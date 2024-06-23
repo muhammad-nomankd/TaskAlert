@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "77234148239",
+    "project_id": "alarmmanager-94655",
+    "storage_bucket": "alarmmanager-94655.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77234148239:android:b7d12ffe776dfbbeaa31fa",
+        "android_client_info": {
+          "package_name": "com.example.alarmmanager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "77234148239-cttjhrlm2phh37gilvvrrpg8mfptla5d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.alarmmanager",
+            "certificate_hash": "51a0ef6b1733a23ac2afbe3fb768a7276cc84398"
+          }
+        },
+        {
+          "client_id": "77234148239-er5pvask6tf53t3gud581muiqo6el87n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBadq0CICRhM7r06QjA6M33d04tFE9qFxU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77234148239-er5pvask6tf53t3gud581muiqo6el87n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
