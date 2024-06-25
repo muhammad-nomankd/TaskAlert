@@ -1,5 +1,7 @@
 package com.example.alarmmanager.viewmodels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.alarmmanager.dataclasses.Task
@@ -14,8 +16,8 @@ class GetTaskViewModel : ViewModel() {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
-    private val _filteredTasks = MutableStateFlow<List<Task>>(emptyList())
-    val filteredTasks: StateFlow<List<Task>> = _filteredTasks
+    private val _filteredTasks = MutableLiveData<List<Task>>(emptyList())
+    var filteredTasks: LiveData<List<Task>> = _filteredTasks
 
     init {
         fetchTasks()
@@ -32,11 +34,18 @@ class GetTaskViewModel : ViewModel() {
         }
     }
 
-    fun filterTasks(category: String) {
-        _filteredTasks.value = if (category == "All") {
-            _tasks.value
-        } else {
-            _tasks.value.filter { it.status == category }
+    suspend fun filterTasks(category: String) {
+        val taskrepo = repository.getTask()
+        try {
+            val taskfilter = when(category){
+                "All" ->taskrepo
+                "In Progress" -> taskrepo.filter { it.status == "In Progress" }
+                "Completed" -> taskrepo.filter { it.status == "Completed"}
+                else -> taskrepo
+            }
+            _filteredTasks.value = taskfilter
+        } catch (e:Exception){
+            emptyList<Task>()
         }
     }
 }

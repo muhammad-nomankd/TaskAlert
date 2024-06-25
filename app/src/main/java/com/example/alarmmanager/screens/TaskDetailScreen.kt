@@ -5,22 +5,30 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.screens.ui.theme.AlarmManagerTheme
@@ -32,22 +40,37 @@ class TaskDetailScreen : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AlarmManagerTheme {
-                TaskList()
+                TaskList(navController = NavController(LocalContext.current))
             }
         }
     }
 
 
     @Composable
-    fun TaskList() {
+    fun TaskList(navController: NavController) {
         val viewModel = GetTaskViewModel()
         val tasks by viewModel.tasks.collectAsState()
+        Column(modifier = Modifier.fillMaxSize()) {
+           Row(Modifier.fillMaxWidth().padding(32.dp),horizontalArrangement = Arrangement.SpaceBetween) {
+               Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back",modifier = Modifier.clickable {
+                   navController.navigateUp()
+               })
+               Text(text = "Task List", fontSize = 22.sp, fontWeight = FontWeight.Bold, style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
+               Icon(imageVector = Icons.Default.Close, contentDescription = "Go back", modifier = Modifier.clickable {
+                   navController.navigateUp()
+               })
 
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            items(tasks) { task ->
-                TaskItem(task)
+           }
+
+            LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)) {
+                items(tasks) { task ->
+                    TaskItem(task)
+                }
             }
         }
+
     }
 
     @Composable
@@ -56,7 +79,6 @@ class TaskDetailScreen : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            elevation = 8.dp,
             shape = RoundedCornerShape(12.dp)
         ) {
             Row(

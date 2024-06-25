@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
                     googleSignInLauncher = googleSignInLauncher
                 ) }
                 composable("createTask") { CreatTask().createTaskcom(navController, CreateTaskViewModel()) }
-                composable("taskListScreen"){ TaskDetailScreen().TaskList()}
+                composable("taskListScreen"){ TaskDetailScreen().TaskList(navController)}
             }
         }
 
