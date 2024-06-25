@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,13 +22,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -58,6 +60,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -94,10 +97,9 @@ class HomeScreen : ComponentActivity() {
         val contextThis = LocalContext.current
         val firestore = Firebase.firestore
         val viewmodel = GetTaskViewModel()
-         val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
-        val allTasks by viewmodel.tasks.collectAsState()
+        val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
+        val nonfilterTasks by viewmodel.tasks.collectAsState()
 
-        // Getting User Detail
         LaunchedEffect(Unit) {
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .get().addOnSuccessListener { document ->
@@ -108,12 +110,11 @@ class HomeScreen : ComponentActivity() {
                 }
         }
 
-        //Getting and filtering tasks
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
         }
 
-        // Custom Button
+
         @Composable
         fun categoryButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
             val isSelected = selectedCategory == text
@@ -131,7 +132,6 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
-        //Getting icons from drawables based on task title
         @Composable
         fun getTaskIcon(title: String): Int {
             return when {
@@ -151,7 +151,6 @@ class HomeScreen : ComponentActivity() {
 
                 title.toLowerCase().contains("medicine", ignoreCase = true) || title.toLowerCase()
                     .contains("tablets", ignoreCase = true) || title.toLowerCase()
-                    .contains("Madicine", ignoreCase = true) || title.toLowerCase()
                     .contains("doctor", ignoreCase = true) || title.toLowerCase()
                     .contains("hospital", ignoreCase = true) || title.toLowerCase()
                     .contains("appointment", ignoreCase = true) -> R.drawable.medicine
@@ -164,7 +163,6 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
-        // Task Item
         @Composable
         fun taskItem(task: Task) {
             Card(
@@ -189,7 +187,9 @@ class HomeScreen : ComponentActivity() {
                         text = task.title,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -245,7 +245,7 @@ class HomeScreen : ComponentActivity() {
                 }
             }
         }
-         // Task item for upcomming tasks
+
         @Composable
         fun upCommingTasksItem(task: Task) {
             Card(
@@ -268,65 +268,79 @@ class HomeScreen : ComponentActivity() {
                                 shape = RoundedCornerShape(4.dp)
                             )
                     )
-                    Column(modifier = Modifier.padding(start = 12.dp)) {
-                        Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(
-                                text = task.title,
-                                fontSize = 20.sp,
-                                fontFamily = FontFamily.SansSerif,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Card(
-                                modifier = Modifier.padding(top = 8.dp),
-                                backgroundColor = when (task.priority) {
-                                    "Low" -> colorResource(id = R.color.lightYellow)
-                                    "Medium" -> colorResource(id = R.color.lightBlue)
-                                    "High" -> colorResource(id = R.color.light_pink)
-                                    else -> Color.White
-                                },
-                                contentColor = when (task.priority) {
-                                    "Low" -> colorResource(id = R.color.darkYellow)
-                                    "Medium" -> colorResource(id = R.color.darkBlue)
-                                    "High" -> colorResource(id = R.color.dark_pink)
-                                    else -> Color.White
-                                }
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .weight(1f)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-
                                 Text(
-                                    text = task.priority,
-                                    modifier = Modifier.padding(
-                                        start = 6.dp,
-                                        end = 6.dp,
-                                        top = 3.dp,
-                                        bottom = 3.dp
-                                    )
+                                    text = task.title,
+                                    fontSize = 20.sp,
+                                    fontFamily = FontFamily.SansSerif,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier
+                                        .padding(top = 8.dp)
+                                        .width(IntrinsicSize.Max)
+                                        .widthIn(0.dp, 150.dp),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
                                 )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Card(
+                                    modifier = Modifier
+                                        .padding(top = 8.dp)
+                                        .wrapContentWidth(),
+                                    backgroundColor = when (task.priority) {
+                                        "Low" -> colorResource(id = R.color.lightYellow)
+                                        "Medium" -> colorResource(id = R.color.lightBlue)
+                                        "High" -> colorResource(id = R.color.light_pink)
+                                        else -> Color.White
+                                    },
+                                    contentColor = when (task.priority) {
+                                        "Low" -> colorResource(id = R.color.darkYellow)
+                                        "Medium" -> colorResource(id = R.color.darkBlue)
+                                        "High" -> colorResource(id = R.color.dark_pink)
+                                        else -> Color.White
+                                    }
+                                ) {
+                                    Text(
+                                        text = task.priority,
+                                        modifier = Modifier.padding(
+                                            start = 6.dp,
+                                            end = 6.dp,
+                                            top = 3.dp,
+                                            bottom = 3.dp
+                                        )
+                                    )
+                                }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = task.startTime + " - " + task.endTime, color = Color.DarkGray)
-
                     }
-
 
                     Text(
                         text = task.startDate,
                         color = Color.DarkGray,
                         modifier = Modifier
                             .padding(top = 8.dp)
-                            .padding(start = 100.dp)
+                            .wrapContentWidth(Alignment.End)
                     )
-
                 }
             }
         }
 
-        // Main UI
+
         Box(
             modifier = Modifier
                 .background(colorResource(id = R.color.custom_white))
@@ -415,9 +429,6 @@ class HomeScreen : ComponentActivity() {
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
-
-                // Categories
-
                 LazyRow(
                     Modifier
                         .fillMaxWidth()
@@ -440,8 +451,6 @@ class HomeScreen : ComponentActivity() {
                         })
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // UpComming Tasks
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -458,8 +467,8 @@ class HomeScreen : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                            items(allTasks) { task ->
+                        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                            items(nonfilterTasks) { task ->
                                 upCommingTasksItem(task)
                             }
 
@@ -485,8 +494,6 @@ class HomeScreen : ComponentActivity() {
                 )
             }
         }
-        // Sign Out
-
         var isSigningOut by rememberSaveable { mutableStateOf(false) }
         Text(
             text = "Sign Out", modifier = Modifier.clickable {

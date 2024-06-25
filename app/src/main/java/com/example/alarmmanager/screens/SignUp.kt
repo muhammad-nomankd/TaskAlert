@@ -87,7 +87,7 @@ fun SignUp(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "SignIn", fontSize = 30.sp, color = colorResource(id = R.color.darkBlue), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
+                text = "SignIn", fontSize = 30.sp, color = colorResource(id = R.color.black), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(64.dp))
             OutlinedTextField(
@@ -193,7 +193,7 @@ fun SignUp(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(48.dp))
             Text(
                 text = "Or continue with",
                 fontSize = 16.sp,
