@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -42,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -92,8 +94,10 @@ class HomeScreen : ComponentActivity() {
         val contextThis = LocalContext.current
         val firestore = Firebase.firestore
         val viewmodel = GetTaskViewModel()
-         val tasks by viewmodel.tasks.collectAsState()
+         val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
+        val allTasks by viewmodel.tasks.collectAsState()
 
+        // Getting User Detail
         LaunchedEffect(Unit) {
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .get().addOnSuccessListener { document ->
@@ -104,22 +108,12 @@ class HomeScreen : ComponentActivity() {
                 }
         }
 
-        /*LaunchedEffect(selectedCategoryState) {
-            viewmodel.filterTasks(selectedCategoryState)
-        }*/
+        //Getting and filtering tasks
         LaunchedEffect(selectedCategoryState) {
-            firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
-                .collection("tasks").get().addOnSuccessListener { documents ->
-                    val tasks = documents.mapNotNull { it.toObject(Task::class.java) }
-                    upcomingTasks = if (selectedCategoryState == "All") {
-                        tasks
-                    } else {
-                        tasks.filter { it.priority == selectedCategoryState }
-                    }
-                }
+            viewmodel.filterTasks(selectedCategoryState)
         }
 
-
+        // Custom Button
         @Composable
         fun categoryButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
             val isSelected = selectedCategory == text
@@ -137,6 +131,7 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
+        //Getting icons from drawables based on task title
         @Composable
         fun getTaskIcon(title: String): Int {
             return when {
@@ -156,6 +151,7 @@ class HomeScreen : ComponentActivity() {
 
                 title.toLowerCase().contains("medicine", ignoreCase = true) || title.toLowerCase()
                     .contains("tablets", ignoreCase = true) || title.toLowerCase()
+                    .contains("Madicine", ignoreCase = true) || title.toLowerCase()
                     .contains("doctor", ignoreCase = true) || title.toLowerCase()
                     .contains("hospital", ignoreCase = true) || title.toLowerCase()
                     .contains("appointment", ignoreCase = true) -> R.drawable.medicine
@@ -168,6 +164,7 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
+        // Task Item
         @Composable
         fun taskItem(task: Task) {
             Card(
@@ -248,12 +245,11 @@ class HomeScreen : ComponentActivity() {
                 }
             }
         }
-
+         // Task item for upcomming tasks
         @Composable
         fun upCommingTasksItem(task: Task) {
             Card(
                 modifier = Modifier.padding(4.dp),
-                elevation = 8.dp,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
@@ -330,6 +326,7 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
+        // Main UI
         Box(
             modifier = Modifier
                 .background(colorResource(id = R.color.custom_white))
@@ -418,12 +415,15 @@ class HomeScreen : ComponentActivity() {
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
+
+                // Categories
+
                 LazyRow(
                     Modifier
                         .fillMaxWidth()
                         .padding(start = 32.dp, end = 32.dp)
                 ) {
-                    items(upcomingTasks) { task ->
+                    items(tasks) { task ->
                         taskItem(task)
                     }
                 }
@@ -440,6 +440,8 @@ class HomeScreen : ComponentActivity() {
                         })
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // UpComming Tasks
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -456,8 +458,8 @@ class HomeScreen : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                            items(tasks) { task ->
+                        LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            items(allTasks) { task ->
                                 upCommingTasksItem(task)
                             }
 
@@ -483,6 +485,8 @@ class HomeScreen : ComponentActivity() {
                 )
             }
         }
+        // Sign Out
+
         var isSigningOut by rememberSaveable { mutableStateOf(false) }
         Text(
             text = "Sign Out", modifier = Modifier.clickable {

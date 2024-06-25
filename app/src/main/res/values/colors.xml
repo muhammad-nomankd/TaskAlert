@@ -9,12 +9,13 @@
     <color name="custom_white">#F5F9FA</color>
     <color name="button_color">#FE7365</color>
     <color name="task_color">#FEFEFE</color>
-    <color name="lightBlue">#EFF3F5</color>
-    <color name="light_pink">#F5E4DF</color>
-    <color name="lightYellow">#FDF1E6</color>
+    <color name="lightBlue">#C0E5FB</color>
+    <color name="light_pink">#F6C5CD</color>
+    <color name="lightYellow">#FAF1A9</color>
     <color name="dark_pink">#FE416C</color>
     <color name="darkYellow">#E4BC64</color>
     <color name="darkBlue">#1B80C5</color>
     <color name="other">#FFFFFFFF</color>
     <color name="box_color">#E0A85A</color>
+    <color name="gsi_bckg">#F1F1F1</color>
 </resources>

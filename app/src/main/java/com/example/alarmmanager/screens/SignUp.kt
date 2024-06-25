@@ -27,6 +27,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -86,26 +87,30 @@ fun SignUp(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "SignIn", fontSize = 30.sp, color = Color.Black, fontWeight = FontWeight.Bold
+                text = "SignIn", fontSize = 30.sp, color = colorResource(id = R.color.darkBlue), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(64.dp))
             OutlinedTextField(
                 textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
                 shape = RoundedCornerShape(16.dp),
                 colors = textColor,
-                value = email, keyboardOptions = KeyboardOptions.Default.copy(
+                value = email,
+                keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Email
-                ), onValueChange = {
+                ),
+                onValueChange = {
                     email = it
                     mailerror = if (it.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(it)
                             .matches()
                     ) "Enter a valid Email address." else null
-                }, label = { Text("username") }, modifier = Modifier.fillMaxWidth(), leadingIcon = {
+                },
+                label = { Text("username") }, modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Email, contentDescription = null
                     )
                 },
-                )
+            )
             mailerror?.let {
                 Text(text = it, fontSize = 12.sp, color = Color.Red)
             }
@@ -180,12 +185,20 @@ fun SignUp(
                     .height(55.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text(text = "SignIn", fontSize = 18.sp, color = Color.White)
+                Text(
+                    text = "SignIn",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "or", fontSize = 24.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Continue with", fontSize = 16.sp)
+            Text(
+                text = "Or continue with",
+                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyLarge
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
@@ -193,7 +206,7 @@ fun SignUp(
                     viewModel.initGoogleSignIn(context)
                     viewModel.launchGoogleSignIn(googleSignInLauncher)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.custom_white)),
+                colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.gsi_bckg)),
                 shape = RoundedCornerShape(16.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
                 modifier = Modifier
@@ -217,7 +230,7 @@ fun SignUp(
                         text = "SignIn with Google",
                         color = Color.Black,
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
