@@ -8,6 +8,7 @@ class CreateTaskViewModel : ViewModel() {
     private val repository = CreateTaskRepository()
 
     fun saveTask(
+        taskid: String,
         taskTitle: String,
         taskDescription: String,
         startDate: String,
@@ -21,6 +22,7 @@ class CreateTaskViewModel : ViewModel() {
         status: String
     ) {
         val task = Task(
+            taskId = taskid,
             title = taskTitle,
             description = taskDescription,
             startDate = startDate,

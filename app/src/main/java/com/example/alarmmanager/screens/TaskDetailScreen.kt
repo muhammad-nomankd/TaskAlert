@@ -20,12 +20,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -66,7 +68,7 @@ class TaskDetailScreen : ComponentActivity() {
                 .fillMaxSize()
                 .padding(16.dp)) {
                 items(tasks) { task ->
-                    TaskItem(task)
+                    taskItem(task)
                 }
             }
         }
@@ -74,11 +76,9 @@ class TaskDetailScreen : ComponentActivity() {
     }
 
     @Composable
-    fun TaskItem(task: Task) {
+    fun taskItem(task: Task) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.padding(4.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
             Row(
@@ -97,51 +97,65 @@ class TaskDetailScreen : ComponentActivity() {
                             shape = RoundedCornerShape(4.dp)
                         )
                 )
-                Column(modifier = Modifier.padding(start = 12.dp)) {
-                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(
-                            text = task.title,
-                            fontSize = 20.sp,
-                            fontFamily = FontFamily.SansSerif,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Card(
-                            modifier = Modifier.padding(top = 8.dp),
-                            backgroundColor = when (task.priority) {
-                                "Low" -> colorResource(id = R.color.lightYellow)
-                                "Medium" -> colorResource(id = R.color.lightBlue)
-                                "High" -> colorResource(id = R.color.light_pink)
-                                else -> Color.White
-                            },
-                            contentColor = when (task.priority) {
-                                "Low" -> colorResource(id = R.color.darkYellow)
-                                "Medium" -> colorResource(id = R.color.darkBlue)
-                                "High" -> colorResource(id = R.color.dark_pink)
-                                else -> Color.White
-                            }
+                Column(
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .weight(1f)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-
                             Text(
-                                text = task.priority,
-                                modifier = Modifier.padding(
-                                    start = 6.dp,
-                                    end = 6.dp,
-                                    top = 3.dp,
-                                    bottom = 3.dp
-                                )
+                                text = task.title,
+                                fontSize = 20.sp,
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .width(IntrinsicSize.Max)
+                                    .widthIn(0.dp, 150.dp),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Card(
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .wrapContentWidth(),
+                                backgroundColor = when (task.priority) {
+                                    "Low" -> colorResource(id = R.color.lightYellow)
+                                    "Medium" -> colorResource(id = R.color.lightBlue)
+                                    "High" -> colorResource(id = R.color.light_pink)
+                                    else -> Color.White
+                                },
+                                contentColor = when (task.priority) {
+                                    "Low" -> colorResource(id = R.color.darkYellow)
+                                    "Medium" -> colorResource(id = R.color.darkBlue)
+                                    "High" -> colorResource(id = R.color.dark_pink)
+                                    else -> Color.White
+                                }
+                            ) {
+                                Text(
+                                    text = task.priority,
+                                    modifier = Modifier.padding(
+                                        start = 6.dp,
+                                        end = 6.dp,
+                                        top = 3.dp,
+                                        bottom = 3.dp
+                                    )
+                                )
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = task.startTime + " - " + task.endTime,
-                        color = Color.DarkGray
-                    )
+                    Text(text = task.startTime + " - " + task.endTime, color = Color.DarkGray)
                 }
 
                 Text(
@@ -149,9 +163,10 @@ class TaskDetailScreen : ComponentActivity() {
                     color = Color.DarkGray,
                     modifier = Modifier
                         .padding(top = 8.dp)
-                        .padding(start = 100.dp)
+                        .wrapContentWidth(Alignment.End)
                 )
             }
         }
     }
+
 }

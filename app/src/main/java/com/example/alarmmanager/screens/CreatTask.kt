@@ -1,6 +1,7 @@
 package com.example.alarmmanager.screens
 
 import CreateTaskViewModel
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.icu.util.Calendar
@@ -59,7 +60,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.alarmmanager.R
 import com.example.alarmmanager.screens.ui.theme.AlarmManagerTheme
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 class CreatTask : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -119,6 +123,7 @@ class CreatTask : ComponentActivity() {
             ).show()
         }
 
+        @SuppressLint("DefaultLocale")
         fun showTimePicker(isStartTime: Boolean) {
             val calendar = Calendar.getInstance()
             TimePickerDialog(
@@ -135,9 +140,10 @@ class CreatTask : ComponentActivity() {
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
-                false // Use 12-hour format
+                false
             ).show()
         }
+
         @Composable
         fun priorityButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
 
@@ -373,7 +379,6 @@ class CreatTask : ComponentActivity() {
                 onClick = {
                     titleError = if (taskTitle.isEmpty()) "Enter the title" else null
 
-
                     if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty()) {
                         Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_LONG)
                             .show()
@@ -381,6 +386,7 @@ class CreatTask : ComponentActivity() {
                     } else {
                         isloading = true
                         viewmodel.saveTask(
+                            taskid = UUID.randomUUID().toString(),
                             taskTitle = taskTitle,
                             taskDescription = taskDescription,
                             startDate = startDate,

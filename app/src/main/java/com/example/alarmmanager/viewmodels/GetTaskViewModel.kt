@@ -1,5 +1,6 @@
 package com.example.alarmmanager.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -30,9 +31,11 @@ class GetTaskViewModel : ViewModel() {
                 _tasks.value = taskList
                 _filteredTasks.value = taskList // Initialize filtered tasks
             } catch (e: Exception) {
+                Log.d("tasks" , "no task found")
             }
         }
     }
+
 
     suspend fun filterTasks(category: String) {
         val taskrepo = repository.getTask()
