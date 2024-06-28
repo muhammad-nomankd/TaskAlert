@@ -1,11 +1,9 @@
 package com.example.alarmmanager.screens
 
-import CreateTaskViewModel
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,7 +29,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -39,7 +36,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -78,10 +74,6 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.time.format.DateTimeFormatter
-import java.util.Date
-import java.util.Locale
 
 class HomeScreen : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -95,7 +87,6 @@ class HomeScreen : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("NotConstructor")
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun HomeScreenUi(navController: NavController, context: Context) {
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
@@ -119,12 +110,10 @@ class HomeScreen : ComponentActivity() {
 
         }
 
-
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
 
         }
-
 
         @Composable
         fun categoryButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {

@@ -33,7 +33,7 @@ class GetTaskViewModel : ViewModel() {
                 _tasks.value = taskList
                 _filteredTasks.value = taskList // Initialize filtered tasks
             } catch (e: Exception) {
-               emptyList<Task>()
+                emptyList<Task>()
             }
         }
     }
@@ -41,17 +41,30 @@ class GetTaskViewModel : ViewModel() {
 
     suspend fun filterTasks(category: String) {
         val taskrepo = repository.getTask()
+        val dateFormate = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+        val currentTime = System.currentTimeMillis()
         try {
-            val taskfilter = when(category){
-                "All" ->taskrepo
-                "In Progress" -> taskrepo.filter { it.status == "In Progress" }
-                "Completed" -> taskrepo.filter { it.status == "Completed"}
-                else -> taskrepo
+            // Assign status based on end date and time
+            taskrepo.forEach { task ->
+                val endT = dateFormate.parse("${task.endDate} ${task.endTime}")?.time ?: 0L
+                task.status = if (currentTime > endT) "Completed" else "In Progress"
+                Log.d("filtertask", taskrepo.toString())
             }
-            _filteredTasks.value = taskfilter
-        } catch (e:Exception){
-            emptyList<Task>()
+        }catch (e:Exception){
+            Log.d("problem", "unable to fileter tasks")
         }
-    }
 
-}
+            try {
+                val taskfilter = when (category) {
+                    "All" -> taskrepo
+                    "In Progress" -> taskrepo.filter { it.status == "In Progress" }
+                    "Completed" -> taskrepo.filter { it.status == "Completed" }
+                    else -> taskrepo
+                }
+                _filteredTasks.value = taskfilter
+            } catch (e: Exception) {
+                emptyList<Task>()
+            }
+        }
+
+    }
