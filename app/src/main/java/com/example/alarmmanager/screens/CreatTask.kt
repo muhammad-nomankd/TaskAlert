@@ -91,6 +91,9 @@ class CreatTask : ComponentActivity() {
         val context = LocalContext.current
         val scrollState = rememberScrollState()
         var isloading by rememberSaveable { mutableStateOf(false) }
+        val status by rememberSaveable {
+            mutableStateOf("")
+        }
 
 
         val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
@@ -119,16 +122,16 @@ class CreatTask : ComponentActivity() {
                 calendar.get(Calendar.DAY_OF_MONTH)
             ).show()
         }
-
         @SuppressLint("DefaultLocale")
         fun showTimePicker(isStartTime: Boolean) {
             val calendar = Calendar.getInstance()
             TimePickerDialog(
                 context,
                 { _, hourOfDay, minute ->
-                    val hour = if (hourOfDay % 12 == 0) 12 else hourOfDay % 12
-                    val amPm = if (hourOfDay >= 12) "PM" else "AM"
-                    val selectedTime = String.format("%02d:%02d %s", hour, minute, amPm)
+                    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    calendar.set(Calendar.MINUTE, minute)
+                    val selectedTime = timeFormat.format(calendar.time)
                     if (isStartTime) {
                         startTime = selectedTime
                     } else {
@@ -137,10 +140,9 @@ class CreatTask : ComponentActivity() {
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
-                false
+                true // Use 24-hour format
             ).show()
         }
-
         @Composable
         fun priorityButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
 
