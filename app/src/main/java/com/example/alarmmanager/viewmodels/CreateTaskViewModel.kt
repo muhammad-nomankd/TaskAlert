@@ -1,7 +1,15 @@
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.repositories.CreateTaskRepository
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class CreateTaskViewModel : ViewModel() {
 

@@ -6,7 +6,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.icu.util.Calendar
 import android.os.Bundle
-import android.widget.ProgressBar
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -61,7 +61,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.alarmmanager.R
 import com.example.alarmmanager.screens.ui.theme.AlarmManagerTheme
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
@@ -88,13 +87,12 @@ class CreatTask : ComponentActivity() {
         var startTime by rememberSaveable { mutableStateOf("") }
         var endTime by rememberSaveable { mutableStateOf("") }
         var titleError by rememberSaveable { mutableStateOf<String?>(null) }
-        var descriptionError by rememberSaveable { mutableStateOf<String?>(null) }
         var selectedPriorityState by rememberSaveable { mutableStateOf("") }
         val context = LocalContext.current
         val scrollState = rememberScrollState()
         var isloading by rememberSaveable { mutableStateOf(false) }
-        var status by rememberSaveable { mutableStateOf("")
-        }
+
+
         val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = colorResource(id = R.color.light_pink),
             unfocusedBorderColor = colorResource(id = R.color.light_pink),
@@ -103,23 +101,22 @@ class CreatTask : ComponentActivity() {
         )
 
         fun showDatePicker(isStartDate: Boolean) {
-            val calender = Calendar.getInstance()
+            val calendar = Calendar.getInstance()
             DatePickerDialog(
                 context,
-                { _, Year, Month, DayOfMonth ->
-                    calender.set(Year, Month, DayOfMonth)
-                    val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-                    val selectedDate = dateFormat.format(calender.time)
+                { _, year, month, dayOfMonth ->
+                    calendar.set(year, month, dayOfMonth)
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val selectedDate = dateFormat.format(calendar.time)
                     if (isStartDate) {
                         startDate = selectedDate
                     } else {
                         endDate = selectedDate
                     }
-
                 },
-                calender.get(Calendar.YEAR),
-                calender.get(Calendar.MONTH),
-                calender.get(Calendar.DAY_OF_MONTH)
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
             ).show()
         }
 
@@ -384,6 +381,12 @@ class CreatTask : ComponentActivity() {
                             .show()
                         return@Button
                     } else {
+
+                        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                        val endT = dateFormat.parse("$endDate $endTime")?.time ?: 0L
+                        val currentTime = System.currentTimeMillis()
+                        val taskStatus = if (currentTime > endT) "Completed" else "In Progress"
+                       Log.d("endT", endT.toString())
                         isloading = true
                         viewmodel.saveTask(
                             taskid = UUID.randomUUID().toString(),
@@ -409,7 +412,7 @@ class CreatTask : ComponentActivity() {
                                     .show()
                             },
                             context,
-                            status
+                            taskStatus
                         )
                     }
                 },
@@ -439,12 +442,14 @@ class CreatTask : ComponentActivity() {
                     .background(Color.Gray), // Semi-transparent black background
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator( strokeWidth = 2.dp,color = colorResource(id = R.color.button_color),
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp, color = colorResource(id = R.color.button_color),
                     modifier = Modifier
                         .height(32.dp)
                         .width(32.dp)
-                        .align(alignment = Alignment.Center))
+                        .align(alignment = Alignment.Center)
+                )
             }
         }
-}
+    }
 }

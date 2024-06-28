@@ -1,9 +1,11 @@
 package com.example.alarmmanager.screens
 
+import CreateTaskViewModel
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -79,6 +81,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 
 class HomeScreen : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -98,9 +101,7 @@ class HomeScreen : ComponentActivity() {
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
         var userName by rememberSaveable { mutableStateOf("") }
         var userEmail by rememberSaveable { mutableStateOf("") }
-        var upcomingTasks by rememberSaveable { mutableStateOf(listOf<Task>()) }
         var selectedCategoryState by rememberSaveable { mutableStateOf("All") }
-        val scrollState = rememberScrollState()
         val contextThis = LocalContext.current
         val firestore = Firebase.firestore
         val viewmodel = GetTaskViewModel()
@@ -115,10 +116,13 @@ class HomeScreen : ComponentActivity() {
                     userEmail = document.getString("email") ?: ""
 
                 }
+
         }
+
 
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
+
         }
 
 
@@ -208,7 +212,8 @@ class HomeScreen : ComponentActivity() {
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = task.status,
@@ -224,7 +229,7 @@ class HomeScreen : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Card(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(4.dp),
                             shape = RoundedCornerShape(4.dp),
                             backgroundColor = when (task.priority) {
                                 "High" -> colorResource(id = R.color.light_pink)

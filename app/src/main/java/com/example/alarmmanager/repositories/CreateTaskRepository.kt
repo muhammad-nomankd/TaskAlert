@@ -20,6 +20,6 @@ class CreateTaskRepository {
         } else {
             onFailure(Exception("User not authenticated"))
         }
-        }
     }
+}
 

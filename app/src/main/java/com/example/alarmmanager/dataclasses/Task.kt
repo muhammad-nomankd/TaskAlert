@@ -9,5 +9,5 @@ data class Task(
     val startTime: String = "",
     val endTime: String = "",
     val priority: String = "",
-    val status: String = ""
+    var status: String = ""
 )

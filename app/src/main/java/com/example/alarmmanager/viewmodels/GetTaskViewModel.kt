@@ -10,6 +10,8 @@ import com.example.alarmmanager.repositories.GetTaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 class GetTaskViewModel : ViewModel() {
@@ -31,7 +33,7 @@ class GetTaskViewModel : ViewModel() {
                 _tasks.value = taskList
                 _filteredTasks.value = taskList // Initialize filtered tasks
             } catch (e: Exception) {
-                Log.d("tasks" , "no task found")
+               emptyList<Task>()
             }
         }
     }
@@ -51,4 +53,5 @@ class GetTaskViewModel : ViewModel() {
             emptyList<Task>()
         }
     }
+
 }
