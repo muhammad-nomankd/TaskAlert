@@ -10,6 +10,7 @@ import com.example.alarmmanager.repositories.GetTaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -41,12 +42,16 @@ class GetTaskViewModel : ViewModel() {
 
     suspend fun filterTasks(category: String) {
         val taskrepo = repository.getTask()
-        val dateFormate = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+        val dateFormats = listOf(
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()),
+            SimpleDateFormat("yyyy-MM-dd HH:mm a", Locale.getDefault()),
+            SimpleDateFormat("dd MMM yyyy HH:mm a", Locale.getDefault())
+        )
         val currentTime = System.currentTimeMillis()
         try {
-            // Assign status based on end date and time
+
             taskrepo.forEach { task ->
-                val endT = dateFormate.parse("${task.endDate} ${task.endTime}")?.time ?: 0L
+                val endT = parseDate("${task.endDate} ${task.endTime}",dateFormats)?.time ?: 0L
                 task.status = if (currentTime > endT) "Completed" else "In Progress"
                 Log.d("filtertask", taskrepo.toString())
             }
@@ -66,5 +71,15 @@ class GetTaskViewModel : ViewModel() {
                 emptyList<Task>()
             }
         }
+    private fun parseDate(dateString: String, dateFormats: List<SimpleDateFormat>): java.util.Date? {
+        for (format in dateFormats) {
+            try {
+                return format.parse(dateString)
+            } catch (e: ParseException) {
+                Log.d("parsing Error", "Unable to parse date and time")
+            }
+        }
+        return null
+    }
 
     }
