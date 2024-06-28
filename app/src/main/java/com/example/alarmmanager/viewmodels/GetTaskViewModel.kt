@@ -42,44 +42,31 @@ class GetTaskViewModel : ViewModel() {
 
     suspend fun filterTasks(category: String) {
         val taskrepo = repository.getTask()
-        val dateFormats = listOf(
-            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()),
-            SimpleDateFormat("yyyy-MM-dd HH:mm a", Locale.getDefault()),
-            SimpleDateFormat("dd MMM yyyy HH:mm a", Locale.getDefault())
-        )
+        val dateFormats = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         val currentTime = System.currentTimeMillis()
         try {
 
             taskrepo.forEach { task ->
-                val endT = parseDate("${task.endDate} ${task.endTime}",dateFormats)?.time ?: 0L
+                val endT = dateFormats.parse("${task.endDate} ${task.endTime}", )?.time ?: 0L
                 task.status = if (currentTime > endT) "Completed" else "In Progress"
                 Log.d("filtertask", taskrepo.toString())
             }
-        }catch (e:Exception){
+        } catch (e: Exception) {
             Log.d("problem", "unable to fileter tasks")
         }
 
-            try {
-                val taskfilter = when (category) {
-                    "All" -> taskrepo
-                    "In Progress" -> taskrepo.filter { it.status == "In Progress" }
-                    "Completed" -> taskrepo.filter { it.status == "Completed" }
-                    else -> taskrepo
-                }
-                _filteredTasks.value = taskfilter
-            } catch (e: Exception) {
-                emptyList<Task>()
+        try {
+            val taskfilter = when (category) {
+                "All" -> taskrepo
+                "In Progress" -> taskrepo.filter { it.status == "In Progress" }
+                "Completed" -> taskrepo.filter { it.status == "Completed" }
+                else -> taskrepo
             }
+            _filteredTasks.value = taskfilter
+        } catch (e: Exception) {
+            emptyList<Task>()
         }
-    private fun parseDate(dateString: String, dateFormats: List<SimpleDateFormat>): java.util.Date? {
-        for (format in dateFormats) {
-            try {
-                return format.parse(dateString)
-            } catch (e: ParseException) {
-                Log.d("parsing Error", "Unable to parse date and time")
-            }
-        }
-        return null
     }
 
-    }
+
+}
