@@ -214,7 +214,7 @@ class TaskDetailScreen : ComponentActivity() {
             date?.let {sdf.format(date) } + suffix
         } catch (e:Exception) {
             e.printStackTrace()
-            "Invalid Date formate found"
+            "Invalid Date"
         }
     }
 

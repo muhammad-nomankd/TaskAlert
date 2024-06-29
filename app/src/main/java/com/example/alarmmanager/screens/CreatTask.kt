@@ -337,7 +337,7 @@ class CreatTask : ComponentActivity() {
                         })
                     Text(text = "  -  ", fontWeight = FontWeight.Bold)
 
-                    Text(text = if (endTime.isEmpty()) "End Time" else startTime,
+                    Text(text = if (endTime.isEmpty()) "End Time" else endTime ,
                         color = Color.DarkGray,
                         fontSize = 16.sp,
                         modifier = Modifier.clickable {
