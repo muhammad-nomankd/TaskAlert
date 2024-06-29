@@ -48,7 +48,8 @@ class GetTaskViewModel : ViewModel() {
 
             taskrepo.forEach { task ->
                 val endT = dateFormats.parse("${task.endDate} ${task.endTime}", )?.time ?: 0L
-                task.status = if (currentTime > endT) "Completed" else "In Progress"
+                val startT = dateFormats.parse("${task.startDate} ${task.startTime}", )?.time ?: 0L
+                task.status = if (currentTime > endT) "Completed" else if (currentTime > startT && currentTime<endT) "In Progress" else "Pending"
                 Log.d("filtertask", taskrepo.toString())
             }
         } catch (e: Exception) {
