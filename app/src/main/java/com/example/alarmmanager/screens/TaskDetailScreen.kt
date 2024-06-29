@@ -35,6 +35,8 @@ import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.screens.ui.theme.AlarmManagerTheme
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class TaskDetailScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,20 +55,38 @@ class TaskDetailScreen : ComponentActivity() {
         val viewModel = GetTaskViewModel()
         val tasks by viewModel.tasks.collectAsState()
         Column(modifier = Modifier.fillMaxSize()) {
-           Row(Modifier.fillMaxWidth().padding(32.dp),horizontalArrangement = Arrangement.SpaceBetween) {
-               Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back",modifier = Modifier.clickable {
-                   navController.navigateUp()
-               })
-               Text(text = "Task List", fontSize = 22.sp, fontWeight = FontWeight.Bold, style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
-               Icon(imageVector = Icons.Default.Close, contentDescription = "Go back", modifier = Modifier.clickable {
-                   navController.navigateUp()
-               })
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Go back",
+                    modifier = Modifier.clickable {
+                        navController.navigateUp()
+                    })
+                Text(
+                    text = "Task List",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
+                )
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Go back",
+                    modifier = Modifier.clickable {
+                        navController.navigateUp()
+                    })
 
-           }
+            }
 
-            LazyColumn(modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
                 items(tasks) { task ->
                     taskItem(task)
                 }
@@ -143,6 +163,12 @@ class TaskDetailScreen : ComponentActivity() {
                             ) {
                                 Text(
                                     text = task.priority,
+                                    color = when (task.priority) {
+                                        "High" -> colorResource(id = R.color.dark_pink)
+                                        "Medium" -> colorResource(id = R.color.darkBlue)
+                                        "Low" -> colorResource(id = R.color.darkYellow)
+                                        else -> Color.Black
+                                    },
                                     modifier = Modifier.padding(
                                         start = 6.dp,
                                         end = 6.dp,
@@ -155,17 +181,40 @@ class TaskDetailScreen : ComponentActivity() {
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = task.startTime + " - " + task.endTime, color = Color.DarkGray)
+                    Text(text = task.startTime + " - " + task.endTime, color = Color.DarkGray, fontSize = 16.sp)
                 }
 
                 Text(
-                    text = task.startDate,
+                    text = dateFormate(task.startDate),
                     color = Color.DarkGray,
+                    fontSize = 16.sp,
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .wrapContentWidth(Alignment.End)
                 )
             }
+        }
+    }
+
+    fun dateFormate(dateString: String): String {
+        val fetchedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
+
+        return try {
+            val date = fetchedDate.parse(dateString)
+            val day = date?.let { SimpleDateFormat("d", Locale.getDefault()).format(it).toInt() }
+
+            val suffix = when (day) {
+                1, 21, 31 -> "st"
+                2, 22 -> "nd"
+                3,23 -> "rd"
+                else -> "th"
+            }
+
+            date?.let {sdf.format(date) } + suffix
+        } catch (e:Exception) {
+            e.printStackTrace()
+            "Invalid Date formate found"
         }
     }
 
