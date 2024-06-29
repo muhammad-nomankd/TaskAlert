@@ -74,6 +74,8 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class HomeScreen : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -193,8 +195,8 @@ class HomeScreen : ComponentActivity() {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = task.startDate,
-                        fontSize = 14.sp,
+                        text = formateDate(task.startDate),
+                        fontSize = 16.sp,
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -208,9 +210,10 @@ class HomeScreen : ComponentActivity() {
                             text = task.status,
                             fontSize = 12.sp,
                             style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
                             color = when (task.status) {
-                                "Completed" -> Color.Green
-                                "In Progress" -> Color.Yellow
+                                "Completed" -> colorResource(id = R.color.green)
+                                "In Progress" -> colorResource(id = R.color.darkYellow)
                                 "Cancelled" -> Color.Red
                                 "Pending" -> Color.Black
                                 else -> Color.Gray
@@ -237,6 +240,12 @@ class HomeScreen : ComponentActivity() {
                                 text = task.priority,
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = when (task.priority) {
+                                    "High" -> colorResource(id = R.color.dark_pink)
+                                    "Medium" -> colorResource(id = R.color.darkBlue)
+                                    "Low" -> colorResource(id = R.color.darkYellow)
+                                    else -> Color.Black},
                                 modifier = Modifier.padding(
                                     start = 8.dp, end = 8.dp, top = 3.dp, bottom = 3.dp
                                 )
@@ -315,6 +324,12 @@ class HomeScreen : ComponentActivity() {
                                 ) {
                                     Text(
                                         text = task.priority,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = when (task.priority) {
+                                            "High" -> colorResource(id = R.color.dark_pink)
+                                            "Medium" -> colorResource(id = R.color.darkBlue)
+                                            "Low" -> colorResource(id = R.color.darkYellow)
+                                            else -> Color.Black},
                                         modifier = Modifier.padding(
                                             start = 6.dp,
                                             end = 6.dp,
@@ -327,11 +342,11 @@ class HomeScreen : ComponentActivity() {
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = task.startTime + " - " + task.endTime, color = Color.DarkGray)
+                        Text(text = timeFormate(task.startTime) + " - " + timeFormate(task.endTime), color = Color.DarkGray, fontSize = 16.sp)
                     }
 
                     Text(
-                        text = task.startDate,
+                        text = formateDate(task.startDate),
                         color = Color.DarkGray,
                         modifier = Modifier
                             .padding(top = 8.dp)
@@ -514,5 +529,42 @@ class HomeScreen : ComponentActivity() {
                 }
             }, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
         )
+    }
+
+    fun formateDate(dateString: String): String {
+
+        val fetchedDateFormate = SimpleDateFormat("yyyy-mm-dd",Locale.getDefault())
+        val sdf = SimpleDateFormat("MMM d",Locale.getDefault())
+        return try {
+            val date = fetchedDateFormate.parse(dateString)
+            val day = date?.let { SimpleDateFormat("d",Locale.getDefault()).format(it).toInt() }
+            val suffix = when(day){
+                1,21,31 -> "st"
+                2,22 -> "nd"
+                3,23 -> "rd"
+                else -> "th"
+
+            }
+            date?.let { sdf.format(it) } + suffix
+        } catch (e:Exception){
+            e.printStackTrace()
+            "Invalid date"
+        }
+
+
+    }
+
+    fun timeFormate(timeString: String): String {
+
+        val fetchedTime = SimpleDateFormat("HH:mm",Locale.getDefault())
+        val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())
+
+        return try {
+            val time = fetchedTime.parse(timeString)
+            dDF.format(time)
+        } catch (e: Exception){
+            e.printStackTrace()
+            "invalid formated time"
+        }
     }
 }
