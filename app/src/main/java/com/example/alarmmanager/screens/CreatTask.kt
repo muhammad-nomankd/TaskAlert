@@ -140,7 +140,7 @@ class CreatTask : ComponentActivity() {
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
-                true // Use 24-hour format
+                false // Use 24-hour format
             ).show()
         }
         @Composable
