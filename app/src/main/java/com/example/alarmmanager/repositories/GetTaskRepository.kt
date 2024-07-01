@@ -15,7 +15,7 @@ class GetTaskRepository {
             try {
                 val taskCollection = firestore.collection("User")
                     .document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
-                    .collection("tasks").orderBy("startDate")
+                    .collection("tasks").orderBy("endDate")
                 taskCollection.get().await().toObjects(Task::class.java)
             } catch (e: Exception) {
                 emptyList()

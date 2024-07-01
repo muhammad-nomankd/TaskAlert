@@ -193,7 +193,7 @@ fun SignUp(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = "Or continue with",
                 fontSize = 16.sp,

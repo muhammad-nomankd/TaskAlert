@@ -10,7 +10,6 @@ import com.example.alarmmanager.repositories.GetTaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -31,6 +30,7 @@ class GetTaskViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val taskList = repository.getTask()
+                updateTaskStatuses(taskList)
                 _tasks.value = taskList
                 _filteredTasks.value = taskList // Initialize filtered tasks
             } catch (e: Exception) {
@@ -40,32 +40,41 @@ class GetTaskViewModel : ViewModel() {
     }
 
 
-    suspend fun filterTasks(category: String) {
+    suspend fun updateTaskStatuses(tasklist: List<Task>) {
         val taskrepo = repository.getTask()
         val dateFormats = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         val currentTime = System.currentTimeMillis()
         try {
 
-            taskrepo.forEach { task ->
-                val endT = dateFormats.parse("${task.endDate} ${task.endTime}", )?.time ?: 0L
-                val startT = dateFormats.parse("${task.startDate} ${task.startTime}", )?.time ?: 0L
-                task.status = if (currentTime > endT) "Completed" else if (currentTime > startT && currentTime<endT) "In Progress" else "Pending"
+            tasklist.forEach { task ->
+                val endT = dateFormats.parse("${task.endDate} ${task.endTime}")?.time ?: 0L
+                val startT = dateFormats.parse("${task.startDate} ${task.startTime}")?.time ?: 0L
+                task.status =
+                    if (currentTime > endT) "Completed" else if (currentTime > startT && currentTime < endT) "In Progress" else "Pending"
                 Log.d("filtertask", taskrepo.toString())
             }
         } catch (e: Exception) {
             Log.d("problem", "unable to fileter tasks")
         }
+    }
 
-        try {
-            val taskfilter = when (category) {
-                "All" -> taskrepo
-                "In Progress" -> taskrepo.filter { it.status == "In Progress" }
-                "Completed" -> taskrepo.filter { it.status == "Completed" }
-                else -> taskrepo
+
+    suspend fun filterTasks(category: String) {
+        viewModelScope.launch {
+
+            try {
+                val taskrepo = repository.getTask()
+                updateTaskStatuses(taskrepo)
+                val taskfilter = when (category) {
+                    "All" -> taskrepo
+                    "In Progress" -> taskrepo.filter { it.status == "In Progress" }
+                    "Completed" -> taskrepo.filter { it.status == "Completed" }
+                    else -> taskrepo
+                }
+                _filteredTasks.value = taskfilter
+            } catch (e: Exception) {
+                emptyList<Task>()
             }
-            _filteredTasks.value = taskfilter
-        } catch (e: Exception) {
-            emptyList<Task>()
         }
     }
 

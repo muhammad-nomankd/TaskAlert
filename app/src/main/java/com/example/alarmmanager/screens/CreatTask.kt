@@ -95,7 +95,6 @@ class CreatTask : ComponentActivity() {
             mutableStateOf("")
         }
 
-
         val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = colorResource(id = R.color.light_pink),
             unfocusedBorderColor = colorResource(id = R.color.light_pink),
@@ -122,6 +121,7 @@ class CreatTask : ComponentActivity() {
                 calendar.get(Calendar.DAY_OF_MONTH)
             ).show()
         }
+
         @SuppressLint("DefaultLocale")
         fun showTimePicker(isStartTime: Boolean) {
             val calendar = Calendar.getInstance()
@@ -143,6 +143,7 @@ class CreatTask : ComponentActivity() {
                 false // Use 24-hour format
             ).show()
         }
+
         @Composable
         fun priorityButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
 
@@ -337,7 +338,7 @@ class CreatTask : ComponentActivity() {
                         })
                     Text(text = "  -  ", fontWeight = FontWeight.Bold)
 
-                    Text(text = if (endTime.isEmpty()) "End Time" else endTime ,
+                    Text(text = if (endTime.isEmpty()) "End Time" else endTime,
                         color = Color.DarkGray,
                         fontSize = 16.sp,
                         modifier = Modifier.clickable {
@@ -378,7 +379,7 @@ class CreatTask : ComponentActivity() {
                 onClick = {
                     titleError = if (taskTitle.isEmpty()) "Enter the title" else null
 
-                    if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty()) {
+                    if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
                         Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_LONG)
                             .show()
                         return@Button
@@ -386,9 +387,9 @@ class CreatTask : ComponentActivity() {
 
                         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
                         val endT = dateFormat.parse("$endDate $endTime")?.time ?: 0L
+                        val startT = dateFormat.parse("$startDate $startTime")?.time ?: 0L
                         val currentTime = System.currentTimeMillis()
-                        val taskStatus = if (currentTime > endT) "Completed" else "In Progress"
-                       Log.d("endT", endT.toString())
+                        val taskStatus = if (currentTime > endT) "Completed" else if (currentTime>startT && currentTime<endT) "In Progress" else "Pending"
                         isloading = true
                         viewmodel.saveTask(
                             taskid = UUID.randomUUID().toString(),
@@ -414,7 +415,7 @@ class CreatTask : ComponentActivity() {
                                     .show()
                             },
                             context,
-                            taskStatus
+                            status
                         )
                     }
                 },

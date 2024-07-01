@@ -1,12 +1,25 @@
 package com.example.alarmmanager.screens
 
 import android.os.Bundle
+import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +28,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -181,40 +199,110 @@ class TaskDetailScreen : ComponentActivity() {
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = task.startTime + " - " + task.endTime, color = Color.DarkGray, fontSize = 16.sp)
+                    Text(
+                        text = timeFormate(task.startTime) + " - " + timeFormate(task.endTime),
+                        color = Color.DarkGray,
+                        fontSize = 16.sp
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = dateFormate(task.startDate),
+                        color = Color.DarkGray,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .wrapContentWidth(Alignment.End)
+                    )
+                    Text(
+                        text = "To", color = Color.DarkGray,
+                        fontSize = 12.sp,
+                    )
+                    Text(
+                        text = dateFormate(task.endDate),
+                        color = Color.DarkGray,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .wrapContentWidth(Alignment.End)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = task.status,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = when (task.status) {
+                            "Completed" -> colorResource(id = R.color.green)
+                            "In Progress" -> colorResource(id = R.color.darkYellow)
+                            "Pending" -> Color.Black
+                            else -> Color.Gray
+                        })
                 }
 
-                Text(
-                    text = dateFormate(task.startDate),
-                    color = Color.DarkGray,
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .wrapContentWidth(Alignment.End)
-                )
             }
         }
     }
 
+    @Composable
+    fun Header(currentMonth:String, onPreviousMonthClick: () -> Unit, onNextMonthClick: () -> Unit, onCalenderClick: () -> Unit , navController: NavController){
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()) {
+            IconButton(onClick = {navController.navigateUp()}) {
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back")
+
+            }
+
+            Row(horizontalArrangement = Arrangement.Center) {
+                IconButton(onClick = {onPreviousMonthClick}) {
+                    Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "Previous Month", tint = colorResource(
+                        id = R.color.button_color
+                    ))
+                }
+                Text(text = currentMonth, style = MaterialTheme.typography.bodyLarge, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                IconButton(onClick = { onNextMonthClick }) {
+                    Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Next Month", tint = colorResource(
+                        id = R.color.button_color
+                    ))
+                }
+            }
+
+            Icon(imageVector = Icons.Default.DateRange, contentDescription = "Calender", tint = colorResource(
+                id = R.color.button_color
+            ))
+
+        }
+    }
+
     fun dateFormate(dateString: String): String {
-        val fetchedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val fetchedDateFormate = SimpleDateFormat("yyyy-mm-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
-
         return try {
-            val date = fetchedDate.parse(dateString)
+            val date = fetchedDateFormate.parse(dateString)
             val day = date?.let { SimpleDateFormat("d", Locale.getDefault()).format(it).toInt() }
-
             val suffix = when (day) {
                 1, 21, 31 -> "st"
                 2, 22 -> "nd"
-                3,23 -> "rd"
+                3, 23 -> "rd"
                 else -> "th"
             }
-
-            date?.let {sdf.format(date) } + suffix
-        } catch (e:Exception) {
+            date?.let { sdf.format(it) } + suffix
+        } catch (e: Exception) {
             e.printStackTrace()
-            "Invalid Date"
+            "Invalid date"
+        }
+    }
+
+    fun timeFormate(timeString: String): String {
+
+        val fetchedTime = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())
+
+        return try {
+            val time = fetchedTime.parse(timeString)
+            dDF.format(time)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "invalid formated time"
         }
     }
 
