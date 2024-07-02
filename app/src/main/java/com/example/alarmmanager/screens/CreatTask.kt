@@ -205,6 +205,7 @@ class CreatTask : ComponentActivity() {
 
                 Icon(imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Go back",
+                    tint = Color.Gray,
                     modifier = Modifier.clickable {
                         navController.navigateUp()
                     })
