@@ -486,7 +486,7 @@ class HomeScreen : ComponentActivity() {
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold
                         )
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         LazyColumn(modifier = Modifier.fillMaxWidth()) {
                             items(nonfilterTasks) { task ->
