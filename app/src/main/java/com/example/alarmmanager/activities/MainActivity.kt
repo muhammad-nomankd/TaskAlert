@@ -12,16 +12,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,8 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.screens.CreatTask
 import com.example.alarmmanager.screens.HomeScreen
-import com.example.alarmmanager.screens.TaskDetailScreen
-import com.example.alarmmanager.ui.theme.AlarmManagerTheme
+import com.example.alarmmanager.screens.TaskListScreen
 import com.example.alarmmanager.viewmodels.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -64,7 +60,7 @@ class MainActivity : ComponentActivity() {
                     googleSignInLauncher = googleSignInLauncher
                 ) }
                 composable("createTask") { CreatTask().createTaskcom(navController, CreateTaskViewModel()) }
-                composable("taskListScreen"){ TaskDetailScreen().TaskList(navController)}
+                composable("taskListScreen"){ TaskListScreen().taskListScreen(navController)}
             }
         }
 

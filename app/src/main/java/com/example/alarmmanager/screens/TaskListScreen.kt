@@ -1,7 +1,7 @@
 package com.example.alarmmanager.screens
 
+import android.icu.util.Calendar
 import android.os.Bundle
-import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,17 +17,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -38,8 +38,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -56,48 +60,73 @@ import com.example.alarmmanager.viewmodels.GetTaskViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class TaskDetailScreen : ComponentActivity() {
+class TaskListScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             AlarmManagerTheme {
-                TaskList(navController = NavController(LocalContext.current))
+                taskListScreen(navController = NavController(LocalContext.current))
             }
         }
     }
 
 
     @Composable
-    fun TaskList(navController: NavController) {
+    fun taskListScreen(navController: NavController) {
         val viewModel = GetTaskViewModel()
         val tasks by viewModel.tasks.collectAsState()
-        Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Go back",
-                    modifier = Modifier.clickable {
-                        navController.navigateUp()
-                    })
-                Text(
-                    text = "Task List",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
-                )
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Go back",
-                    modifier = Modifier.clickable {
-                        navController.navigateUp()
-                    })
 
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+        var currentMonth by remember { mutableStateOf(dateFormat.format(calendar.time)) }
+        var selectedDay by remember { mutableStateOf(calendar.get(Calendar.DAY_OF_MONTH)) }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            header(
+                currentMonth = currentMonth,
+                onPreviousMonthClick = {
+                    calendar.add(Calendar.MONTH, -1)
+                    currentMonth = dateFormat.format(calendar.time)
+                },
+                onNextMonthClick = {
+                    calendar.add(Calendar.MONTH, 1)
+                    currentMonth = dateFormat.format(calendar.time)
+                },
+                navController = navController,
+                onCalenderClick = {
+                    (LocalContext.current as TaskListScreen).datePickerDialogue { year, month, day ->
+                        calendar.set(year, month, day)
+                        currentMonth = dateFormat.format(calendar.time)
+                        selectedDay = day
+                        viewModel.fetchTasksForDay(day, month, year)
+                    }
+                }
+            )
+
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                for (day in 1..daysInMonth) {
+                    val dayOfWeek =
+                        SimpleDateFormat("EEE", Locale.getDefault()).format(calendar.time)
+                    item {
+                        dayItem(
+                            day = dayOfWeek,
+                            date = day.toString(),
+                            isSelected = day == selectedDay,
+                            onClick = {
+                                selectedDay = day
+                                // Fetch tasks for the selected day from Firestore
+                                //viewModel.fetchTasksForDay(day, calendar.get(Calendar.MONTH), calendar.get(Calendar.YEAR))
+                            }
+                        )
+                    }
+                    calendar.add(Calendar.DAY_OF_MONTH, 1)
+                }
+                calendar.set(Calendar.DAY_OF_MONTH, 1)  // Reset to first day of month
             }
 
             LazyColumn(
@@ -109,6 +138,40 @@ class TaskDetailScreen : ComponentActivity() {
                     taskItem(task)
                 }
             }
+        }
+
+    }
+
+    @Composable
+    fun dayItem(day: String, date: String, isSelected: Boolean = false, onClick: () -> Unit) {
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .fillMaxWidth()
+                .size(width = 60.dp, height = 80.dp)
+                .background(
+                    if (isSelected) colorResource(
+                        id = R.color.button_color
+                    ) else Color.White
+                )
+                .padding(8.dp)
+                .clickable { onClick },
+
+            ) {
+            Text(
+                text = day,
+                color = if (!isSelected) Color.DarkGray else colorResource(id = R.color.box_color)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = date,
+                fontWeight = FontWeight.Bold,
+                color = if (!isSelected) Color.DarkGray else Color.White
+            )
+
         }
 
     }
@@ -225,7 +288,8 @@ class TaskDetailScreen : ComponentActivity() {
                             .wrapContentWidth(Alignment.End)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = task.status,
+                    Text(
+                        text = task.status,
                         fontSize = 14.sp,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
@@ -234,7 +298,8 @@ class TaskDetailScreen : ComponentActivity() {
                             "In Progress" -> colorResource(id = R.color.darkYellow)
                             "Pending" -> Color.Black
                             else -> Color.Gray
-                        })
+                        }
+                    )
                 }
 
             }
@@ -242,39 +307,66 @@ class TaskDetailScreen : ComponentActivity() {
     }
 
     @Composable
-    fun Header(currentMonth:String, onPreviousMonthClick: () -> Unit, onNextMonthClick: () -> Unit, onCalenderClick: () -> Unit , navController: NavController){
+    fun header(
+        currentMonth: String,
+        onPreviousMonthClick: () -> Unit,
+        onNextMonthClick: () -> Unit,
+        onCalenderClick: @Composable () -> Unit,
+        navController: NavController
+    ) {
 
-        Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()) {
-            IconButton(onClick = {navController.navigateUp()}) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .fillMaxWidth()
+        ) {
+            IconButton(onClick = { navController.navigateUp() }) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back")
 
             }
 
             Row(horizontalArrangement = Arrangement.Center) {
-                IconButton(onClick = {onPreviousMonthClick}) {
-                    Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "Previous Month", tint = colorResource(
-                        id = R.color.button_color
-                    ))
+                IconButton(onClick = { onPreviousMonthClick }) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Previous Month",
+                        tint = colorResource(
+                            id = R.color.button_color
+                        )
+                    )
                 }
-                Text(text = currentMonth, style = MaterialTheme.typography.bodyLarge, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = currentMonth,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
                 IconButton(onClick = { onNextMonthClick }) {
-                    Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Next Month", tint = colorResource(
-                        id = R.color.button_color
-                    ))
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next Month",
+                        tint = colorResource(
+                            id = R.color.button_color
+                        )
+                    )
                 }
             }
 
-            Icon(imageVector = Icons.Default.DateRange, contentDescription = "Calender", tint = colorResource(
-                id = R.color.button_color
-            ))
+            Icon(
+                imageVector = Icons.Default.DateRange,
+                contentDescription = "Calender",
+                tint = colorResource(
+                    id = R.color.button_color
+                )
+            )
 
         }
     }
 
     fun dateFormate(dateString: String): String {
-        val fetchedDateFormate = SimpleDateFormat("yyyy-mm-dd", Locale.getDefault())
+        val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
         return try {
             val date = fetchedDateFormate.parse(dateString)
@@ -294,16 +386,37 @@ class TaskDetailScreen : ComponentActivity() {
 
     fun timeFormate(timeString: String): String {
 
-        val fetchedTime = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val fetchedTimeFormate = SimpleDateFormat("HH:mm", Locale.getDefault())
         val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())
 
         return try {
-            val time = fetchedTime.parse(timeString)
+            val time = fetchedTimeFormate.parse(timeString)
             dDF.format(time)
         } catch (e: Exception) {
             e.printStackTrace()
             "invalid formated time"
         }
+    }
+
+    @Composable
+    fun datePickerDialogue(onDateSelected: (Int, Int, Int) -> Unit) {
+
+
+        val context = LocalContext.current
+        val calender = Calendar.getInstance()
+        val year = calender.get(Calendar.YEAR)
+        val month = calender.get(Calendar.MONTH)
+        val day = calender.get(Calendar.DAY_OF_MONTH)
+
+        android.app.DatePickerDialog(
+            context,
+            { _, selectedYear, selectedMonth, selectedDay ->
+                onDateSelected(selectedYear, selectedMonth, selectedDay)
+            },
+            year,
+            month,
+            day
+        ).show()
     }
 
 }

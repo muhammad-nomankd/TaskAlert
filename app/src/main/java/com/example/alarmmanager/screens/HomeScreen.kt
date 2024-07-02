@@ -47,6 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -94,7 +95,7 @@ class HomeScreen : ComponentActivity() {
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
         var userName by rememberSaveable { mutableStateOf("") }
         var userEmail by rememberSaveable { mutableStateOf("") }
-        var selectedCategoryState by rememberSaveable { mutableStateOf("All") }
+        var selectedCategoryState by remember { mutableStateOf("All") }
         val contextThis = LocalContext.current
         val firestore = Firebase.firestore
         val viewmodel = GetTaskViewModel()
@@ -536,7 +537,7 @@ class HomeScreen : ComponentActivity() {
     }
 
     fun formateDate(dateString: String): String {
-        val fetchedDateFormate = SimpleDateFormat("yyyy-mm-dd", Locale.getDefault())
+        val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
         return try {
             val date = fetchedDateFormate.parse(dateString)
