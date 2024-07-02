@@ -77,41 +77,31 @@ class TaskListScreen : ComponentActivity() {
         val viewModel = GetTaskViewModel()
         val tasks by viewModel.tasks.collectAsState()
 
-        val calendar = Calendar.getInstance()
+        val calendar = remember { Calendar.getInstance()}
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         var currentMonth by remember { mutableStateOf(dateFormat.format(calendar.time)) }
         var selectedDay by remember { mutableStateOf(calendar.get(Calendar.DAY_OF_MONTH)) }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            header(
-                currentMonth = currentMonth,
-                onPreviousMonthClick = {
-                    calendar.add(Calendar.MONTH, -1)
-                    currentMonth = dateFormat.format(calendar.time)
-                },
-                onNextMonthClick = {
-                    calendar.add(Calendar.MONTH, 1)
-                    currentMonth = dateFormat.format(calendar.time)
-                },
-                navController = navController,
-                onCalendarIconClick = {
-                    (LocalContext.current as TaskListScreen).DatePickerDialogue { year, month, day ->
-                        calendar.set(year, month, day)
-                        currentMonth = dateFormat.format(calendar.time)
-                        selectedDay = day
-                        viewModel.fetchTasksForDay(day, month, year)
-                    }
-                }
-            )
+           header(
+               currentMonth = currentMonth,
+               onPreviousMonthClick = { calendar.add(Calendar.MONTH,-1); currentMonth = dateFormat.format(calendar.time) },
+               onNextMonthClick = { calendar.add(Calendar.MONTH, 1); currentMonth = dateFormat.format(calendar.time) },
+               onCalendarIconClick = { /*TODO*/ },
+               navController = navController
+           )
+
 
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                val renderingCalendar = calendar.clone() as Calendar
+                renderingCalendar.set(Calendar.DAY_OF_MONTH,1)
+                val daysInMonth = renderingCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
                 for (day in 1..daysInMonth) {
                     val dayOfWeek =
-                        SimpleDateFormat("EEE", Locale.getDefault()).format(calendar.time)
+                        SimpleDateFormat("EEE", Locale.getDefault()).format(renderingCalendar.time)
                     item {
                         dayItem(
                             day = dayOfWeek,
@@ -124,9 +114,9 @@ class TaskListScreen : ComponentActivity() {
                             }
                         )
                     }
-                    calendar.add(Calendar.DAY_OF_MONTH, 1)
+                    renderingCalendar.add(Calendar.DAY_OF_MONTH, 1)
                 }
-                calendar.set(Calendar.DAY_OF_MONTH, 1)  // Reset to first day of month
+                renderingCalendar.set(Calendar.DAY_OF_MONTH, 1)  // Reset to first day of month
             }
 
             LazyColumn(
@@ -144,7 +134,7 @@ class TaskListScreen : ComponentActivity() {
 
     @Composable
     fun dayItem(day: String, date: String, isSelected: Boolean = false, onClick: () -> Unit) {
-        Card(Modifier.padding(8.dp), shape = RoundedCornerShape(8.dp)) {
+        Card(Modifier.padding(4.dp), shape = RoundedCornerShape(8.dp)) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
@@ -157,19 +147,18 @@ class TaskListScreen : ComponentActivity() {
                         ) else Color.White
                     )
                     .padding(8.dp)
-                    .clickable ( onClick = onClick )
+                    .clickable(onClick = onClick)
 
                 ) {
                 Text(
                     text = date,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (!isSelected) Color.Gray else Color.White
+                    fontSize = 20.sp,
+                    color = if (!isSelected) Color.Black else Color.White
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = day,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = if (!isSelected) Color.Gray else Color.White
                 )
 
@@ -327,16 +316,16 @@ class TaskListScreen : ComponentActivity() {
                 .padding(top = 32.dp, start = 8.dp, end = 8.dp)
         ) {
             IconButton(onClick = { navController.navigateUp() }) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back")
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back", tint = Color.Gray)
 
             }
 
             Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onPreviousMonthClick ) {
+                IconButton(onClick = onPreviousMonthClick) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
                         contentDescription = "Previous Month",
-                        Modifier.size(32.dp),
+                        Modifier.size(28.dp),
                         tint = colorResource(
                             id = R.color.button_color
                         )
@@ -345,14 +334,14 @@ class TaskListScreen : ComponentActivity() {
                 Text(
                     text = currentMonth,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 IconButton(onClick =  onNextMonthClick) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = "Next Month",
-                        Modifier.size(32.dp),
+                        Modifier.size(28.dp),
                         tint = colorResource(
                             id = R.color.button_color
                         )
