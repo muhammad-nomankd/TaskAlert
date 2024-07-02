@@ -2,6 +2,7 @@ package com.example.alarmmanager.screens
 
 import android.icu.util.Calendar
 import android.os.Bundle
+import android.app.DatePickerDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -43,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -94,8 +94,8 @@ class TaskListScreen : ComponentActivity() {
                     currentMonth = dateFormat.format(calendar.time)
                 },
                 navController = navController,
-                onCalenderClick = {
-                    (LocalContext.current as TaskListScreen).datePickerDialogue { year, month, day ->
+                onCalendarIconClick = {
+                    (LocalContext.current as TaskListScreen).DatePickerDialogue { year, month, day ->
                         calendar.set(year, month, day)
                         currentMonth = dateFormat.format(calendar.time)
                         selectedDay = day
@@ -144,33 +144,36 @@ class TaskListScreen : ComponentActivity() {
 
     @Composable
     fun dayItem(day: String, date: String, isSelected: Boolean = false, onClick: () -> Unit) {
+        Card(Modifier.padding(8.dp), shape = RoundedCornerShape(8.dp)) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(width = 60.dp, height = 80.dp)
+                    .background(
+                        if (isSelected) colorResource(
+                            id = R.color.button_color
+                        ) else Color.White
+                    )
+                    .padding(8.dp)
+                    .clickable ( onClick = onClick )
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .fillMaxWidth()
-                .size(width = 60.dp, height = 80.dp)
-                .background(
-                    if (isSelected) colorResource(
-                        id = R.color.button_color
-                    ) else Color.White
+                ) {
+                Text(
+                    text = date,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (!isSelected) Color.Gray else Color.White
                 )
-                .padding(8.dp)
-                .clickable { onClick },
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = day,
+                    fontSize = 16.sp,
+                    color = if (!isSelected) Color.Gray else Color.White
+                )
 
-            ) {
-            Text(
-                text = day,
-                color = if (!isSelected) Color.DarkGray else colorResource(id = R.color.box_color)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = date,
-                fontWeight = FontWeight.Bold,
-                color = if (!isSelected) Color.DarkGray else Color.White
-            )
+            }
 
         }
 
@@ -311,7 +314,7 @@ class TaskListScreen : ComponentActivity() {
         currentMonth: String,
         onPreviousMonthClick: () -> Unit,
         onNextMonthClick: () -> Unit,
-        onCalenderClick: @Composable () -> Unit,
+        onCalendarIconClick: @Composable () -> Unit,
         navController: NavController
     ) {
 
@@ -321,17 +324,19 @@ class TaskListScreen : ComponentActivity() {
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth()
+                .padding(top = 32.dp, start = 8.dp, end = 8.dp)
         ) {
             IconButton(onClick = { navController.navigateUp() }) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back")
 
             }
 
-            Row(horizontalArrangement = Arrangement.Center) {
-                IconButton(onClick = { onPreviousMonthClick }) {
+            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onPreviousMonthClick ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
                         contentDescription = "Previous Month",
+                        Modifier.size(32.dp),
                         tint = colorResource(
                             id = R.color.button_color
                         )
@@ -341,12 +346,13 @@ class TaskListScreen : ComponentActivity() {
                     text = currentMonth,
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold
                 )
-                IconButton(onClick = { onNextMonthClick }) {
+                IconButton(onClick =  onNextMonthClick) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = "Next Month",
+                        Modifier.size(32.dp),
                         tint = colorResource(
                             id = R.color.button_color
                         )
@@ -354,16 +360,39 @@ class TaskListScreen : ComponentActivity() {
                 }
             }
 
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = "Calender",
-                tint = colorResource(
-                    id = R.color.button_color
+            IconButton(onClick = { onCalendarIconClick}) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = "Next Month",
+                    Modifier.size(28.dp),
+                    tint = colorResource(
+                        id = R.color.button_color
+                    )
                 )
-            )
+            }
 
         }
     }
+
+    @Composable
+    fun DatePickerDialogue(onDateSelected: (Int, Int, Int) -> Unit) {
+        val context = LocalContext.current
+        val calender = Calendar.getInstance()
+        val year = calender.get(Calendar.YEAR)
+        val month = calender.get(Calendar.MONTH)
+        val day = calender.get(Calendar.DAY_OF_MONTH)
+
+       DatePickerDialog(
+            context,
+            { _, selectedYear, selectedMonth, selectedDay ->
+                onDateSelected(selectedYear, selectedMonth, selectedDay)
+            },
+            year,
+            month,
+            day
+        ).show()
+    }
+
 
     fun dateFormate(dateString: String): String {
         val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -397,26 +426,4 @@ class TaskListScreen : ComponentActivity() {
             "invalid formated time"
         }
     }
-
-    @Composable
-    fun datePickerDialogue(onDateSelected: (Int, Int, Int) -> Unit) {
-
-
-        val context = LocalContext.current
-        val calender = Calendar.getInstance()
-        val year = calender.get(Calendar.YEAR)
-        val month = calender.get(Calendar.MONTH)
-        val day = calender.get(Calendar.DAY_OF_MONTH)
-
-        android.app.DatePickerDialog(
-            context,
-            { _, selectedYear, selectedMonth, selectedDay ->
-                onDateSelected(selectedYear, selectedMonth, selectedDay)
-            },
-            year,
-            month,
-            day
-        ).show()
-    }
-
 }
