@@ -78,5 +78,9 @@ class GetTaskViewModel : ViewModel() {
         }
     }
 
+    fun fetchTasksForDay(day: Int, month: Int, year: Int) {
+
+    }
+
 
 }

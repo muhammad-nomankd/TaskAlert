@@ -537,7 +537,7 @@ class HomeScreen : ComponentActivity() {
     }
 
     fun formateDate(dateString: String): String {
-        val fetchedDateFormate = SimpleDateFormat("yyyy-mm-dd", Locale.getDefault())
+        val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
         return try {
             val date = fetchedDateFormate.parse(dateString)
