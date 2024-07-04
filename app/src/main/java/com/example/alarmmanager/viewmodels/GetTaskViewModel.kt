@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 
@@ -67,8 +68,8 @@ class GetTaskViewModel : ViewModel() {
                 updateTaskStatuses(taskrepo)
                 val taskfilter = when (category) {
                     "All" -> taskrepo
-                    "In Progress" -> taskrepo.filter { it.status == "In Progress" }
-                    "Completed" -> taskrepo.filter { it.status == "Completed" }
+                    "In Progress" -> taskrepo.filter { it.status == category }
+                    "Completed" -> taskrepo.filter { it.status == category }
                     else -> taskrepo
                 }
                 _filteredTasks.value = taskfilter
@@ -78,9 +79,19 @@ class GetTaskViewModel : ViewModel() {
         }
     }
 
-    fun fetchTasksForDay(day: Int, month: Int, year: Int) {
-
-    }
-
-
+   fun fetchTaskForDay( day:Int, Month: Int, Year: Int){
+       val filterList = _tasks.value.filter {
+           val taskDate = SimpleDateFormat("yyyy-MM-dd",Locale.getDefault()).parse(it.startDate)
+           val calendar = Calendar.getInstance()
+           taskDate?.let {
+               calendar.time = taskDate
+           }
+           val isSameDay = calendar.get(Calendar.DAY_OF_MONTH) ==day
+                   && (calendar.get(Calendar.MONTH) + 1 ) == Month
+                   && calendar.get(Calendar.YEAR) == Year
+           isSameDay
+       }
+       _filteredTasks.postValue(filterList)
+   }
 }
+

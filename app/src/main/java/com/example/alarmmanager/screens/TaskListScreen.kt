@@ -1,8 +1,8 @@
 package com.example.alarmmanager.screens
 
+import android.app.DatePickerDialog
 import android.icu.util.Calendar
 import android.os.Bundle
-import android.app.DatePickerDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,69 +72,79 @@ class TaskListScreen : ComponentActivity() {
         }
     }
 
-
     @Composable
     fun taskListScreen(navController: NavController) {
         val viewModel = GetTaskViewModel()
-        val tasks by viewModel.tasks.collectAsState()
+        val filteredTasks by viewModel.filteredTasks.observeAsState(emptyList())
+        val allTasks by viewModel.tasks.collectAsState(emptyList())
 
-        val calendar = remember { Calendar.getInstance()}
+        val calendar = remember { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         var currentMonth by remember { mutableStateOf(dateFormat.format(calendar.time)) }
-        var selectedDay by remember { mutableStateOf(calendar.get(Calendar.DAY_OF_MONTH)) }
-
-        Column(modifier = Modifier.fillMaxSize()) {
-           header(
-               currentMonth = currentMonth,
-               onPreviousMonthClick = { calendar.add(Calendar.MONTH,-1); currentMonth = dateFormat.format(calendar.time) },
-               onNextMonthClick = { calendar.add(Calendar.MONTH, 1); currentMonth = dateFormat.format(calendar.time) },
-               onCalendarIconClick = { /*TODO*/ },
-               navController = navController
-           )
-
+        var selectedDay by remember { mutableStateOf(-1) }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            header(
+                currentMonth = currentMonth,
+                onPreviousMonthClick = {
+                    calendar.add(Calendar.MONTH, -1)
+                    currentMonth = dateFormat.format(calendar.time)
+                },
+                onNextMonthClick = {
+                    calendar.add(Calendar.MONTH, 1)
+                    currentMonth = dateFormat.format(calendar.time)
+                },
+                onCalendarIconClick = { /* Handle calendar icon click if needed */ },
+                navController = navController
+            )
 
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val renderingCalendar = calendar.clone() as Calendar
-                renderingCalendar.set(Calendar.DAY_OF_MONTH,1)
-                val daysInMonth = renderingCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-                for (day in 1..daysInMonth) {
+                val calendarSecond = calendar.clone() as Calendar
+                calendarSecond.set(Calendar.DAY_OF_MONTH, 1)
+                val daysInMonth = calendarSecond.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+                (1..daysInMonth).forEach { day ->
                     val dayOfWeek =
-                        SimpleDateFormat("EEE", Locale.getDefault()).format(renderingCalendar.time)
+                        SimpleDateFormat("EEE", Locale.getDefault()).format(calendarSecond.time)
                     item {
                         dayItem(
                             day = dayOfWeek,
                             date = day.toString(),
-                            isSelected = day == selectedDay,
-                            onClick = {
+                            isSelected = (day == selectedDay),
+                            onclick = {
                                 selectedDay = day
-                                // Fetch tasks for the selected day from Firestore
-                                //viewModel.fetchTasksForDay(day, calendar.get(Calendar.MONTH), calendar.get(Calendar.YEAR))
+                                viewModel.fetchTaskForDay(
+                                    day,
+                                    calendarSecond.get(Calendar.MONTH),
+                                    calendarSecond.get(Calendar.YEAR)
+                                )
                             }
                         )
                     }
-                    renderingCalendar.add(Calendar.DAY_OF_MONTH, 1)
+                    calendarSecond.add(Calendar.DAY_OF_MONTH, 1)
                 }
-                renderingCalendar.set(Calendar.DAY_OF_MONTH, 1)  // Reset to first day of month
             }
+
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                items(tasks) { task ->
+                items(if (selectedDay == -1) allTasks else filteredTasks) { task ->
                     taskItem(task)
                 }
             }
         }
-
     }
 
     @Composable
-    fun dayItem(day: String, date: String, isSelected: Boolean = false, onClick: () -> Unit) {
+    fun dayItem(day: String, date: String, isSelected: Boolean = false, onclick: () -> Unit) {
         Card(Modifier.padding(4.dp), shape = RoundedCornerShape(8.dp)) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -142,14 +153,10 @@ class TaskListScreen : ComponentActivity() {
                     .fillMaxWidth()
                     .size(width = 60.dp, height = 80.dp)
                     .background(
-                        if (isSelected) colorResource(
-                            id = R.color.button_color
-                        ) else Color.White
+                        if (isSelected) colorResource(id = R.color.button_color) else Color.White
                     )
-                    .padding(8.dp)
-                    .clickable(onClick = onClick)
-
-                ) {
+                    .clickable(onClick = onclick)
+            ) {
                 Text(
                     text = date,
                     fontSize = 20.sp,
@@ -161,11 +168,8 @@ class TaskListScreen : ComponentActivity() {
                     fontSize = 14.sp,
                     color = if (!isSelected) Color.Gray else Color.White
                 )
-
             }
-
         }
-
     }
 
     @Composable
@@ -180,7 +184,6 @@ class TaskListScreen : ComponentActivity() {
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
-
                 Box(
                     modifier = Modifier
                         .height(90.dp)
@@ -293,7 +296,6 @@ class TaskListScreen : ComponentActivity() {
                         }
                     )
                 }
-
             }
         }
     }
@@ -306,7 +308,6 @@ class TaskListScreen : ComponentActivity() {
         onCalendarIconClick: @Composable () -> Unit,
         navController: NavController
     ) {
-
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -316,19 +317,23 @@ class TaskListScreen : ComponentActivity() {
                 .padding(top = 32.dp, start = 8.dp, end = 8.dp)
         ) {
             IconButton(onClick = { navController.navigateUp() }) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back", tint = Color.Gray)
-
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Go back",
+                    tint = Color.Gray
+                )
             }
 
-            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 IconButton(onClick = onPreviousMonthClick) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
                         contentDescription = "Previous Month",
                         Modifier.size(28.dp),
-                        tint = colorResource(
-                            id = R.color.button_color
-                        )
+                        tint = colorResource(id = R.color.button_color)
                     )
                 }
                 Text(
@@ -337,41 +342,36 @@ class TaskListScreen : ComponentActivity() {
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold
                 )
-                IconButton(onClick =  onNextMonthClick) {
+                IconButton(onClick = onNextMonthClick) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = "Next Month",
                         Modifier.size(28.dp),
-                        tint = colorResource(
-                            id = R.color.button_color
-                        )
+                        tint = colorResource(id = R.color.button_color)
                     )
                 }
             }
 
-            IconButton(onClick = { onCalendarIconClick}) {
+            IconButton(onClick = { onCalendarIconClick }) {
                 Icon(
                     imageVector = Icons.Default.DateRange,
                     contentDescription = "Next Month",
                     Modifier.size(28.dp),
-                    tint = colorResource(
-                        id = R.color.button_color
-                    )
+                    tint = colorResource(id = R.color.button_color)
                 )
             }
-
         }
     }
 
     @Composable
     fun DatePickerDialogue(onDateSelected: (Int, Int, Int) -> Unit) {
         val context = LocalContext.current
-        val calender = Calendar.getInstance()
-        val year = calender.get(Calendar.YEAR)
-        val month = calender.get(Calendar.MONTH)
-        val day = calender.get(Calendar.DAY_OF_MONTH)
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-       DatePickerDialog(
+        DatePickerDialog(
             context,
             { _, selectedYear, selectedMonth, selectedDay ->
                 onDateSelected(selectedYear, selectedMonth, selectedDay)
@@ -382,12 +382,11 @@ class TaskListScreen : ComponentActivity() {
         ).show()
     }
 
-
     fun dateFormate(dateString: String): String {
-        val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val fetchedDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
         return try {
-            val date = fetchedDateFormate.parse(dateString)
+            val date = fetchedDateFormat.parse(dateString)
             val day = date?.let { SimpleDateFormat("d", Locale.getDefault()).format(it).toInt() }
             val suffix = when (day) {
                 1, 21, 31 -> "st"
@@ -403,16 +402,15 @@ class TaskListScreen : ComponentActivity() {
     }
 
     fun timeFormate(timeString: String): String {
-
-        val fetchedTimeFormate = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val fetchedTimeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
         val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())
 
         return try {
-            val time = fetchedTimeFormate.parse(timeString)
-            dDF.format(time)
+            val time = fetchedTimeFormat.parse(timeString)
+            dDF.format(time ?: "No time")
         } catch (e: Exception) {
             e.printStackTrace()
-            "invalid formated time"
+            "invalid formatted time"
         }
     }
 }
