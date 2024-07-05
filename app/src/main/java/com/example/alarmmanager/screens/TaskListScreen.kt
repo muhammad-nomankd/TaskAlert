@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,10 +76,9 @@ class TaskListScreen : ComponentActivity() {
     @Composable
     fun taskListScreen(navController: NavController) {
         val viewModel = GetTaskViewModel()
-        val filteredTasks by viewModel.filteredTasks.observeAsState(emptyList())
-        val allTasks by viewModel.tasks.collectAsState(emptyList())
+        val filteredTasks by viewModel.fTskfordayandMonth.observeAsState(initial = emptyList())
 
-        val calendar = remember { Calendar.getInstance() }
+        val calendar = rememberSaveable { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         var currentMonth by remember { mutableStateOf(dateFormat.format(calendar.time)) }
         var selectedDay by remember { mutableStateOf(-1) }
@@ -90,11 +90,14 @@ class TaskListScreen : ComponentActivity() {
                 currentMonth = currentMonth,
                 onPreviousMonthClick = {
                     calendar.add(Calendar.MONTH, -1)
+                    selectedDay = 0
                     currentMonth = dateFormat.format(calendar.time)
+                    viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)) // Fetch tasks for new month
                 },
                 onNextMonthClick = {
                     calendar.add(Calendar.MONTH, 1)
-                    currentMonth = dateFormat.format(calendar.time)
+                    selectedDay = 0
+                    viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
                 },
                 onCalendarIconClick = { /* Handle calendar icon click if needed */ },
                 navController = navController
@@ -136,7 +139,7 @@ class TaskListScreen : ComponentActivity() {
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                items(if (selectedDay == -1) allTasks else filteredTasks) { task ->
+                items(filteredTasks) { task ->
                     taskItem(task)
                 }
             }

@@ -414,7 +414,6 @@ class CreatTask : ComponentActivity() {
                                 Toast.makeText(context, "Error saving task", Toast.LENGTH_LONG)
                                     .show()
                             },
-                            context,
                             status
                         )
                     }

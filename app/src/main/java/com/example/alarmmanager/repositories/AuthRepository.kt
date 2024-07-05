@@ -2,6 +2,7 @@ package com.example.alarmmanager.repositories
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.NavController
@@ -25,7 +26,7 @@ class AuthRepository() {
         email: String,
         password: String,
         onSuccess: () -> Unit,
-        onError: (String) -> Unit,
+        onError: () -> Unit,
         context: Context,
         navController: NavController
     ) {
@@ -42,12 +43,12 @@ class AuthRepository() {
                     firestore.document(auth.currentUser?.uid!!).set(user)
                         .addOnCompleteListener { task2 ->
                             if (task2.isSuccessful) {
+                                onSuccess()
                                 Toast.makeText(
                                     context,
                                     "You are successfully registered.",
                                     Toast.LENGTH_LONG
                                 ).show()
-                                onSuccess()
                             } else {
                                 Toast.makeText(
                                     context,
@@ -56,8 +57,8 @@ class AuthRepository() {
                                 ).show()
                             }
 
-                        }.addOnFailureListener { e ->
-                            onError(e.message ?: "Registration failed")
+                        }.addOnFailureListener {
+                            onError()
                         }
                 }
 
@@ -66,26 +67,11 @@ class AuthRepository() {
                     .addOnCompleteListener {
                         if (it.isSuccessful) {
                             onSuccess()
-                            Toast.makeText(
-                                context,
-                                "Welcome back ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email}.",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-
                         } else {
-                            Toast.makeText(
-                                context,
-                                "Authentication failed Enter a valid email and password.",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            onError()
                         }
                     }
             }
-            .addOnFailureListener { e ->
-                onError(e.message ?: "Sign-in failed")
-            }
-
     }
 
     fun ResetPasswordRepository(email: String, context: Context, navController: NavController) {
@@ -127,9 +113,9 @@ class AuthRepository() {
                     user?.delete()
                         ?.addOnCompleteListener { it2 ->
                             if (it2.isSuccessful) {
-                                println("User deleted successfully")
+                                Log.d("User deletion","User Deletion is Successfull")
                             } else {
-                                println("User deletion failed")
+                                Log.d("User deletion","User Deletion failed")
                             }
                         }
                     Toast.makeText(
@@ -157,19 +143,20 @@ class AuthRepository() {
         }
     }
 
-    fun handleGoogleSignInResult(data: Intent?, context: Context) {
+    fun handleGoogleSignInResult(data: Intent?, context: Context,onSuccess: () -> Unit, onError: () -> Unit,) {
         try {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
-            firebaseAuthWithGoogle(account, context)
+            firebaseAuthWithGoogle(account, context,onSuccess,onError)
         } catch (e: ApiException) {
-            Toast.makeText(context, "Google Sign in failed: ${e.message}", Toast.LENGTH_LONG).show()
+            Log.d("api exception", e.message.toString())
         }
     }
-
-    private fun firebaseAuthWithGoogle(
+    fun firebaseAuthWithGoogle(
         account: GoogleSignInAccount,
-        context: Context
+        context: Context,
+        onSuccess: () -> Unit,
+        onError: () -> Unit,
     ) {
         val credentials = GoogleAuthProvider.getCredential(account.idToken, null)
         auth.signInWithCredential(credentials)
@@ -185,22 +172,9 @@ class AuthRepository() {
                     firestore.document(auth.currentUser?.uid!!).set(user)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
-                                Toast.makeText(
-                                    context,
-                                    "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    flags =
-                                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                }
-                                context.startActivity(intent)
+                                onSuccess()
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Something went wrong, please try again.",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                onError()
                             }
                         }
                 } else {

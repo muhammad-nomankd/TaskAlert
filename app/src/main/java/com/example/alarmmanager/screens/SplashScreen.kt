@@ -20,6 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.alarmmanager.R
+import com.example.alarmmanager.activities.MainActivity
 import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.viewmodels.AuthViewModel
 import com.example.alarmmanager.ui.theme.AlarmManagerTheme
@@ -31,13 +32,6 @@ class SplashScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val viewmodel = AuthViewModel(AuthRepository())
-
-        val googleSignInLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                viewmodel.handleGoogleSignInResult(result.data, this)
-
-            }
         setContent {
             AlarmManagerTheme {
                 val navController = rememberNavController()
@@ -48,8 +42,7 @@ class SplashScreen : ComponentActivity() {
                     composable("SignIn") {
                         SignUp(
                             viewModel = AuthViewModel(AuthRepository()),
-                            navController = navController,
-                            googleSignInLauncher
+                            navController = navController
                         )
                     }
                     composable("splash") {
@@ -60,6 +53,9 @@ class SplashScreen : ComponentActivity() {
                     }
                     composable("HomeScreen"){
                         HomeScreen()
+                    }
+                    composable("MainActivity"){
+                       MainActivity()
                     }
                 }
             }

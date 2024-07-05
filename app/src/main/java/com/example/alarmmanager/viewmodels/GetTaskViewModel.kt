@@ -23,6 +23,9 @@ class GetTaskViewModel : ViewModel() {
     private val _filteredTasks = MutableLiveData<List<Task>>(emptyList())
     var filteredTasks: LiveData<List<Task>> = _filteredTasks
 
+    private val _fTskfordayandMonth = MutableLiveData<List<Task>>(emptyList())
+    var fTskfordayandMonth: LiveData<List<Task>> = _fTskfordayandMonth
+
     init {
         fetchTasks()
     }
@@ -33,7 +36,7 @@ class GetTaskViewModel : ViewModel() {
                 val taskList = repository.getTask()
                 updateTaskStatuses(taskList)
                 _tasks.value = taskList
-                _filteredTasks.value = taskList // Initialize filtered tasks
+                _filteredTasks.value = taskList
             } catch (e: Exception) {
                 emptyList<Task>()
             }
@@ -79,19 +82,38 @@ class GetTaskViewModel : ViewModel() {
         }
     }
 
-   fun fetchTaskForDay( day:Int, Month: Int, Year: Int){
-       val filterList = _tasks.value.filter {
-           val taskDate = SimpleDateFormat("yyyy-MM-dd",Locale.getDefault()).parse(it.startDate)
-           val calendar = Calendar.getInstance()
-           taskDate?.let {
-               calendar.time = taskDate
-           }
-           val isSameDay = calendar.get(Calendar.DAY_OF_MONTH) ==day
-                   && (calendar.get(Calendar.MONTH) + 1 ) == Month
-                   && calendar.get(Calendar.YEAR) == Year
-           isSameDay
-       }
-       _filteredTasks.postValue(filterList)
-   }
+    fun fetchTaskForDay(day: Int, Month: Int, Year: Int) {
+        val filterList = _tasks.value.filter {
+            val taskDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
+            val calendar = Calendar.getInstance()
+            taskDate?.let {
+                calendar.time = taskDate
+            }
+            val isSameDay = calendar.get(Calendar.DAY_OF_MONTH) == day
+                    && (calendar.get(Calendar.MONTH) + 1) == Month
+                    && calendar.get(Calendar.YEAR) == Year
+            isSameDay
+        }
+        _fTskfordayandMonth.postValue(filterList)
+        Log.d("FilterTaskFor Day", filterList.toString())
+
+    }
+
+    fun fetchTaskForMonth(month: Int, year: Int) {
+        viewModelScope.launch {
+            val filterListForMonth = _tasks.value.filter {
+                val taskDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
+                val calendar2 = Calendar.getInstance()
+                taskDate?.let {
+                    calendar2.time = taskDate
+                }
+                val isSameMonth = (calendar2.get(Calendar.MONTH) + 1) == month && calendar2.get(Calendar.YEAR) == year
+                isSameMonth
+            }
+            _fTskfordayandMonth.postValue(filterListForMonth)
+        }
+
+    }
+
 }
 
