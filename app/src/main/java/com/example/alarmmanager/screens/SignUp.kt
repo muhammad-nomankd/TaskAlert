@@ -1,6 +1,9 @@
+import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,16 +51,19 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.ContentInfoCompat.Flags
 import androidx.navigation.NavController
 import com.example.alarmmanager.R
+import com.example.alarmmanager.activities.MainActivity
+import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.viewmodels.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUp(
     viewModel: AuthViewModel,
-    navController: NavController,
-    googleSignInLauncher: ActivityResultLauncher<Intent>
+    navController: NavController
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -66,6 +72,34 @@ fun SignUp(
     val context = LocalContext.current
     val isLoading = rememberSaveable { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val intent = Intent()
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val data: Intent? = result.data
+        if (result.resultCode == RESULT_OK && data != null) {
+            viewModel.handleGoogleSignInResult(data, context, onSuccess = {
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                context.startActivity(intent)
+                Toast.makeText(
+                    context,
+                    "Welcome ${FirebaseAuth.getInstance().currentUser?.displayName ?: FirebaseAuth.getInstance().currentUser?.email}. You are successfully signed in with Google.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }, onError = {
+                isLoading.value = false
+                Toast.makeText(context,"Google authentication Failed Enter a valid email and ", Toast.LENGTH_LONG).show()
+            })
+        } else {
+            isLoading.value = false
+            Toast.makeText(context, "Google Sign-In failed. Please try again.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+
 
     val textColor = TextFieldDefaults.outlinedTextFieldColors(
         focusedBorderColor = colorResource(id = R.color.light_pink),
@@ -161,14 +195,31 @@ fun SignUp(
                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_color)),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
                 onClick = {
-                    //Check for empty fields
                     if (password.isNotEmpty() && email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(
                             email
                         ).matches()
                     ) {
-                        //start loading
                         isLoading.value = true
-                        viewModel.signin(email, password, context, navController)
+                        viewModel.signin(email, password, onSuccess = {
+                            val intent = Intent(context,MainActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            context.startActivity(intent)
+                            Toast.makeText(
+                                context,
+                                "Welcome back ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
+                                else FirebaseAuth.getInstance().currentUser?.email}.",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }, onError = {
+                            isLoading.value = false
+                            Toast.makeText(
+                                context,
+                                "Authentication failed Enter a valid email and .",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }, context, navController)
 
                     } else {
                         Toast.makeText(
@@ -203,8 +254,17 @@ fun SignUp(
             Button(
                 onClick = {
                     isLoading.value = true
-                    viewModel.initGoogleSignIn(context)
-                    viewModel.launchGoogleSignIn(googleSignInLauncher)
+                   viewModel.googleSignIn(context,googleSignInLauncher,intent, onSuccess = {
+                       val intentn = Intent(context,MainActivity::class.java).apply {
+                           flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                       }
+                       context.startActivity(intentn)
+                       Toast.makeText(
+                           context,
+                           "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
+                           Toast.LENGTH_LONG
+                       ).show()
+                   }, onError = {Toast.makeText(context,"Sign in failed please try again",Toast.LENGTH_LONG).show()})
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.gsi_bckg)),
                 shape = RoundedCornerShape(16.dp),

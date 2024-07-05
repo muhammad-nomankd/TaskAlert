@@ -26,7 +26,6 @@ class CreateTaskViewModel : ViewModel() {
         taskPriority: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit,
-        context: Context,
         status: String
     ) {
         val task = Task(
