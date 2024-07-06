@@ -4,14 +4,17 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +34,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -88,6 +92,7 @@ class HomeScreen : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("NotConstructor")
     @Composable
@@ -101,7 +106,12 @@ class HomeScreen : ComponentActivity() {
         val viewmodel = GetTaskViewModel()
         val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
         val nonfilterTasks by viewmodel.tasks.collectAsState()
+        var showPopUp by rememberSaveable { mutableStateOf(false) }
+        var currenttask by rememberSaveable { mutableStateOf("") }
+        var taskStatus by rememberSaveable { mutableStateOf("") }
 
+
+        // Geting User Detail from FireStore
         LaunchedEffect(Unit) {
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .get().addOnSuccessListener { document ->
@@ -113,10 +123,71 @@ class HomeScreen : ComponentActivity() {
 
         }
 
+        // Geting filtered Tasks based on selectec Category Button
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
         }
 
+
+        // PopUp for Deleting task
+        if (showPopUp) {
+            Log.d("currentTask", currenttask)
+            AlertDialog(onDismissRequest = { showPopUp = false },
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = colorResource(
+                    id = R.color.task_color
+                ),
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showPopUp = false
+                            viewmodel.deleteTask(currenttask, taskStatus, context)
+                        },
+                        elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(
+                                id = R.color.button_color
+                            )
+                        )
+                    ) {
+                        Text(
+                            text = "Delete",
+                            color = Color.White, modifier = Modifier
+                        )
+                    }
+
+                },
+                title = {
+                    Text(
+                        text = "Delete Task",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Are you sure you  want to delete this task?",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showPopUp = false },
+                        elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            colorResource(id = R.color.darkBlue)
+                        )
+                    ) {
+                        Text(text = "Cancel", color = Color.White)
+                    }
+                })
+        }
+
+
+        // Category Button for selecting specific category like All, In Progress or Completed
         @Composable
         fun categoryButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
             val isSelected = selectedCategory == text
@@ -134,6 +205,7 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
+        // Adding task Icons to each task
         @Composable
         fun getTaskIcon(title: String): Int {
             return when {
@@ -165,18 +237,28 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
+        // Task Item for LazyRow
         @Composable
-        fun taskItem(task: Task) {
+        fun taskItem(task: Task, longClick: () -> Unit) {
             Card(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp)
-                    .width(160.dp),
+                    .width(160.dp)
+                    .clip(shape = RoundedCornerShape(16.dp))
+                    .combinedClickable(
+                        onClick = {
+                            Toast
+                                .makeText(context, "${task.title} clicked", Toast.LENGTH_LONG)
+                                .show()
+                        },
+                        onLongClick = { longClick() },
+                    ),
                 backgroundColor = Color.White,
-                shape = RoundedCornerShape(16.dp),
             ) {
 
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier
+                        .padding(16.dp)
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Image(
@@ -256,6 +338,8 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
+
+        // Task Item for UpComing tasks
         @Composable
         fun upCommingTasksItem(task: Task) {
             Card(
@@ -362,6 +446,7 @@ class HomeScreen : ComponentActivity() {
         }
 
 
+        // MainHome Screen UI
         Box(
             modifier = Modifier
                 .background(colorResource(id = R.color.custom_white))
@@ -450,17 +535,25 @@ class HomeScreen : ComponentActivity() {
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
+
+
+                // LazyRow for horizontal scrollable tasks
                 LazyRow(
                     Modifier
                         .fillMaxWidth()
                         .padding(start = 32.dp, end = 32.dp)
                 ) {
                     items(tasks) { task ->
-                        taskItem(task)
+                        taskItem(task, longClick = {
+                            currenttask = task.taskId
+                            showPopUp = true
+                            taskStatus = task.status
+                        })
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // View all tasks
                 Text(text = "View all",
                     color = colorResource(id = R.color.button_color),
                     fontSize = 16.sp,
@@ -472,6 +565,8 @@ class HomeScreen : ComponentActivity() {
                         })
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // UpComing tasks List
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -498,6 +593,8 @@ class HomeScreen : ComponentActivity() {
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))
+
+            // Floating Action Button for Creating task Screen navigation
             FloatingActionButton(
                 onClick = { navController.navigate("createTask") },
                 containerColor = colorResource(id = R.color.button_color),
@@ -536,6 +633,7 @@ class HomeScreen : ComponentActivity() {
         )
     }
 
+    // Formating Date
     fun formateDate(dateString: String): String {
         val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
@@ -554,6 +652,8 @@ class HomeScreen : ComponentActivity() {
             "Invalid date"
         }
     }
+
+    // Formating Time
 
     fun timeFormate(timeString: String): String {
 
