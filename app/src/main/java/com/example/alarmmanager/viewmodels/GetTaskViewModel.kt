@@ -11,9 +11,11 @@ import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.repositories.GetTaskRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -34,7 +36,7 @@ class GetTaskViewModel : ViewModel() {
         fetchTasks()
     }
 
-    private fun fetchTasks() {
+     fun fetchTasks() {
         viewModelScope.launch {
             try {
                 val taskList = repository.getTask()
@@ -119,7 +121,7 @@ class GetTaskViewModel : ViewModel() {
 
     }
 
-    fun deleteTask(taskId: String, status: String, context: Context) {
+     suspend fun deleteTask(taskId: String, status: String, context: Context, category: String) {
         val db = FirebaseFirestore.getInstance()
         val uId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         val taskRef = db.collection("User").document(uId).collection("tasks")
@@ -131,6 +133,11 @@ class GetTaskViewModel : ViewModel() {
                     if (status == "Completed"){
                         taskRef.document(document.id).delete().addOnSuccessListener {
                             Toast.makeText(context, "Task Deleted", Toast.LENGTH_SHORT).show()
+                           viewModelScope.launch { filterTasks(category) }
+                            Log.d("deleteTask", tasks.toString())
+                        }.addOnFailureListener {
+                            Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT).show()
+
                         }
                     }else{
                         Toast.makeText(context,"Task has not completed yet.", Toast.LENGTH_LONG).show()
@@ -138,6 +145,8 @@ class GetTaskViewModel : ViewModel() {
                 }
             }
     }
+
+
 
 }
 
