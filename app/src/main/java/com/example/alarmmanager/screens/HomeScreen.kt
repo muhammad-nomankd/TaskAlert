@@ -52,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,6 +76,7 @@ import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -109,9 +111,10 @@ class HomeScreen : ComponentActivity() {
         var showPopUp by rememberSaveable { mutableStateOf(false) }
         var currenttask by rememberSaveable { mutableStateOf("") }
         var taskStatus by rememberSaveable { mutableStateOf("") }
+        var deleteTask by rememberSaveable { mutableStateOf(false)}
 
 
-        // Geting User Detail from FireStore
+        // Getting User Detail from FireStore
         LaunchedEffect(Unit) {
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .get().addOnSuccessListener { document ->
@@ -123,11 +126,43 @@ class HomeScreen : ComponentActivity() {
 
         }
 
-        // Geting filtered Tasks based on selectec Category Button
+        // Getting filtered Tasks based on selected Category Button
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
         }
 
+        fun deleteTask(taskId: String, status: String, context: Context) {
+            val db = FirebaseFirestore.getInstance()
+            val uId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val taskRef = db.collection("User").document(uId).collection("tasks")
+            taskRef.whereEqualTo("taskId", taskId)
+                .get()
+                .addOnSuccessListener { querySnapShot->
+                    for (document in querySnapShot.documents ) {
+                        if (status == "Completed"){
+                            taskRef.document(document.id).delete().addOnSuccessListener {
+                                Toast.makeText(context, "Task Deleted", Toast.LENGTH_SHORT).show()
+                                deleteTask = true
+                                Log.d("deleteTask", tasks.toString())
+                            }.addOnFailureListener {
+                                Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT).show()
+
+                            }
+                        }else{
+                            Toast.makeText(context,"Task has not completed yet.", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+        }
+
+
+        val coroutineScope = rememberCoroutineScope()
+        if (deleteTask){
+            coroutineScope.launch {
+                viewmodel.filterTasks(selectedCategoryState)
+                deleteTask = false
+            }
+        }
 
         // PopUp for Deleting task
         if (showPopUp) {
@@ -141,7 +176,8 @@ class HomeScreen : ComponentActivity() {
                     Button(
                         onClick = {
                             showPopUp = false
-                            viewmodel.deleteTask(currenttask, taskStatus, context)
+                            deleteTask(currenttask, taskStatus, context)
+
                         },
                         elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -548,6 +584,7 @@ class HomeScreen : ComponentActivity() {
                             currenttask = task.taskId
                             showPopUp = true
                             taskStatus = task.status
+
                         })
                     }
                 }
@@ -668,4 +705,8 @@ class HomeScreen : ComponentActivity() {
             "invalid formated time"
         }
     }
+
+
+
+
 }
