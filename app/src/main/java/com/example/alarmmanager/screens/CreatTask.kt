@@ -70,23 +70,47 @@ class CreatTask : ComponentActivity() {
         setContent {
             AlarmManagerTheme {
                 val navController = rememberNavController()
-                createTaskcom(navController, CreateTaskViewModel())
+                createTaskcom(
+                    navController,
+                    CreateTaskViewModel(),
+                    intent?.getStringExtra("taskId"),
+                    intent?.getStringExtra("taskTitle"),
+                    intent?.getStringExtra("taskDescription"),
+                    intent?.getStringExtra("startDate"),
+                    intent?.getStringExtra("endDate"),
+                    intent?.getStringExtra("startTime"),
+                    intent?.getStringExtra("endTime"),
+                    intent?.getStringExtra("priority")
+
+                )
             }
         }
     }
 
 
+    @SuppressLint("SuspiciousIndentation")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun createTaskcom(navController: NavController, viewmodel: CreateTaskViewModel) {
-        var taskTitle by rememberSaveable { mutableStateOf("") }
-        var taskDescription by rememberSaveable { mutableStateOf("") }
-        var startDate by rememberSaveable { mutableStateOf("") }
-        var endDate by rememberSaveable { mutableStateOf("") }
-        var startTime by rememberSaveable { mutableStateOf("") }
-        var endTime by rememberSaveable { mutableStateOf("") }
+    fun createTaskcom(
+        navController: NavController,
+        viewmodel: CreateTaskViewModel,
+        taskid: String? = null,
+        taskTitleArg: String? = null,
+        taskDescriptionArg: String? = null,
+        startDateArg: String? = null,
+        endDateArg: String? = null,
+        startTimeArg: String? = null,
+        endTimeArg: String? = null,
+        priorityArg: String? = null
+    ) {
+        var taskTitle by rememberSaveable { mutableStateOf(taskTitleArg ?: "") }
+        var taskDescription by rememberSaveable { mutableStateOf(taskDescriptionArg ?: "") }
+        var startDate by rememberSaveable { mutableStateOf(startDateArg ?: "") }
+        var endDate by rememberSaveable { mutableStateOf(endDateArg?:"") }
+        var startTime by rememberSaveable { mutableStateOf(startTimeArg?:"") }
+        var endTime by rememberSaveable { mutableStateOf(endTimeArg?:"") }
         var titleError by rememberSaveable { mutableStateOf<String?>(null) }
-        var selectedPriorityState by rememberSaveable { mutableStateOf("") }
+        var selectedPriorityState by rememberSaveable { mutableStateOf(priorityArg?:"") }
         val context = LocalContext.current
         val scrollState = rememberScrollState()
         var isloading by rememberSaveable { mutableStateOf(false) }
@@ -211,7 +235,7 @@ class CreatTask : ComponentActivity() {
                     })
 
                 Text(
-                    text = "Create Task",
+                    text = if (taskid == null )"Create Task" else "Update Task",
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 24.sp,
                     color = Color.DarkGray,
@@ -384,13 +408,28 @@ class CreatTask : ComponentActivity() {
                             .show()
                         return@Button
                     } else {
-
-                        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                        val endT = dateFormat.parse("$endDate $endTime")?.time ?: 0L
-                        val startT = dateFormat.parse("$startDate $startTime")?.time ?: 0L
-                        val currentTime = System.currentTimeMillis()
-                        val taskStatus = if (currentTime > endT) "Completed" else if (currentTime>startT && currentTime<endT) "In Progress" else "Pending"
                         isloading = true
+
+                        if (taskid != null) {
+                            viewmodel.updateTask(
+                                taskid = taskid,
+                                taskTitle = taskTitle,
+                                taskDescription = taskDescription,
+                                startDate = startDate,
+                                endDate = endDate,
+                                startTime = startTime,
+                                endTime = endTime,
+                                taskPriority = selectedPriorityState,
+                                onSuccess = {
+                                    Toast.makeText(context, "Task updated successfully", Toast.LENGTH_LONG).show()
+                                    navController.navigate("home")
+                                },
+                                onFailure = {
+                                    isloading = false
+                                    Toast.makeText(context, "Error updating task", Toast.LENGTH_LONG).show()
+                                },context
+                            )
+                        }else
                         viewmodel.saveTask(
                             taskid = UUID.randomUUID().toString(),
                             taskTitle = taskTitle,
@@ -425,7 +464,7 @@ class CreatTask : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(colorResource(id = R.color.button_color))
             ) {
                 Text(
-                    "Create task", fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                    if (taskid != null) "Update Task" else "Create Task", fontSize = 18.sp, fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             }

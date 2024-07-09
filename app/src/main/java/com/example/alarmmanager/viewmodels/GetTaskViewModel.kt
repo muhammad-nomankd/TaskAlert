@@ -11,11 +11,9 @@ import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.repositories.GetTaskRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -61,7 +59,6 @@ class GetTaskViewModel : ViewModel() {
                 val startT = dateFormats.parse("${task.startDate} ${task.startTime}")?.time ?: 0L
                 task.status =
                     if (currentTime > endT) "Completed" else if (currentTime > startT && currentTime < endT) "In Progress" else "Pending"
-                Log.d("filtertask", taskrepo.toString())
             }
         } catch (e: Exception) {
             Log.d("problem", "unable to fileter tasks")
@@ -101,7 +98,6 @@ class GetTaskViewModel : ViewModel() {
             isSameDay
         }
         _fTskfordayandMonth.postValue(filterList)
-        Log.d("FilterTaskFor Day", filterList.toString())
 
     }
 
@@ -134,7 +130,6 @@ class GetTaskViewModel : ViewModel() {
                         taskRef.document(document.id).delete().addOnSuccessListener {
                             Toast.makeText(context, "Task Deleted", Toast.LENGTH_SHORT).show()
                            viewModelScope.launch { filterTasks(category) }
-                            Log.d("deleteTask", tasks.toString())
                         }.addOnFailureListener {
                             Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT).show()
 
