@@ -1,5 +1,6 @@
 package com.example.alarmmanager.repositories
 
+import android.content.Context
 import com.example.alarmmanager.dataclasses.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -21,5 +22,33 @@ class CreateTaskRepository {
             onFailure(Exception("User not authenticated"))
         }
     }
+
+    fun updateTask(
+        task: Task,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit,
+        updatedFields: MutableMap<String, Any>
+    ) {
+        val db = FirebaseFirestore.getInstance()
+        val uId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        val taskRef = db.collection("User").document(uId).collection("tasks")
+
+        taskRef.whereEqualTo("taskId", task.taskId)
+            .get()
+            .addOnSuccessListener { querySnapShot ->
+                for (document in querySnapShot.documents) {
+                    taskRef.document(document.id).update(updatedFields)
+                        .addOnSuccessListener {
+                            onSuccess()
+                        }
+                        .addOnFailureListener {
+                            onFailure()
+                        }
+                }
+            }
+
+
+    }
+
 }
 
