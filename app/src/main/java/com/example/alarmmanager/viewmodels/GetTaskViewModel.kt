@@ -1,16 +1,12 @@
 package com.example.alarmmanager.viewmodels
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.repositories.GetTaskRepository
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -115,30 +111,6 @@ class GetTaskViewModel : ViewModel() {
             _fTskfordayandMonth.postValue(filterListForMonth)
         }
 
-    }
-
-     suspend fun deleteTask(taskId: String, status: String, context: Context, category: String) {
-        val db = FirebaseFirestore.getInstance()
-        val uId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        val taskRef = db.collection("User").document(uId).collection("tasks")
-
-        taskRef.whereEqualTo("taskId", taskId)
-            .get()
-            .addOnSuccessListener { querySnapShot->
-                for (document in querySnapShot.documents ) {
-                    if (status == "Completed"){
-                        taskRef.document(document.id).delete().addOnSuccessListener {
-                            Toast.makeText(context, "Task Deleted", Toast.LENGTH_SHORT).show()
-                           viewModelScope.launch { filterTasks(category) }
-                        }.addOnFailureListener {
-                            Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT).show()
-
-                        }
-                    }else{
-                        Toast.makeText(context,"Task has not completed yet.", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
     }
 
 

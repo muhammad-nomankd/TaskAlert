@@ -1,16 +1,7 @@
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.repositories.CreateTaskRepository
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class CreateTaskViewModel : ViewModel() {
 
@@ -58,9 +49,27 @@ class CreateTaskViewModel : ViewModel() {
         endTime: String,
         taskPriority: String,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit,
-        context: Context
+        onFailure: () -> Unit
     ) {
-        onSuccess()
+        val task = Task(
+            taskId = taskid,
+            title = taskTitle,
+            description = taskDescription,
+            startDate = startDate,
+            endDate = endDate,
+            startTime = startTime,
+            endTime = endTime,
+            priority = taskPriority
+        )
+
+        val updatedFields = mutableMapOf<String, Any>()
+        taskTitle.let { updatedFields["title"] = it }
+        taskDescription.let { updatedFields["description"] = it }
+        startDate.let { updatedFields["startDate"] = it }
+        endDate.let { updatedFields["endDate"] = it }
+        startTime.let { updatedFields["startTime"] = it }
+        endTime.let { updatedFields["endTime"] = it }
+        taskPriority.let { updatedFields["priority"] = it }
+        repository.updateTask(task,onSuccess, onFailure, updatedFields)
     }
 }

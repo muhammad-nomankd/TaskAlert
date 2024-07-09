@@ -427,7 +427,7 @@ class CreatTask : ComponentActivity() {
                                 onFailure = {
                                     isloading = false
                                     Toast.makeText(context, "Error updating task", Toast.LENGTH_LONG).show()
-                                },context
+                                }
                             )
                         }else
                         viewmodel.saveTask(
