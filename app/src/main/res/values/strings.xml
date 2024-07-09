@@ -11,6 +11,7 @@
     <string name="facebook_app_secret">c183ecdb38f399786c4b6f9ce1809c01</string>
     <string name="title_activity_home_screen">HomeScreen</string>
     <string name="title_activity_creat_task">CreatTask</string>
+    <string name="title_activity_task_detail_screen">TaskDetailScreen</string>
 
 
 </resources>

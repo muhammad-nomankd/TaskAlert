@@ -1,5 +1,6 @@
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.alarmmanager.dataclasses.Task
@@ -45,5 +46,21 @@ class CreateTaskViewModel : ViewModel() {
             onSuccess = onSuccess,
             onFailure = onFailure
         )
+    }
+
+    fun updateTask(
+        taskid: String,
+        taskTitle: String,
+        taskDescription: String,
+        startDate: String,
+        endDate: String,
+        startTime: String,
+        endTime: String,
+        taskPriority: String,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit,
+        context: Context
+    ) {
+        onSuccess()
     }
 }

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -96,7 +95,7 @@ class HomeScreen : ComponentActivity() {
 
     @OptIn(ExperimentalFoundationApi::class)
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("NotConstructor")
+    @SuppressLint("NotConstructor", "CoroutineCreationDuringComposition")
     @Composable
     fun HomeScreenUi(navController: NavController, context: Context) {
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
@@ -111,7 +110,7 @@ class HomeScreen : ComponentActivity() {
         var showPopUp by rememberSaveable { mutableStateOf(false) }
         var currenttask by rememberSaveable { mutableStateOf("") }
         var taskStatus by rememberSaveable { mutableStateOf("") }
-        var deleteTask by rememberSaveable { mutableStateOf(false)}
+        var deleteTask by rememberSaveable { mutableStateOf(false) }
 
 
         // Getting User Detail from FireStore
@@ -137,19 +136,23 @@ class HomeScreen : ComponentActivity() {
             val taskRef = db.collection("User").document(uId).collection("tasks")
             taskRef.whereEqualTo("taskId", taskId)
                 .get()
-                .addOnSuccessListener { querySnapShot->
-                    for (document in querySnapShot.documents ) {
-                        if (status == "Completed"){
+                .addOnSuccessListener { querySnapShot ->
+                    for (document in querySnapShot.documents) {
+                        if (status == "Completed") {
                             taskRef.document(document.id).delete().addOnSuccessListener {
                                 Toast.makeText(context, "Task Deleted", Toast.LENGTH_SHORT).show()
                                 deleteTask = true
-                                Log.d("deleteTask", tasks.toString())
                             }.addOnFailureListener {
-                                Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT)
+                                    .show()
 
                             }
-                        }else{
-                            Toast.makeText(context,"Task has not completed yet.", Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Task has not completed yet.",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }
@@ -157,7 +160,7 @@ class HomeScreen : ComponentActivity() {
 
 
         val coroutineScope = rememberCoroutineScope()
-        if (deleteTask){
+        if (deleteTask) {
             coroutineScope.launch {
                 viewmodel.filterTasks(selectedCategoryState)
                 deleteTask = false
@@ -166,7 +169,6 @@ class HomeScreen : ComponentActivity() {
 
         // PopUp for Deleting task
         if (showPopUp) {
-            Log.d("currentTask", currenttask)
             AlertDialog(onDismissRequest = { showPopUp = false },
                 shape = RoundedCornerShape(16.dp),
                 backgroundColor = colorResource(
@@ -245,28 +247,38 @@ class HomeScreen : ComponentActivity() {
         @Composable
         fun getTaskIcon(title: String): Int {
             return when {
-                title.toLowerCase().contains("office", ignoreCase = true) || title.toLowerCase()
-                    .contains("work", ignoreCase = true) || title.toLowerCase()
+                title.lowercase(Locale.ROOT).contains("office", ignoreCase = true) || title.lowercase(
+                    Locale.ROOT
+                )
+                    .contains("work", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("job", ignoreCase = true) -> R.drawable.office
 
-                title.toLowerCase().contains("home", ignoreCase = true) || title.toLowerCase()
-                    .contains("house", ignoreCase = true) || title.toLowerCase()
+                title.lowercase(Locale.ROOT).contains("home", ignoreCase = true) || title.lowercase(
+                    Locale.ROOT
+                )
+                    .contains("house", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("building", ignoreCase = true) -> R.drawable.house
 
-                title.toLowerCase().contains("shopping", ignoreCase = true) -> R.drawable.shopping
-                title.toLowerCase().contains("food", ignoreCase = true) || title.toLowerCase()
-                    .contains("lunch", ignoreCase = true) || title.toLowerCase()
-                    .contains("dinner", ignoreCase = true) || title.toLowerCase()
+                title.lowercase(Locale.ROOT).contains("shopping", ignoreCase = true) -> R.drawable.shopping
+                title.lowercase(Locale.ROOT).contains("food", ignoreCase = true) || title.lowercase(
+                    Locale.ROOT
+                )
+                    .contains("lunch", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                    .contains("dinner", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("breakfast", ignoreCase = true) -> R.drawable.lunch
 
-                title.toLowerCase().contains("medicine", ignoreCase = true) || title.toLowerCase()
-                    .contains("tablets", ignoreCase = true) || title.toLowerCase()
-                    .contains("doctor", ignoreCase = true) || title.toLowerCase()
-                    .contains("hospital", ignoreCase = true) || title.toLowerCase()
+                title.lowercase(Locale.ROOT).contains("medicine", ignoreCase = true) || title.lowercase(
+                    Locale.ROOT
+                )
+                    .contains("tablets", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                    .contains("doctor", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                    .contains("hospital", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("appointment", ignoreCase = true) -> R.drawable.medicine
 
-                title.toLowerCase().contains("Yoga", ignoreCase = true) || title.toLowerCase()
-                    .contains("Gym", ignoreCase = true) || title.toLowerCase()
+                title.lowercase(Locale.ROOT).contains("Yoga", ignoreCase = true) || title.lowercase(
+                    Locale.ROOT
+                )
+                    .contains("Gym", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("Exercise", ignoreCase = true) -> R.drawable.house
 
                 else -> R.drawable.taskicon
@@ -275,7 +287,7 @@ class HomeScreen : ComponentActivity() {
 
         // Task Item for LazyRow
         @Composable
-        fun taskItem(task: Task, longClick: () -> Unit) {
+        fun taskItem(task: Task, longClick: () -> Unit, onClick: () -> Unit) {
             Card(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp)
@@ -283,9 +295,7 @@ class HomeScreen : ComponentActivity() {
                     .clip(shape = RoundedCornerShape(16.dp))
                     .combinedClickable(
                         onClick = {
-                            Toast
-                                .makeText(context, "${task.title} clicked", Toast.LENGTH_LONG)
-                                .show()
+                            onClick()
                         },
                         onLongClick = { longClick() },
                     ),
@@ -585,6 +595,8 @@ class HomeScreen : ComponentActivity() {
                             showPopUp = true
                             taskStatus = task.status
 
+                        }, onClick = {
+                            navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
                         })
                     }
                 }
@@ -699,14 +711,12 @@ class HomeScreen : ComponentActivity() {
 
         return try {
             val time = fetchedTime.parse(timeString)
-            dDF.format(time)
+            dDF.format(time ?: "")
         } catch (e: Exception) {
             e.printStackTrace()
             "invalid formated time"
         }
     }
-
-
 
 
 }
