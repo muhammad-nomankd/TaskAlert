@@ -70,18 +70,9 @@ class CreatTask : ComponentActivity() {
         setContent {
             AlarmManagerTheme {
                 val navController = rememberNavController()
-                createTaskcom(
+                CreateTaskcom(
                     navController,
-                    CreateTaskViewModel(),
-                    intent?.getStringExtra("taskId"),
-                    intent?.getStringExtra("taskTitle"),
-                    intent?.getStringExtra("taskDescription"),
-                    intent?.getStringExtra("startDate"),
-                    intent?.getStringExtra("endDate"),
-                    intent?.getStringExtra("startTime"),
-                    intent?.getStringExtra("endTime"),
-                    intent?.getStringExtra("priority")
-
+                    CreateTaskViewModel()
                 )
             }
         }
@@ -91,7 +82,7 @@ class CreatTask : ComponentActivity() {
     @SuppressLint("SuspiciousIndentation")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun createTaskcom(
+    fun CreateTaskcom(
         navController: NavController,
         viewmodel: CreateTaskViewModel,
         taskid: String? = null,
@@ -422,7 +413,13 @@ class CreatTask : ComponentActivity() {
                                 taskPriority = selectedPriorityState,
                                 onSuccess = {
                                     Toast.makeText(context, "Task updated successfully", Toast.LENGTH_LONG).show()
-                                    navController.navigate("home")
+                                    navController.navigate("home"){
+                                        popUpTo(navController.graph.startDestinationId){
+                                            inclusive = true
+                                        }
+                                    }
+                                    isloading = false
+
                                 },
                                 onFailure = {
                                     isloading = false
@@ -446,7 +443,11 @@ class CreatTask : ComponentActivity() {
                                     Toast.LENGTH_LONG
                                 )
                                     .show()
-                                navController.navigate("home")
+                                navController.navigate("home"){
+                                    popUpTo(navController.graph.startDestinationId){
+                                        inclusive = true
+                                    }
+                                }
                             },
                             onFailure = {
                                 isloading = false

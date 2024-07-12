@@ -1,4 +1,3 @@
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.repositories.CreateTaskRepository
@@ -70,6 +69,8 @@ class CreateTaskViewModel : ViewModel() {
         startTime.let { updatedFields["startTime"] = it }
         endTime.let { updatedFields["endTime"] = it }
         taskPriority.let { updatedFields["priority"] = it }
-        repository.updateTask(task,onSuccess, onFailure, updatedFields)
+
+        repository.updateTask(task, onSuccess, onFailure, updatedFields)
+
     }
 }

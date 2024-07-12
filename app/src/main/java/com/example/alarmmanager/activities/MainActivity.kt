@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                     val endTime = backStackEntry.arguments?.getString("endTime")
                     val priority = backStackEntry.arguments?.getString("priority")
 
-                    CreatTask().createTaskcom(
+                    CreatTask().CreateTaskcom(
                         navController,
                         CreateTaskViewModel(),
                         taskId,
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         priority
                     )
                 }
-                composable("taskListScreen") { TaskListScreen().taskListScreen(navController) }
+                composable("taskListScreen") { TaskListScreen().TaskListScreen(navController) }
             }
         }
     }

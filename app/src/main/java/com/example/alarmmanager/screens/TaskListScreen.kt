@@ -1,5 +1,7 @@
 package com.example.alarmmanager.screens
 
+//noinspection UsingMaterialAndMaterial3Libraries
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.icu.util.Calendar
 import android.os.Bundle
@@ -28,20 +30,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,6 +62,7 @@ import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.screens.ui.theme.AlarmManagerTheme
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -68,38 +72,50 @@ class TaskListScreen : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AlarmManagerTheme {
-                taskListScreen(navController = NavController(LocalContext.current))
+                TaskListScreen(navController = NavController(LocalContext.current))
             }
         }
     }
 
-    @Composable
-    fun taskListScreen(navController: NavController) {
-        val viewModel = GetTaskViewModel()
-        val filteredTasks by viewModel.fTskfordayandMonth.observeAsState(initial = emptyList())
 
+    @SuppressLint("NotConstructor", "CoroutineCreationDuringComposition")
+    @Composable
+    fun TaskListScreen(navController: NavController) {
+        val viewModel = GetTaskViewModel()
+        val filteredTasks by viewModel.fAffordanceMonth.observeAsState(initial = emptyList())
         val calendar = rememberSaveable { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-        var currentMonth by remember { mutableStateOf(dateFormat.format(calendar.time)) }
-        var selectedDay by remember { mutableStateOf(-1) }
+        var currentMonth by rememberSaveable { mutableStateOf(dateFormat.format(calendar.time)) }
+        var currentMonth2 by rememberSaveable { mutableStateOf(dateFormat.format(calendar.time)) }
+        var selectedDay by rememberSaveable { mutableIntStateOf(-1) }
+        var showPickerDialogue: Boolean by rememberSaveable { mutableStateOf(false) }
+        var refresh: Boolean by rememberSaveable { mutableStateOf(false) }
+
+        LaunchedEffect(currentMonth) {
+            // Ensure tasks are fetched when `currentMonth` changes
+            viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            header(
+            Header(
                 currentMonth = currentMonth,
                 onPreviousMonthClick = {
                     calendar.add(Calendar.MONTH, -1)
-                    selectedDay = 0
                     currentMonth = dateFormat.format(calendar.time)
-                    viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)) // Fetch tasks for new month
+                    selectedDay = 0
+                    viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
+
                 },
                 onNextMonthClick = {
                     calendar.add(Calendar.MONTH, 1)
+                    currentMonth = dateFormat.format(calendar.time)
                     selectedDay = 0
                     viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
+
                 },
-                onCalendarIconClick = { /* Handle calendar icon click if needed */ },
+                onCalendarIconClick = {showPickerDialogue = true},
                 navController = navController
             )
 
@@ -108,14 +124,12 @@ class TaskListScreen : ComponentActivity() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 val calendarSecond = calendar.clone() as Calendar
-                calendarSecond.set(Calendar.DAY_OF_MONTH, 1)
                 val daysInMonth = calendarSecond.getActualMaximum(Calendar.DAY_OF_MONTH)
-
+                calendarSecond.set(Calendar.DAY_OF_MONTH, 1)
                 (1..daysInMonth).forEach { day ->
-                    val dayOfWeek =
-                        SimpleDateFormat("EEE", Locale.getDefault()).format(calendarSecond.time)
+                    val dayOfWeek = SimpleDateFormat("EEE", Locale.getDefault()).format(calendarSecond.time)
                     item {
-                        dayItem(
+                        DayItem(
                             day = dayOfWeek,
                             date = day.toString(),
                             isSelected = (day == selectedDay),
@@ -133,6 +147,24 @@ class TaskListScreen : ComponentActivity() {
                 }
             }
 
+            if (showPickerDialogue) {
+                DatePickerDialogueShow { year, month, day ->
+                    showPickerDialogue = false
+                    calendar.set(year, month, day)
+
+                    selectedDay = day
+                    currentMonth = dateFormat.format(calendar.time)
+                    viewModel.fetchTaskForDay(
+                        day,
+                        (calendar.get(Calendar.MONTH) + 1),
+                        calendar.get(Calendar.YEAR)
+                    )
+
+
+                }
+            }
+
+
 
             LazyColumn(
                 modifier = Modifier
@@ -140,14 +172,38 @@ class TaskListScreen : ComponentActivity() {
                     .padding(16.dp)
             ) {
                 items(filteredTasks) { task ->
-                    taskItem(task)
+                    TaskItem(task)
                 }
             }
         }
     }
 
     @Composable
-    fun dayItem(day: String, date: String, isSelected: Boolean = false, onclick: () -> Unit) {
+    fun DatePickerDialogueShow(onDateSelected: (Int, Int, Int) -> Unit) {
+
+        val context = LocalContext.current
+
+        val calendar = Calendar.getInstance()
+
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        DatePickerDialog(
+            context,
+            { _, selectedYear, selectedMonth, selectedDay ->
+                onDateSelected(selectedYear, selectedMonth, selectedDay)
+            },
+            year,
+            month,
+            day
+        ).show()
+
+    }
+
+
+    @Composable
+    fun DayItem(day: String, date: String, isSelected: Boolean = false, onclick: () -> Unit) {
         Card(Modifier.padding(4.dp), shape = RoundedCornerShape(8.dp)) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -176,7 +232,7 @@ class TaskListScreen : ComponentActivity() {
     }
 
     @Composable
-    fun taskItem(task: Task) {
+    fun TaskItem(task: Task) {
         Card(
             modifier = Modifier.padding(4.dp),
             shape = RoundedCornerShape(12.dp)
@@ -242,6 +298,7 @@ class TaskListScreen : ComponentActivity() {
                             ) {
                                 Text(
                                     text = task.priority,
+                                    fontSize = 12.sp,
                                     color = when (task.priority) {
                                         "High" -> colorResource(id = R.color.dark_pink)
                                         "Medium" -> colorResource(id = R.color.darkBlue)
@@ -304,11 +361,11 @@ class TaskListScreen : ComponentActivity() {
     }
 
     @Composable
-    fun header(
+    fun Header(
         currentMonth: String,
         onPreviousMonthClick: () -> Unit,
         onNextMonthClick: () -> Unit,
-        onCalendarIconClick: @Composable () -> Unit,
+        onCalendarIconClick:  () -> Unit,
         navController: NavController
     ) {
         Row(
@@ -321,7 +378,7 @@ class TaskListScreen : ComponentActivity() {
         ) {
             IconButton(onClick = { navController.navigateUp() }) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Go back",
                     tint = Color.Gray
                 )
@@ -333,7 +390,7 @@ class TaskListScreen : ComponentActivity() {
             ) {
                 IconButton(onClick = onPreviousMonthClick) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                         contentDescription = "Previous Month",
                         Modifier.size(28.dp),
                         tint = colorResource(id = R.color.button_color)
@@ -347,7 +404,7 @@ class TaskListScreen : ComponentActivity() {
                 )
                 IconButton(onClick = onNextMonthClick) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Next Month",
                         Modifier.size(28.dp),
                         tint = colorResource(id = R.color.button_color)
@@ -355,7 +412,7 @@ class TaskListScreen : ComponentActivity() {
                 }
             }
 
-            IconButton(onClick = { onCalendarIconClick }) {
+            IconButton(onClick =  onCalendarIconClick ) {
                 Icon(
                     imageVector = Icons.Default.DateRange,
                     contentDescription = "Next Month",
@@ -366,24 +423,6 @@ class TaskListScreen : ComponentActivity() {
         }
     }
 
-    @Composable
-    fun DatePickerDialogue(onDateSelected: (Int, Int, Int) -> Unit) {
-        val context = LocalContext.current
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        DatePickerDialog(
-            context,
-            { _, selectedYear, selectedMonth, selectedDay ->
-                onDateSelected(selectedYear, selectedMonth, selectedDay)
-            },
-            year,
-            month,
-            day
-        ).show()
-    }
 
     fun dateFormate(dateString: String): String {
         val fetchedDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())

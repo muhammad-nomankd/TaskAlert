@@ -294,17 +294,13 @@ class HomeScreen : ComponentActivity() {
                     .width(160.dp)
                     .clip(shape = RoundedCornerShape(16.dp))
                     .combinedClickable(
-                        onClick = {
-                            onClick()
-                        },
+                        onClick = { onClick() },
                         onLongClick = { longClick() },
                     ),
                 backgroundColor = Color.White,
             ) {
-
                 Column(
-                    modifier = Modifier
-                        .padding(16.dp)
+                    modifier = Modifier.padding(16.dp)
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Image(
@@ -329,10 +325,8 @@ class HomeScreen : ComponentActivity() {
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = task.status,
@@ -344,11 +338,10 @@ class HomeScreen : ComponentActivity() {
                                 "In Progress" -> colorResource(id = R.color.darkYellow)
                                 "Pending" -> Color.Black
                                 else -> Color.Gray
-                            }
+                            },
+                            modifier = Modifier.align(Alignment.CenterStart)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Card(
-                            modifier = Modifier.padding(4.dp),
                             shape = RoundedCornerShape(4.dp),
                             backgroundColor = when (task.priority) {
                                 "High" -> colorResource(id = R.color.light_pink)
@@ -361,7 +354,8 @@ class HomeScreen : ComponentActivity() {
                                 "Medium" -> colorResource(id = R.color.darkBlue)
                                 "Low" -> colorResource(id = R.color.darkYellow)
                                 else -> Color.Black
-                            }
+                            },
+                            modifier = Modifier.align(Alignment.CenterEnd)
                         ) {
                             Text(
                                 text = task.priority,
@@ -375,7 +369,7 @@ class HomeScreen : ComponentActivity() {
                                     else -> Color.Black
                                 },
                                 modifier = Modifier.padding(
-                                    start = 8.dp, end = 8.dp, top = 3.dp, bottom = 3.dp
+                                    start = 4.dp, end = 4.dp
                                 )
                             )
                         }
@@ -385,9 +379,10 @@ class HomeScreen : ComponentActivity() {
         }
 
 
+
         // Task Item for UpComing tasks
         @Composable
-        fun upCommingTasksItem(task: Task) {
+        fun upComingTasksItem(task: Task) {
             Card(
                 modifier = Modifier.padding(4.dp),
                 shape = RoundedCornerShape(12.dp)
@@ -454,6 +449,7 @@ class HomeScreen : ComponentActivity() {
                                 ) {
                                     Text(
                                         text = task.priority,
+                                        fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = when (task.priority) {
                                             "High" -> colorResource(id = R.color.dark_pink)
@@ -634,7 +630,7 @@ class HomeScreen : ComponentActivity() {
 
                         LazyColumn(modifier = Modifier.fillMaxWidth()) {
                             items(nonfilterTasks) { task ->
-                                upCommingTasksItem(task)
+                                upComingTasksItem(task)
                             }
 
                         }
