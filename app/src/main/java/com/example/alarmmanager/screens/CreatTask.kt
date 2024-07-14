@@ -29,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -97,17 +96,15 @@ class CreatTask : ComponentActivity() {
         var taskTitle by rememberSaveable { mutableStateOf(taskTitleArg ?: "") }
         var taskDescription by rememberSaveable { mutableStateOf(taskDescriptionArg ?: "") }
         var startDate by rememberSaveable { mutableStateOf(startDateArg ?: "") }
-        var endDate by rememberSaveable { mutableStateOf(endDateArg?:"") }
-        var startTime by rememberSaveable { mutableStateOf(startTimeArg?:"") }
-        var endTime by rememberSaveable { mutableStateOf(endTimeArg?:"") }
+        var endDate by rememberSaveable { mutableStateOf(endDateArg ?: "") }
+        var startTime by rememberSaveable { mutableStateOf(startTimeArg ?: "") }
+        var endTime by rememberSaveable { mutableStateOf(endTimeArg ?: "") }
         var titleError by rememberSaveable { mutableStateOf<String?>(null) }
-        var selectedPriorityState by rememberSaveable { mutableStateOf(priorityArg?:"") }
+        var selectedPriorityState by rememberSaveable { mutableStateOf(priorityArg ?: "") }
         val context = LocalContext.current
         val scrollState = rememberScrollState()
         var isloading by rememberSaveable { mutableStateOf(false) }
-        val status by rememberSaveable {
-            mutableStateOf("")
-        }
+        val status by rememberSaveable { mutableStateOf("") }
 
         val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = colorResource(id = R.color.light_pink),
@@ -154,7 +151,7 @@ class CreatTask : ComponentActivity() {
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
-                false // Use 24-hour format
+                false
             ).show()
         }
 
@@ -215,7 +212,7 @@ class CreatTask : ComponentActivity() {
         {
             Spacer(modifier = Modifier.height(16.dp))
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
             ) {
 
                 Icon(imageVector = Icons.Default.ArrowBack,
@@ -224,20 +221,16 @@ class CreatTask : ComponentActivity() {
                     modifier = Modifier.clickable {
                         navController.navigateUp()
                     })
-
+                Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = if (taskid == null )"Create Task" else "Update Task",
+                    text = if (taskid == null) "Create Task" else "Update Task",
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 24.sp,
                     color = Color.DarkGray,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
-
-                Icon(imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    modifier = Modifier.clickable {
-                        navController.navigateUp()
-                    })
+                Spacer(modifier = Modifier.weight(1f))
             }
 
 
@@ -412,9 +405,13 @@ class CreatTask : ComponentActivity() {
                                 endTime = endTime,
                                 taskPriority = selectedPriorityState,
                                 onSuccess = {
-                                    Toast.makeText(context, "Task updated successfully", Toast.LENGTH_LONG).show()
-                                    navController.navigate("home"){
-                                        popUpTo(navController.graph.startDestinationId){
+                                    Toast.makeText(
+                                        context,
+                                        "Task updated successfully",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    navController.navigate("home") {
+                                        popUpTo(navController.graph.startDestinationId) {
                                             inclusive = true
                                         }
                                     }
@@ -423,39 +420,43 @@ class CreatTask : ComponentActivity() {
                                 },
                                 onFailure = {
                                     isloading = false
-                                    Toast.makeText(context, "Error updating task", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Error updating task",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             )
-                        }else
-                        viewmodel.saveTask(
-                            taskid = UUID.randomUUID().toString(),
-                            taskTitle = taskTitle,
-                            taskDescription = taskDescription,
-                            startDate = startDate,
-                            endDate = endDate,
-                            startTime = startTime,
-                            endTime = endTime,
-                            taskPriority = selectedPriorityState,
-                            onSuccess = {
-                                Toast.makeText(
-                                    context,
-                                    "Task added successfully",
-                                    Toast.LENGTH_LONG
-                                )
-                                    .show()
-                                navController.navigate("home"){
-                                    popUpTo(navController.graph.startDestinationId){
-                                        inclusive = true
+                        } else
+                            viewmodel.saveTask(
+                                taskid = UUID.randomUUID().toString(),
+                                taskTitle = taskTitle,
+                                taskDescription = taskDescription,
+                                startDate = startDate,
+                                endDate = endDate,
+                                startTime = startTime,
+                                endTime = endTime,
+                                taskPriority = selectedPriorityState,
+                                onSuccess = {
+                                    Toast.makeText(
+                                        context,
+                                        "Task added successfully",
+                                        Toast.LENGTH_LONG
+                                    )
+                                        .show()
+                                    navController.navigate("home") {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            inclusive = true
+                                        }
                                     }
-                                }
-                            },
-                            onFailure = {
-                                isloading = false
-                                Toast.makeText(context, "Error saving task", Toast.LENGTH_LONG)
-                                    .show()
-                            },
-                            status
-                        )
+                                },
+                                onFailure = {
+                                    isloading = false
+                                    Toast.makeText(context, "Error saving task", Toast.LENGTH_LONG)
+                                        .show()
+                                },
+                                status
+                            )
                     }
                 },
                 modifier = Modifier
@@ -465,7 +466,9 @@ class CreatTask : ComponentActivity() {
                 colors = ButtonDefaults.buttonColors(colorResource(id = R.color.button_color))
             ) {
                 Text(
-                    if (taskid != null) "Update Task" else "Create Task", fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                    if (taskid != null) "Update Task" else "Create Task",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             }

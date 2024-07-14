@@ -33,7 +33,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.AlertDialog
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -47,6 +49,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -92,20 +95,37 @@ class TaskListScreen : ComponentActivity() {
     @Composable
     fun TaskListScreen(navController: NavController) {
         val viewModel = GetTaskViewModel()
-        val filteredTasks by viewModel.filteredTasksofMonth.observeAsState(initial = emptyList())
+        val filteredTasks by viewModel.filteredTasksofMonth.observeAsState(emptyList())
         val calendar = rememberSaveable { Calendar.getInstance() }
-        val calendar2 = rememberSaveable { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         var showPopUp by rememberSaveable { mutableStateOf(false) }
         var currenttask by rememberSaveable { mutableStateOf("") }
         var taskStatus by rememberSaveable { mutableStateOf("") }
         var deleteTask by rememberSaveable { mutableStateOf(false) }
-        var selectedCategoryState by remember { mutableStateOf("All") }
+        val selectedCategoryState by remember { mutableStateOf("All") }
         var currentMonth by rememberSaveable { mutableStateOf(dateFormat.format(calendar.time)) }
         var selectedDay by rememberSaveable { mutableIntStateOf(-1) }
         var showPickerDialogue: Boolean by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current
         val viewmodel = GetTaskViewModel()
+
+
+        LaunchedEffect(Unit) {
+            viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
+            Log.d("task list of task list screen", filteredTasks.toString())
+            Log.d("task list of task list screen month", currentMonth)
+        }
+
+        LaunchedEffect(currentMonth) {
+            currentMonth = dateFormat.format(calendar.time)
+            viewModel.fetchTaskForMonth(
+                calendar.get(Calendar.MONTH) + 1,
+                calendar.get(Calendar.YEAR)
+            )
+
+            Log.d("task list of task list screen month", currentMonth)
+
+        }
 
         fun deleteTask(taskId: String, status: String, context: Context) {
             val db = FirebaseFirestore.getInstance()
@@ -204,7 +224,7 @@ class TaskListScreen : ComponentActivity() {
                 .fillMaxSize()
         ) {
             Header(
-
+               currentMonth,
                 onPreviousMonthClick = {
                     calendar.add(Calendar.MONTH, -1)
                     selectedDay = -1
@@ -222,9 +242,10 @@ class TaskListScreen : ComponentActivity() {
                     )
                 },
                 onCalendarIconClick = { showPickerDialogue = true },
-                navController = navController,
-                calendar = calendar2
+                navController = navController
             )
+
+
 
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -300,15 +321,14 @@ class TaskListScreen : ComponentActivity() {
 
     @Composable
     fun Header(
-        calendar: Calendar,
+        currentmonth: String,
         onPreviousMonthClick: () -> Unit,
         onNextMonthClick: () -> Unit,
         onCalendarIconClick: () -> Unit,
         navController: NavController
     ) {
-        val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-        val currentMonth = dateFormat.format(calendar.time)
-        Log.d(" bug fixing current month", currentMonth)
+
+        Log.d(" bug fixing current month", currentmonth)
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -338,7 +358,7 @@ class TaskListScreen : ComponentActivity() {
                     )
                 }
                 Text(
-                    text = currentMonth,
+                    text = currentmonth,
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold

@@ -26,6 +26,8 @@ class GetTaskViewModel : ViewModel() {
     private val _filteredTasksofMonth = MutableLiveData<List<Task>>(emptyList())
     var filteredTasksofMonth: LiveData<List<Task>> = _filteredTasksofMonth
 
+    val calendar2 = Calendar.getInstance()
+
     init {
         fetchTasks()
     }
@@ -96,7 +98,6 @@ class GetTaskViewModel : ViewModel() {
 
             }
             _filteredTasksofMonth.postValue(filterList)
-            Log.d("task filter for day", filterList.toString())
         }
         }
 
@@ -105,7 +106,7 @@ class GetTaskViewModel : ViewModel() {
                 val filterListForMonth = _tasks.value.filter {
                     val taskDate =
                         SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
-                    val calendar2 = Calendar.getInstance()
+
                     taskDate?.let {
                         calendar2.time = taskDate
                     }
