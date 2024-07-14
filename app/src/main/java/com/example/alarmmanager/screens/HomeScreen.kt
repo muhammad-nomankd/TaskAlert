@@ -382,9 +382,13 @@ class HomeScreen : ComponentActivity() {
 
         // Task Item for UpComing tasks
         @Composable
-        fun upComingTasksItem(task: Task) {
+        fun upComingTasksItem(task: Task, longClick: () -> Unit, onClick: () -> Unit) {
             Card(
-                modifier = Modifier.padding(4.dp),
+                modifier = Modifier.padding(4.dp)
+                    .combinedClickable(
+                        onClick = {onClick()},
+                        onLongClick = {longClick()}
+                    ),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
@@ -630,7 +634,15 @@ class HomeScreen : ComponentActivity() {
 
                         LazyColumn(modifier = Modifier.fillMaxWidth()) {
                             items(nonfilterTasks) { task ->
-                                upComingTasksItem(task)
+                                upComingTasksItem(task,
+                                    longClick = {
+                                        currenttask = task.taskId
+                                        showPopUp = true
+                                        taskStatus = task.status
+
+                                    }, onClick = {
+                                        navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
+                                    })
                             }
 
                         }

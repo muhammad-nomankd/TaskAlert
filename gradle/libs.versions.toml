@@ -4,7 +4,7 @@ activityComposeVersion = "1.9.0"
 agp = "8.4.2"
 coilCompose = "2.0.0"
 coreKtxVersion = "1.13.1"
-firebaseBom = "33.1.1"
+firebaseBom = "33.1.2"
 #noinspection GradleDependency
 kotlin = "1.9.0"
 coreKtx = "1.13.1"

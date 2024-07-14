@@ -23,8 +23,8 @@ class GetTaskViewModel : ViewModel() {
     private val _filteredTasks = MutableLiveData<List<Task>>(emptyList())
     var filteredTasks: LiveData<List<Task>> = _filteredTasks
 
-    private val _fAffordanceMonth = MutableLiveData<List<Task>>(emptyList())
-    var fAffordanceMonth: LiveData<List<Task>> = _fAffordanceMonth
+    private val _filteredTasksofMonth = MutableLiveData<List<Task>>(emptyList())
+    var filteredTasksofMonth: LiveData<List<Task>> = _filteredTasksofMonth
 
     init {
         fetchTasks()
@@ -95,7 +95,7 @@ class GetTaskViewModel : ViewModel() {
                 isSameDay
 
             }
-            _fAffordanceMonth.postValue(filterList)
+            _filteredTasksofMonth.postValue(filterList)
             Log.d("task filter for day", filterList.toString())
         }
         }
@@ -113,7 +113,7 @@ class GetTaskViewModel : ViewModel() {
                         (calendar2.get(Calendar.MONTH) + 1) == month && calendar2.get(Calendar.YEAR) == year
                     isSameMonth
                 }
-                _fAffordanceMonth.postValue(filterListForMonth)
+                _filteredTasksofMonth.postValue(filterListForMonth)
             }
 
         }
