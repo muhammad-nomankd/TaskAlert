@@ -319,7 +319,7 @@ class HomeScreen : ComponentActivity() {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = formateDate(task.startDate),
+                        text = dateFormater(task.startDate),
                         fontSize = 16.sp,
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyLarge
@@ -381,13 +381,15 @@ class HomeScreen : ComponentActivity() {
 
 
         // Task Item for UpComing tasks
+        @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun upComingTasksItem(task: Task, longClick: () -> Unit, onClick: () -> Unit) {
             Card(
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier
+                    .padding(4.dp)
                     .combinedClickable(
-                        onClick = {onClick()},
-                        onLongClick = {longClick()}
+                        onClick = { onClick() },
+                        onLongClick = { longClick() },
                     ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -397,7 +399,6 @@ class HomeScreen : ComponentActivity() {
                         .padding(8.dp),
                     horizontalArrangement = Arrangement.Start
                 ) {
-
                     Box(
                         modifier = Modifier
                             .height(90.dp)
@@ -454,7 +455,6 @@ class HomeScreen : ComponentActivity() {
                                     Text(
                                         text = task.priority,
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
                                         color = when (task.priority) {
                                             "High" -> colorResource(id = R.color.dark_pink)
                                             "Medium" -> colorResource(id = R.color.darkBlue)
@@ -471,22 +471,58 @@ class HomeScreen : ComponentActivity() {
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = task.description,
+                            fontSize = 16.sp,
+                            color = Color.DarkGray,
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                        )
 
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = timeFormate(task.startTime) + " - " + timeFormate(task.endTime),
+                            text = timeFormater(task.startTime) + " - " + timeFormater(task.endTime),
                             color = Color.DarkGray,
                             fontSize = 16.sp
                         )
                     }
-
-                    Text(
-                        text = formateDate(task.startDate),
-                        color = Color.DarkGray,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .wrapContentWidth(Alignment.End)
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = dateFormater(task.startDate),
+                            color = Color.DarkGray,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .wrapContentWidth(Alignment.End)
+                        )
+                        Text(
+                            text = "To", color = Color.DarkGray,
+                            fontSize = 12.sp,
+                        )
+                        Text(
+                            text = dateFormater(task.endDate),
+                            color = Color.DarkGray,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .wrapContentWidth(Alignment.End)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = task.status,
+                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = when (task.status) {
+                                "Completed" -> colorResource(id = R.color.green)
+                                "In Progress" -> colorResource(id = R.color.darkYellow)
+                                "Pending" -> Color.Black
+                                else -> Color.Gray
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -691,7 +727,7 @@ class HomeScreen : ComponentActivity() {
     }
 
     // Formating Date
-    fun formateDate(dateString: String): String {
+    fun dateFormater(dateString: String): String {
         val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
         return try {
@@ -712,7 +748,7 @@ class HomeScreen : ComponentActivity() {
 
     // Formating Time
 
-    fun timeFormate(timeString: String): String {
+    fun timeFormater(timeString: String): String {
 
         val fetchedTime = SimpleDateFormat("HH:mm", Locale.getDefault())
         val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())
