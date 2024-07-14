@@ -107,8 +107,6 @@ class TaskListScreen : ComponentActivity() {
         val context = LocalContext.current
         val viewmodel = GetTaskViewModel()
 
-
-
         fun deleteTask(taskId: String, status: String, context: Context) {
             val db = FirebaseFirestore.getInstance()
             val uId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -136,7 +134,6 @@ class TaskListScreen : ComponentActivity() {
                     }
                 }
         }
-
 
         val coroutineScope = rememberCoroutineScope()
         if (deleteTask) {
