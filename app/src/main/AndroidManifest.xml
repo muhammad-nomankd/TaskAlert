@@ -4,6 +4,14 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <supports-screens
+        android:resizeable="true"
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        android:anyDensity="true"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -15,7 +23,7 @@
         android:theme="@style/Theme.AlarmManager"
         tools:targetApi="31" >
         <activity
-            android:name=".screens.TaskDetailScreen"
+            android:name=".screens.TaskListScreen"
             android:exported="false"
             android:label="@string/title_activity_task_detail_screen"
             android:theme="@style/Theme.AlarmManager" />

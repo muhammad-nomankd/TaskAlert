@@ -121,7 +121,11 @@ fun SignUp(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "SignIn", fontSize = 30.sp, color = colorResource(id = R.color.black), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
+                text = "SignIn",
+                fontSize = 30.sp,
+                color = colorResource(id = R.color.black),
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(64.dp))
             OutlinedTextField(
@@ -201,14 +205,17 @@ fun SignUp(
                     ) {
                         isLoading.value = true
                         viewModel.signin(email, password, onSuccess = {
-                            val intent = Intent(context,MainActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            val intent = Intent(context, MainActivity::class.java).apply {
+                                flags =
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             }
                             context.startActivity(intent)
                             Toast.makeText(
                                 context,
-                                "Welcome back ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
-                                else FirebaseAuth.getInstance().currentUser?.email}.",
+                                "Welcome back ${
+                                    if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
+                                    else FirebaseAuth.getInstance().currentUser?.email
+                                }.",
                                 Toast.LENGTH_SHORT
                             )
                                 .show()
@@ -254,17 +261,29 @@ fun SignUp(
             Button(
                 onClick = {
                     isLoading.value = true
-                   viewModel.googleSignIn(context,googleSignInLauncher,intent, onSuccess = {
-                       val intentn = Intent(context,MainActivity::class.java).apply {
-                           flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                       }
-                       context.startActivity(intentn)
-                       Toast.makeText(
-                           context,
-                           "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
-                           Toast.LENGTH_LONG
-                       ).show()
-                   }, onError = {Toast.makeText(context,"Sign in failed please try again",Toast.LENGTH_LONG).show()})
+                    viewModel.googleSignIn(
+                        context,
+                        googleSignInLauncher,
+                        intent,
+                        onSuccess = {
+                            val intentn = Intent(context, MainActivity::class.java).apply {
+                                flags =
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            context.startActivity(intentn)
+                            Toast.makeText(
+                                context,
+                                "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        },
+                        onError = {
+                            Toast.makeText(
+                                context,
+                                "Sign in failed please try again",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        })
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.gsi_bckg)),
                 shape = RoundedCornerShape(16.dp),

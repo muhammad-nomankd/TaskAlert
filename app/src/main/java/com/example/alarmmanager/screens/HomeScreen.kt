@@ -61,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ModifierInfo
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -239,11 +240,13 @@ class HomeScreen : ComponentActivity() {
 
 
         // Category Button for selecting specific category like All, In Progress or Completed
+
         @Composable
         fun categoryButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
             val isSelected = selectedCategory == text
             Button(
-                onClick = { onClick(text) }, colors = ButtonDefaults.buttonColors(
+                onClick = { onClick(text) },
+                colors = ButtonDefaults.buttonColors(
                     containerColor = if (isSelected) colorResource(id = R.color.button_color) else Color.White,
                     contentColor = if (isSelected) Color.White else colorResource(id = R.color.button_color),
                 )
@@ -255,7 +258,6 @@ class HomeScreen : ComponentActivity() {
                 )
             }
         }
-
         // Adding task Icons to each task
         @Composable
         fun getTaskIcon(title: String): Int {
@@ -604,7 +606,7 @@ class HomeScreen : ComponentActivity() {
                 Text(
                     "Categories",
                     color = Color.DarkGray,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
                         .align(Alignment.Start)
@@ -614,8 +616,8 @@ class HomeScreen : ComponentActivity() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 32.dp, end = 32.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(start = 8.dp, end = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     categoryButton(text = "All", selectedCategoryState) {
                         selectedCategoryState = it
