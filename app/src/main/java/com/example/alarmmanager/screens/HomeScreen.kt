@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -79,6 +80,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -111,15 +113,26 @@ class HomeScreen : ComponentActivity() {
         var currenttask by rememberSaveable { mutableStateOf("") }
         var taskStatus by rememberSaveable { mutableStateOf("") }
         var deleteTask by rememberSaveable { mutableStateOf(false) }
+        var isLoading by rememberSaveable { mutableStateOf(false) }
+        var isSigningOut by rememberSaveable { mutableStateOf(false) }
+        val coroutinescope = rememberCoroutineScope()
 
 
         // Getting User Detail from FireStore
         LaunchedEffect(Unit) {
+            isLoading = true
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .get().addOnSuccessListener { document ->
                     userName = document.getString("name") ?: ""
                     profileImageUrl = document.getString("imageUrl") ?: ""
                     userEmail = document.getString("email") ?: ""
+                }
+                .addOnSuccessListener {
+                    isLoading = false
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to get user details", Toast.LENGTH_SHORT).show()
+                    isLoading = false
 
                 }
 
@@ -685,6 +698,22 @@ class HomeScreen : ComponentActivity() {
                     }
                 }
             }
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier
+                            .height(32.dp)
+                            .width(32.dp)
+                            .align(alignment = Alignment.CenterHorizontally),
+                        color = Color.Gray
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(32.dp))
 
             // Floating Action Button for Creating task Screen navigation
@@ -705,14 +734,19 @@ class HomeScreen : ComponentActivity() {
                 )
             }
         }
-        var isSigningOut by rememberSaveable { mutableStateOf(false) }
+
         Text(
             text = "Sign Out", modifier = Modifier.clickable {
+                isLoading = true
                 isSigningOut = true
-                CoroutineScope(Dispatchers.Main).launch {
+
+               coroutinescope.launch {
+                   delay(1000)
                     FirebaseAuth.getInstance().signOut()
                     if (FirebaseAuth.getInstance().currentUser == null) {
                         navController.navigate("signup")
+                        isLoading = true
+                        isLoading = false
                     } else {
                         Toast.makeText(
                             contextThis,
@@ -720,6 +754,7 @@ class HomeScreen : ComponentActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                         isSigningOut = false
+                        isLoading = false
                     }
                 }
             }, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
@@ -727,7 +762,7 @@ class HomeScreen : ComponentActivity() {
     }
 
     // Formating Date
-    fun dateFormater(dateString: String): String {
+    private fun dateFormater(dateString: String): String {
         val fetchedDateFormate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
         return try {
@@ -748,7 +783,7 @@ class HomeScreen : ComponentActivity() {
 
     // Formating Time
 
-    fun timeFormater(timeString: String): String {
+    private fun timeFormater(timeString: String): String {
 
         val fetchedTime = SimpleDateFormat("HH:mm", Locale.getDefault())
         val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())

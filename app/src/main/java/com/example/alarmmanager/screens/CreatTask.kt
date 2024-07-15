@@ -445,7 +445,7 @@ class CreatTask : ComponentActivity() {
                                     )
                                         .show()
                                     navController.navigate("home") {
-                                        popUpTo(navController.graph.startDestinationId) {
+                                        popUpTo("home") {
                                             inclusive = true
                                         }
                                     }
