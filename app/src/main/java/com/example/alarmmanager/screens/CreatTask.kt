@@ -28,7 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -201,6 +201,13 @@ class CreatTask : ComponentActivity() {
                 )
             }
         }
+
+
+        // Create task UI
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(colorResource(id = R.color.custom_white)))
+        {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -215,7 +222,7 @@ class CreatTask : ComponentActivity() {
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
             ) {
 
-                Icon(imageVector = Icons.Default.ArrowBack,
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Go back",
                     tint = Color.Gray,
                     modifier = Modifier.clickable {
@@ -479,20 +486,20 @@ class CreatTask : ComponentActivity() {
             ) {
 
             }
-        }
-        if (isloading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Gray), // Semi-transparent black background
-                contentAlignment = Alignment.Center
-            ) {
+        }}
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start
+        ) {
+            if (isloading) {
                 CircularProgressIndicator(
-                    strokeWidth = 2.dp, color = colorResource(id = R.color.button_color),
+                    strokeWidth = 2.dp,
                     modifier = Modifier
                         .height(32.dp)
                         .width(32.dp)
-                        .align(alignment = Alignment.Center)
+                        .align(alignment = Alignment.CenterHorizontally),
+                    color = Color.Gray
                 )
             }
         }
