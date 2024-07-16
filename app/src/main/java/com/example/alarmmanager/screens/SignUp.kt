@@ -86,7 +86,7 @@ fun SignUp(
                 context.startActivity(intent)
                 Toast.makeText(
                     context,
-                    "Welcome ${FirebaseAuth.getInstance().currentUser?.displayName ?: FirebaseAuth.getInstance().currentUser?.email}. You are successfully signed in with Google.",
+                    "Welcome ${FirebaseAuth.getInstance().currentUser?.displayName ?: FirebaseAuth.getInstance().currentUser?.email?.substringBefore("@")}",
                     Toast.LENGTH_LONG
                 ).show()
             }, onError = {
@@ -212,9 +212,9 @@ fun SignUp(
                             context.startActivity(intent)
                             Toast.makeText(
                                 context,
-                                "Welcome back ${
+                                "Welcome ${
                                     if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
-                                    else FirebaseAuth.getInstance().currentUser?.email
+                                    else FirebaseAuth.getInstance().currentUser?.email?.substringBefore("@")
                                 }.",
                                 Toast.LENGTH_SHORT
                             )
