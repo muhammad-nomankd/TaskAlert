@@ -104,6 +104,7 @@ class HomeScreen : ComponentActivity() {
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
         var userName by rememberSaveable { mutableStateOf("") }
         var userEmail by rememberSaveable { mutableStateOf("") }
+        val userMail = FirebaseAuth.getInstance().currentUser?.email
         var selectedCategoryState by remember { mutableStateOf("All") }
         val contextThis = LocalContext.current
         val firestore = Firebase.firestore
@@ -117,7 +118,7 @@ class HomeScreen : ComponentActivity() {
         var isLoading by rememberSaveable { mutableStateOf(false) }
         var isSigningOut by rememberSaveable { mutableStateOf(false) }
         val coroutinescope = rememberCoroutineScope()
-
+        val nameFromEmail = userMail?.substringBefore("@")
 
         // Getting User Detail from FireStore
         LaunchedEffect(Unit) {
@@ -565,7 +566,8 @@ class HomeScreen : ComponentActivity() {
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text(
-                            text = "Hey ${userName.ifEmpty { FirebaseAuth.getInstance().currentUser?.email }},",
+
+                            text = "Hey ${userName.ifEmpty { nameFromEmail }},",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 22.sp
