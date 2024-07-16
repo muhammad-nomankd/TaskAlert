@@ -71,6 +71,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
@@ -582,7 +583,7 @@ class HomeScreen : ComponentActivity() {
 
                     if (profileImageUrl.isNotEmpty()) {
                         Image(
-                            painter = rememberImagePainter(data = profileImageUrl),
+                            painter = rememberAsyncImagePainter(model = profileImageUrl),
                             contentDescription = "Profile Image",
                             Modifier
                                 .shadow(0.1.dp, CircleShape)
@@ -592,7 +593,7 @@ class HomeScreen : ComponentActivity() {
                         )
                     } else {
                         Image(
-                            painter = rememberImagePainter(data = R.drawable.person),
+                            painter = rememberAsyncImagePainter(model = R.drawable.person),
                             contentDescription = "No image found",
                             modifier = Modifier
                                 .clip(CircleShape)
