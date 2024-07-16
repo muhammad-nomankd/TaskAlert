@@ -565,7 +565,7 @@ class HomeScreen : ComponentActivity() {
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text(
-                            text = "Hey ${FirebaseAuth.getInstance().currentUser?.displayName ?: FirebaseAuth.getInstance().currentUser?.email},",
+                            text = "Hey ${if (userName.isNotEmpty()) userName else FirebaseAuth.getInstance().currentUser?.email},",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 22.sp
