@@ -215,7 +215,7 @@ fun SignUp(
                                 "Welcome ${
                                     if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
                                     else FirebaseAuth.getInstance().currentUser?.email?.substringBefore("@")
-                                }.",
+                                }",
                                 Toast.LENGTH_SHORT
                             )
                                 .show()

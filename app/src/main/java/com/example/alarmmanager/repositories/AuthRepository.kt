@@ -33,6 +33,11 @@ class AuthRepository() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    Toast.makeText(
+                        context,
+                        "You are successfully registered.",
+                        Toast.LENGTH_LONG
+                    ).show()
                     val user = User(
                         id = auth.currentUser?.uid ?: "",
                         email = auth.currentUser?.email ?: "",
@@ -44,11 +49,6 @@ class AuthRepository() {
                         .addOnCompleteListener { task2 ->
                             if (task2.isSuccessful) {
                                 onSuccess()
-                                Toast.makeText(
-                                    context,
-                                    "You are successfully registered.",
-                                    Toast.LENGTH_LONG
-                                ).show()
                             } else {
                                 Toast.makeText(
                                     context,
