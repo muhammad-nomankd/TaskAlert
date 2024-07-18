@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
@@ -46,9 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.ModifierInfo
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -246,11 +250,13 @@ class HomeScreen : ComponentActivity() {
                 )
             }
         }
+
         // Adding task Icons to each task
         @Composable
         fun getTaskIcon(title: String): Int {
             return when {
-                title.lowercase(Locale.ROOT).contains("office", ignoreCase = true) || title.lowercase(
+                title.lowercase(Locale.ROOT)
+                    .contains("office", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
                 )
                     .contains("work", ignoreCase = true) || title.lowercase(Locale.ROOT)
@@ -262,7 +268,9 @@ class HomeScreen : ComponentActivity() {
                     .contains("house", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("building", ignoreCase = true) -> R.drawable.house
 
-                title.lowercase(Locale.ROOT).contains("shopping", ignoreCase = true) -> R.drawable.shopping
+                title.lowercase(Locale.ROOT)
+                    .contains("shopping", ignoreCase = true) -> R.drawable.shopping
+
                 title.lowercase(Locale.ROOT).contains("food", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
                 )
@@ -270,7 +278,8 @@ class HomeScreen : ComponentActivity() {
                     .contains("dinner", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("breakfast", ignoreCase = true) -> R.drawable.lunch
 
-                title.lowercase(Locale.ROOT).contains("medicine", ignoreCase = true) || title.lowercase(
+                title.lowercase(Locale.ROOT)
+                    .contains("medicine", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
                 )
                     .contains("tablets", ignoreCase = true) || title.lowercase(Locale.ROOT)
@@ -380,8 +389,6 @@ class HomeScreen : ComponentActivity() {
                 }
             }
         }
-
-
 
         // Task Item for UpComing tasks
         @OptIn(ExperimentalFoundationApi::class)
@@ -532,18 +539,13 @@ class HomeScreen : ComponentActivity() {
 
 
         // MainHome Screen UI
-        Box(
+        LazyColumn(
             modifier = Modifier
                 .background(colorResource(id = R.color.custom_white))
                 .fillMaxSize()
 
         ) {
-            Column(
-                Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            item {
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -589,19 +591,20 @@ class HomeScreen : ComponentActivity() {
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Spacer(modifier = Modifier.height(32.dp))
+            }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+            item {
                 Text(
                     "Categories",
                     color = Color.DarkGray,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
-                        .align(Alignment.Start)
                         .padding(start = 32.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -620,10 +623,12 @@ class HomeScreen : ComponentActivity() {
                         selectedCategoryState = it
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+            }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
 
 
-                // LazyRow for horizontal scrollable tasks
+            // LazyRow for horizontal scrollable tasks
+            item {
                 LazyRow(
                     Modifier
                         .fillMaxWidth()
@@ -640,22 +645,26 @@ class HomeScreen : ComponentActivity() {
                         })
                     }
                 }
+            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+
+            // View all tasks
+            item {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "View all",
+                        color = colorResource(id = R.color.button_color),
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .padding(end = 32.dp)
+                            .align(Alignment.CenterEnd)
+                            .clickable {
+                                navController.navigate("taskListScreen")
+                            })
+                }
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // View all tasks
-                Text(text = "View all",
-                    color = colorResource(id = R.color.button_color),
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(end = 32.dp)
-                        .clickable {
-                            navController.navigate("taskListScreen")
-                        })
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // UpComing tasks List
+            }
+            // UpComing tasks List
+            item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -672,23 +681,49 @@ class HomeScreen : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                            items(nonfilterTasks) { task ->
-                                upComingTasksItem(task,
-                                    longClick = {
-                                        currenttask = task.taskId
-                                        showPopUp = true
-                                        taskStatus = task.status
+                        nonfilterTasks.forEach { task ->
+                            upComingTasksItem(task,
+                                longClick = {
+                                    currenttask = task.taskId
+                                    showPopUp = true
+                                    taskStatus = task.status
 
-                                    }, onClick = {
-                                        navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
-                                    })
-                            }
+                                }, onClick = {
+                                    navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
+                                })
+
 
                         }
                     }
                 }
             }
+
+        }
+
+        Box(modifier = Modifier.fillMaxSize()){
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Floating Action Button for Creating task Screen navigation
+                FloatingActionButton(
+                    onClick = { navController.navigate("createTask") },
+                    containerColor = colorResource(id = R.color.button_color),
+                    contentColor = Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(48.dp)
+
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add task",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+        }
+        Box(modifier = Modifier.fillMaxSize()){
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -705,34 +740,16 @@ class HomeScreen : ComponentActivity() {
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Floating Action Button for Creating task Screen navigation
-            FloatingActionButton(
-                onClick = { navController.navigate("createTask") },
-                containerColor = colorResource(id = R.color.button_color),
-                contentColor = Color.White,
-                elevation = FloatingActionButtonDefaults.elevation(8.dp),
-                shape = CircleShape,
-                modifier = Modifier
-                    .padding(48.dp)
-                    .align(Alignment.BottomEnd)
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Add task",
-                    modifier = Modifier.size(32.dp)
-                )
-            }
         }
+
 
         Text(
             text = "Sign Out", modifier = Modifier.clickable {
                 isLoading = true
                 isSigningOut = true
 
-               coroutinescope.launch {
-                   delay(1000)
+                coroutinescope.launch {
+                    delay(1000)
                     FirebaseAuth.getInstance().signOut()
                     if (FirebaseAuth.getInstance().currentUser == null) {
                         navController.navigate("signup")

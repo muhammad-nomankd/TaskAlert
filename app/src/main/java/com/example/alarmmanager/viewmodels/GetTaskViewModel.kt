@@ -98,10 +98,12 @@ class GetTaskViewModel : ViewModel() {
 
             }
             _filteredTasksofMonth.postValue(filterList)
+            Log.d("filter task after date selection in viewmodel", filterList.toString())
         }
         }
 
         fun fetchTaskForMonth(month: Int, year: Int) {
+            Log.d("fetchTaskForMonth", "Started fetching tasks for month: $month, year: $year")
             viewModelScope.launch {
                 val filterListForMonth = _tasks.value.filter {
                     val taskDate =
@@ -115,6 +117,7 @@ class GetTaskViewModel : ViewModel() {
                     isSameMonth
                 }
                 _filteredTasksofMonth.postValue(filterListForMonth)
+                Log.d("filter task after month selection in viewmodel", filterListForMonth.toString())
             }
 
         }

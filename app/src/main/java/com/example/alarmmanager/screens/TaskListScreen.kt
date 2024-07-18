@@ -96,7 +96,7 @@ class TaskListScreen : ComponentActivity() {
     fun TaskListScreen(navController: NavController) {
         val viewModel = GetTaskViewModel()
         val filteredTasks by viewModel.filteredTasksofMonth.observeAsState(emptyList())
-        val calendar = rememberSaveable { Calendar.getInstance() }
+        val calendar = remember { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         var showPopUp by rememberSaveable { mutableStateOf(false) }
         var currenttask by rememberSaveable { mutableStateOf("") }
@@ -107,7 +107,6 @@ class TaskListScreen : ComponentActivity() {
         var selectedDay by rememberSaveable { mutableIntStateOf(-1) }
         var showPickerDialogue: Boolean by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current
-        val viewmodel = GetTaskViewModel()
 
 
         LaunchedEffect(Unit) {
@@ -158,7 +157,7 @@ class TaskListScreen : ComponentActivity() {
         val coroutineScope = rememberCoroutineScope()
         if (deleteTask) {
             coroutineScope.launch {
-                viewmodel.filterTasks(selectedCategoryState)
+                viewModel.filterTasks(selectedCategoryState)
                 deleteTask = false
             }
         }
@@ -290,6 +289,8 @@ class TaskListScreen : ComponentActivity() {
                             (calendar.get(Calendar.MONTH) + 1),
                             calendar.get(Calendar.YEAR)
                         )
+                        Log.d("Current date in datepicker Dialogue","current day: $day, current month: ${(calendar.get(Calendar.MONTH) + 1)}, current year: ${calendar.get(Calendar.YEAR)}")
+
                     },
                     context = context,
                     calendar = calendar
@@ -391,7 +392,7 @@ class TaskListScreen : ComponentActivity() {
         calendar: Calendar
     ) {
 
-        //Default values passed to calender in the beginning which current date
+        //Default values passed to calender in the beginning which is  current date
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
         val day = calendar.get(Calendar.DAY_OF_MONTH)
@@ -406,6 +407,8 @@ class TaskListScreen : ComponentActivity() {
             month,
             day
         ).show()
+
+        Log.d("Current date in datepicker Dialogue","current day: $day, current month: $month, current year: $year")
 
     }
 
