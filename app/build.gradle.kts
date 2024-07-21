@@ -87,8 +87,7 @@ dependencies {
     implementation (libs.firebase.auth.ktx)
     implementation (libs.accompanist.insets)
     implementation(libs.coil.compose)
-    implementation("com.google.accompanist:accompanist-pager:0.33.1-alpha")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.33.1-alpha")
+
 
 
 }
