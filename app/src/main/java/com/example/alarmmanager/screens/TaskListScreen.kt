@@ -1,6 +1,8 @@
 package com.example.alarmmanager.screens
 
 //noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
@@ -33,9 +35,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.AlertDialog
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -44,6 +44,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
@@ -94,9 +96,10 @@ class TaskListScreen : ComponentActivity() {
     @SuppressLint("NotConstructor", "CoroutineCreationDuringComposition")
     @Composable
     fun TaskListScreen(navController: NavController) {
-        val viewModel = GetTaskViewModel()
-        val filteredTasks by viewModel.filteredTasksofMonth.observeAsState(emptyList())
-        val calendar = remember { Calendar.getInstance() }
+        val viewModel: GetTaskViewModel = viewModel()
+        val filteredTasksForMonth by viewModel.filteredTasksofMonth.observeAsState(emptyList())
+        val filteredTasksForDay by viewModel.filteredTasksofDay.observeAsState(emptyList())
+        val calendar = rememberSaveable { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         var showPopUp by rememberSaveable { mutableStateOf(false) }
         var currenttask by rememberSaveable { mutableStateOf("") }
@@ -107,23 +110,17 @@ class TaskListScreen : ComponentActivity() {
         var selectedDay by rememberSaveable { mutableIntStateOf(-1) }
         var showPickerDialogue: Boolean by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current
+        var refreshtaskforday by rememberSaveable { mutableStateOf(false) }
 
 
-        LaunchedEffect(Unit) {
-            viewModel.fetchTaskForMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
-            Log.d("task list of task list screen", filteredTasks.toString())
-            Log.d("task list of task list screen month", currentMonth)
-        }
 
-        LaunchedEffect(currentMonth) {
+       val coroutines = rememberCoroutineScope()
+        coroutines.launch {
             currentMonth = dateFormat.format(calendar.time)
             viewModel.fetchTaskForMonth(
                 calendar.get(Calendar.MONTH) + 1,
                 calendar.get(Calendar.YEAR)
             )
-
-            Log.d("task list of task list screen month", currentMonth)
-
         }
 
         fun deleteTask(taskId: String, status: String, context: Context) {
@@ -218,15 +215,19 @@ class TaskListScreen : ComponentActivity() {
                     }
                 })
         }
+
+        // Main Screen
         Column(
             modifier = Modifier
                 .fillMaxSize()
         ) {
             Header(
-               currentMonth,
+                currentMonth,
                 onPreviousMonthClick = {
                     calendar.add(Calendar.MONTH, -1)
                     selectedDay = -1
+                    currentMonth = dateFormat.format(calendar.time)
+                    refreshtaskforday = false
                     viewModel.fetchTaskForMonth(
                         calendar.get(Calendar.MONTH) + 1,
                         calendar.get(Calendar.YEAR)
@@ -235,6 +236,8 @@ class TaskListScreen : ComponentActivity() {
                 onNextMonthClick = {
                     calendar.add(Calendar.MONTH, 1)
                     selectedDay = -1
+                    currentMonth = dateFormat.format(calendar.time)
+                    refreshtaskforday = false
                     viewModel.fetchTaskForMonth(
                         calendar.get(Calendar.MONTH) + 1,
                         calendar.get(Calendar.YEAR)
@@ -262,6 +265,7 @@ class TaskListScreen : ComponentActivity() {
                             date = day.toString(),
                             isSelected = (day == selectedDay),
                             onclick = {
+                                refreshtaskforday = true
                                 selectedDay = day
                                 viewModel.fetchTaskForDay(
                                     day,
@@ -276,21 +280,18 @@ class TaskListScreen : ComponentActivity() {
             }
 
             if (showPickerDialogue) {
+
                 DatePickerDialogueShow(
-                    //callback function it contain the values that is selected in the DatePickerDialogueShow and passed to it
                     onDateSelected = { year, month, day ->
                         calendar.set(year, month, day)
-
                         selectedDay = day
                         currentMonth = dateFormat.format(calendar.time)
-                        Log.d("bug fixing current month", currentMonth)
                         viewModel.fetchTaskForDay(
-                            day,
+                            calendar.get(Calendar.DAY_OF_MONTH),
                             (calendar.get(Calendar.MONTH) + 1),
                             calendar.get(Calendar.YEAR)
                         )
-                        Log.d("Current date in datepicker Dialogue","current day: $day, current month: ${(calendar.get(Calendar.MONTH) + 1)}, current year: ${calendar.get(Calendar.YEAR)}")
-
+                        refreshtaskforday = true
                     },
                     context = context,
                     calendar = calendar
@@ -300,12 +301,13 @@ class TaskListScreen : ComponentActivity() {
 
 
 
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                items(filteredTasks) { task ->
+                items(if (refreshtaskforday) filteredTasksForDay else filteredTasksForMonth) { task ->
                     TaskItem(task, longClick = {
                         currenttask = task.taskId
                         showPopUp = true
@@ -316,9 +318,8 @@ class TaskListScreen : ComponentActivity() {
                 }
             }
         }
+
     }
-
-
 
     @Composable
     fun Header(
@@ -392,7 +393,7 @@ class TaskListScreen : ComponentActivity() {
         calendar: Calendar
     ) {
 
-        //Default values passed to calender in the beginning which is  current date
+        //Default values passed to calendar in the beginning which current date
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
         val day = calendar.get(Calendar.DAY_OF_MONTH)
@@ -400,17 +401,15 @@ class TaskListScreen : ComponentActivity() {
         DatePickerDialog(
             context,
             { _, selectedYear, selectedMonth, selectedDay ->
-                //Selected values passed to the callback function
+                // Adjust the month from zero-based to one-based
                 onDateSelected(selectedYear, selectedMonth, selectedDay)
             },
             year,
             month,
             day
         ).show()
-
-        Log.d("Current date in datepicker Dialogue","current day: $day, current month: $month, current year: $year")
-
     }
+
 
     @Composable
     fun DayItem(day: String, date: String, isSelected: Boolean = false, onclick: () -> Unit) {
