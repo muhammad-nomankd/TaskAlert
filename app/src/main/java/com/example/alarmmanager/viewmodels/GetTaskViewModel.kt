@@ -1,6 +1,9 @@
 package com.example.alarmmanager.viewmodels
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,6 +20,7 @@ import java.util.Locale
 
 class GetTaskViewModel : ViewModel() {
     private val repository = GetTaskRepository()
+
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
@@ -26,7 +30,12 @@ class GetTaskViewModel : ViewModel() {
     private val _filteredTasksofMonth = MutableLiveData<List<Task>>(emptyList())
     var filteredTasksofMonth: LiveData<List<Task>> = _filteredTasksofMonth
 
-    val calendar2 = Calendar.getInstance()
+    private val _filteredTasksofDay = MutableLiveData<List<Task>>(emptyList())
+    var filteredTasksofDay: LiveData<List<Task>> = _filteredTasksofDay
+
+    var isloading by mutableStateOf(false)
+
+
 
     init {
         fetchTasks()
@@ -83,42 +92,42 @@ class GetTaskViewModel : ViewModel() {
     }
 
     fun fetchTaskForDay(day: Int, month: Int, year: Int) {
+        Log.d("date passed to viewmodel", "$day/$month/$year")
         viewModelScope.launch {
+            isloading = true
             val filterList = _tasks.value.filter {
-                val taskDate =
-                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
+                val taskDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
                 val calendar = Calendar.getInstance()
                 taskDate?.let {
-                    calendar.time = taskDate
+                    calendar.time = it
                 }
                 val isSameDay = calendar.get(Calendar.DAY_OF_MONTH) == day
-                        && (calendar.get(Calendar.MONTH) + 1) == month
+                        && calendar.get(Calendar.MONTH) + 1 == month
                         && calendar.get(Calendar.YEAR) == year
                 isSameDay
-
             }
-            _filteredTasksofMonth.postValue(filterList)
+            _filteredTasksofDay.postValue(filterList)
+            Log.d("filter list after date selection", filterList.toString())
         }
-        }
+    }
 
-        fun fetchTaskForMonth(month: Int, year: Int) {
-            viewModelScope.launch {
-                val filterListForMonth = _tasks.value.filter {
-                    val taskDate =
-                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
-
-                    taskDate?.let {
-                        calendar2.time = taskDate
-                    }
-                    val isSameMonth =
-                        (calendar2.get(Calendar.MONTH) + 1) == month && calendar2.get(Calendar.YEAR) == year
-                    isSameMonth
+    fun fetchTaskForMonth(month: Int, year: Int) {
+        Log.d("date passed to viewmodel", "$month/$year")
+        viewModelScope.launch {
+            isloading = true
+            val filterListForMonth = _tasks.value.filter {
+                val taskDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
+                val calendar = Calendar.getInstance()
+                taskDate?.let {
+                    calendar.time = it
                 }
-                _filteredTasksofMonth.postValue(filterListForMonth)
+                val isSameMonth = calendar.get(Calendar.MONTH) + 1 == month && calendar.get(Calendar.YEAR) == year
+                isSameMonth.also { isloading = false }
             }
-
+            _filteredTasksofMonth.postValue(filterListForMonth)
+            Log.d("filter list after date selection", filterListForMonth.toString())
         }
-
+    }
 
     }
 
