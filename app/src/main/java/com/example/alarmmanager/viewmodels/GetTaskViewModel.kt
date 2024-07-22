@@ -27,8 +27,8 @@ class GetTaskViewModel : ViewModel() {
     private val _filteredTasks = MutableLiveData<List<Task>>(emptyList())
     var filteredTasks: LiveData<List<Task>> = _filteredTasks
 
-    private val _filteredTasksofMonth = MutableLiveData<List<Task>>(emptyList())
-    var filteredTasksofMonth: LiveData<List<Task>> = _filteredTasksofMonth
+    private val _filteredTasksofMonth = MutableStateFlow<List<Task>>(emptyList())
+    var filteredTasksofMonth: StateFlow<List<Task>> = _filteredTasksofMonth
 
     private val _filteredTasksofDay = MutableLiveData<List<Task>>(emptyList())
     var filteredTasksofDay: LiveData<List<Task>> = _filteredTasksofDay
@@ -92,7 +92,6 @@ class GetTaskViewModel : ViewModel() {
     }
 
     fun fetchTaskForDay(day: Int, month: Int, year: Int) {
-        Log.d("date passed to viewmodel", "$day/$month/$year")
         viewModelScope.launch {
             isloading = true
             val filterList = _tasks.value.filter {
@@ -107,12 +106,10 @@ class GetTaskViewModel : ViewModel() {
                 isSameDay
             }
             _filteredTasksofDay.postValue(filterList)
-            Log.d("filter list after date selection", filterList.toString())
         }
     }
 
     fun fetchTaskForMonth(month: Int, year: Int) {
-        Log.d("date passed to viewmodel", "$month/$year")
         viewModelScope.launch {
             isloading = true
             val filterListForMonth = _tasks.value.filter {
@@ -124,8 +121,7 @@ class GetTaskViewModel : ViewModel() {
                 val isSameMonth = calendar.get(Calendar.MONTH) + 1 == month && calendar.get(Calendar.YEAR) == year
                 isSameMonth.also { isloading = false }
             }
-            _filteredTasksofMonth.postValue(filterListForMonth)
-            Log.d("filter list after date selection", filterListForMonth.toString())
+            _filteredTasksofMonth.value=(filterListForMonth)
         }
     }
 

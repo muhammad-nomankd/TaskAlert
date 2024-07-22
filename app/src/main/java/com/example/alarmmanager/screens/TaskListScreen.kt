@@ -51,6 +51,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -97,7 +98,7 @@ class TaskListScreen : ComponentActivity() {
     @Composable
     fun TaskListScreen(navController: NavController) {
         val viewModel: GetTaskViewModel = viewModel()
-        val filteredTasksForMonth by viewModel.filteredTasksofMonth.observeAsState(emptyList())
+        val filteredTasksForMonth by viewModel.filteredTasksofMonth.collectAsState(emptyList())
         val filteredTasksForDay by viewModel.filteredTasksofDay.observeAsState(emptyList())
         val calendar = rememberSaveable { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
@@ -111,7 +112,6 @@ class TaskListScreen : ComponentActivity() {
         var showPickerDialogue: Boolean by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current
         var refreshtaskforday by rememberSaveable { mutableStateOf(false) }
-
 
 
        val coroutines = rememberCoroutineScope()

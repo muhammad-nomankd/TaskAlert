@@ -6,6 +6,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.icu.util.Calendar
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,7 +59,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.alarmmanager.R
 import com.example.alarmmanager.screens.ui.theme.AlarmManagerTheme
+import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
@@ -202,6 +205,27 @@ class CreatTask : ComponentActivity() {
             }
         }
 
+        fun convertStrToTime(timeStr:String): Date? {
+            return try {
+                SimpleDateFormat("HH:mm",Locale.getDefault()).parse(timeStr)
+            } catch (e:ParseException)
+            {
+               null
+            }
+
+        }
+
+        fun convertStrToDate(dateStr:String): Date? {
+            return try {
+                SimpleDateFormat("yyyy-MM-dd",Locale.getDefault()).parse(dateStr)
+            } catch (e:ParseException)
+            {
+               null
+            }
+
+        }
+
+
 
         // Create task UI
         Box(modifier = Modifier
@@ -314,7 +338,7 @@ class CreatTask : ComponentActivity() {
                     )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = if (startDate.isEmpty()) "Start Date" else startDate,
+                Text(text = startDate.ifEmpty { "Start Date" },
                     color = Color.DarkGray,
                     fontSize = 16.sp,
                     modifier = Modifier.clickable {
@@ -322,7 +346,7 @@ class CreatTask : ComponentActivity() {
                     })
                 Text(text = "  -  ", fontWeight = FontWeight.Bold)
 
-                Text(text = if (endDate.isEmpty()) "End Date" else endDate,
+                Text(text = endDate.ifEmpty { "End Date" },
                     color = Color.DarkGray,
                     fontSize = 16.sp,
                     modifier = Modifier.clickable {
@@ -345,7 +369,7 @@ class CreatTask : ComponentActivity() {
                             .padding(start = 2.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = if (startTime.isEmpty()) "Start Time" else startTime,
+                    Text(text = startTime.ifEmpty { "Start Time" },
                         color = Color.DarkGray,
                         fontSize = 16.sp,
                         modifier = Modifier.clickable {
@@ -353,7 +377,7 @@ class CreatTask : ComponentActivity() {
                         })
                     Text(text = "  -  ", fontWeight = FontWeight.Bold)
 
-                    Text(text = if (endTime.isEmpty()) "End Time" else endTime,
+                    Text(text = endTime.ifEmpty { "End Time" },
                         color = Color.DarkGray,
                         fontSize = 16.sp,
                         modifier = Modifier.clickable {
@@ -394,6 +418,14 @@ class CreatTask : ComponentActivity() {
                 onClick = {
                     titleError = if (taskTitle.isEmpty()) "Enter the title" else null
 
+                    if (convertStrToTime(endTime)!! < convertStrToTime(startTime)){
+                        Toast.makeText(context, "Start Time shouldn't be after end Time",Toast.LENGTH_LONG).show()
+                        return@Button
+                    }
+                    if (convertStrToDate(endDate)!! < convertStrToDate(startDate)){
+                        Toast.makeText(context, "Start Date shouldn't be after end Date",Toast.LENGTH_LONG).show()
+                        return@Button
+                    }
                     if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
                         Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_LONG)
                             .show()
@@ -402,6 +434,27 @@ class CreatTask : ComponentActivity() {
                         isloading = true
 
                         if (taskid != null) {
+
+
+                            if (convertStrToTime(endTime)!! < convertStrToTime(startTime)){
+                                Toast.makeText(context, "Start Time shouldn't be after end Time",Toast.LENGTH_LONG).show()
+                                return@Button
+                            }
+                            if (convertStrToDate(endDate)!! < convertStrToDate(startDate)) {
+                                Toast.makeText(
+                                    context,
+                                    "Start Date shouldn't be after end Date",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@Button
+                            }
+
+
+                            if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
+                                Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_LONG)
+                                    .show()
+                                return@Button
+                            }
                             viewmodel.updateTask(
                                 taskid = taskid,
                                 taskTitle = taskTitle,
