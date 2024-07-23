@@ -24,17 +24,19 @@ class GetTaskViewModel : ViewModel() {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
+    private val _tasksForUpCommingCategory = MutableStateFlow<List<Task>>(emptyList())
+    val tasksForUpCommingCategory: StateFlow<List<Task>> = _tasksForUpCommingCategory
+
     private val _filteredTasks = MutableLiveData<List<Task>>(emptyList())
     var filteredTasks: LiveData<List<Task>> = _filteredTasks
 
-    private val _filteredTasksofMonth = MutableStateFlow<List<Task>>(emptyList())
-    var filteredTasksofMonth: StateFlow<List<Task>> = _filteredTasksofMonth
+    private val _filteredTasksofMonth = MutableLiveData<List<Task>>(emptyList())
+    var filteredTasksofMonth: LiveData<List<Task>> = _filteredTasksofMonth
 
     private val _filteredTasksofDay = MutableLiveData<List<Task>>(emptyList())
     var filteredTasksofDay: LiveData<List<Task>> = _filteredTasksofDay
 
     var isloading by mutableStateOf(false)
-
 
 
     init {
@@ -91,11 +93,31 @@ class GetTaskViewModel : ViewModel() {
         }
     }
 
+    suspend fun filterTasksForUpCommingCategory(category: String) {
+        viewModelScope.launch {
+            try {
+                val taskRepo = repository.getTask()
+                updateTaskStatuses(taskRepo)
+                val taskFilter = when (category) {
+                    "In Progress and Pending" -> taskRepo.filter {
+                        it.status == "In Progress" || it.status == "Pending"
+                    }
+                    else -> taskRepo
+                }
+                _tasksForUpCommingCategory.value = taskFilter
+            } catch (e: Exception) {
+                _tasksForUpCommingCategory.value = emptyList()
+                // You might want to log the exception here or handle it appropriately
+            }
+        }
+    }
+
     fun fetchTaskForDay(day: Int, month: Int, year: Int) {
         viewModelScope.launch {
             isloading = true
             val filterList = _tasks.value.filter {
-                val taskDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
+                val taskDate =
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
                 val calendar = Calendar.getInstance()
                 taskDate?.let {
                     calendar.time = it
@@ -109,20 +131,26 @@ class GetTaskViewModel : ViewModel() {
         }
     }
 
-    fun fetchTaskForMonth(month: Int, year: Int) {
+
+    fun fetchTaskForMonth(month: Int, year: Int): List<Task> {
+        Log.d("bug fixing month", "$month $year")
         viewModelScope.launch {
             isloading = true
             val filterListForMonth = _tasks.value.filter {
-                val taskDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
+                val taskDate =
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.startDate)
                 val calendar = Calendar.getInstance()
                 taskDate?.let {
                     calendar.time = it
                 }
-                val isSameMonth = calendar.get(Calendar.MONTH) + 1 == month && calendar.get(Calendar.YEAR) == year
-                isSameMonth.also { isloading = false }
+                val isSameMonth =
+                    calendar.get(Calendar.MONTH) + 1 == month && calendar.get(Calendar.YEAR) == year
+                isSameMonth
             }
-            _filteredTasksofMonth.value=(filterListForMonth)
+            _filteredTasksofMonth.value = (filterListForMonth)
+            Log.d("bug fixing month", filterListForMonth.toString())
         }
+        return _filteredTasksofMonth.value ?: emptyList()
     }
 
 }

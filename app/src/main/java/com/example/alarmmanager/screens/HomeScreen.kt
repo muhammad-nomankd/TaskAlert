@@ -60,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
@@ -99,9 +100,9 @@ class HomeScreen : ComponentActivity() {
         var selectedCategoryState by remember { mutableStateOf("All") }
         val contextThis = LocalContext.current
         val firestore = Firebase.firestore
-        val viewmodel = GetTaskViewModel()
+        val viewmodel:GetTaskViewModel =  viewModel()
         val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
-        val nonfilterTasks by viewmodel.tasks.collectAsState()
+        val nonfilterTasks by viewmodel.tasksForUpCommingCategory.collectAsState()
         var showPopUp by rememberSaveable { mutableStateOf(false) }
         var currenttask by rememberSaveable { mutableStateOf("") }
         var taskStatus by rememberSaveable { mutableStateOf("") }
@@ -134,6 +135,10 @@ class HomeScreen : ComponentActivity() {
         // Getting filtered Tasks based on selected Category Button
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
+        }
+
+        LaunchedEffect(Unit) {
+            viewmodel.filterTasksForUpCommingCategory("In Progress and Pending")
         }
 
         fun deleteTask(taskId: String, status: String, context: Context) {

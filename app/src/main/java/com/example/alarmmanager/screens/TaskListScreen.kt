@@ -98,7 +98,7 @@ class TaskListScreen : ComponentActivity() {
     @Composable
     fun TaskListScreen(navController: NavController) {
         val viewModel: GetTaskViewModel = viewModel()
-        val filteredTasksForMonth by viewModel.filteredTasksofMonth.collectAsState(emptyList())
+        val filteredTasksForMonth by viewModel.filteredTasksofMonth.observeAsState(emptyList())
         val filteredTasksForDay by viewModel.filteredTasksofDay.observeAsState(emptyList())
         val calendar = rememberSaveable { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
@@ -329,8 +329,6 @@ class TaskListScreen : ComponentActivity() {
         onCalendarIconClick: () -> Unit,
         navController: NavController
     ) {
-
-        Log.d(" bug fixing current month", currentmonth)
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
