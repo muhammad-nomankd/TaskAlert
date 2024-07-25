@@ -87,6 +87,8 @@ dependencies {
     implementation (libs.firebase.auth.ktx)
     implementation (libs.accompanist.insets)
     implementation(libs.coil.compose)
+    implementation (libs.converter.gson)
+    implementation (libs.retrofit)
 
 
 
