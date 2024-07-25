@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -100,11 +101,12 @@ class ProfileScreen : ComponentActivity() {
         ) {
 
 
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "back arrow",
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back arrow",
                 modifier = Modifier
                     .align(Alignment.Start)
                     .padding(top = 32.dp, start = 18.dp)
                     .clickable { navControler.navigateUp() })
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Image(
@@ -117,13 +119,17 @@ class ProfileScreen : ComponentActivity() {
                     .size(75.dp),
                 contentScale = ContentScale.Crop
             )
+
             Spacer(modifier = Modifier.height(18.dp))
+
             Text(
                 userName, fontSize = 16.sp, color = Color.Black, modifier = Modifier
                     .align(Alignment.Start)
                     .padding(start = 32.dp)
             )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 userEmail, fontSize = 16.sp, color = Color.Black, modifier = Modifier
                     .align(Alignment.Start)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -120,14 +122,13 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
             }
             Spacer(modifier = Modifier.height(32.dp))
             Text(text = "Go to SignIn",
-                color = colorResource(id = R.color.other),
+                color = Color.DarkGray,
                 modifier = Modifier.clickable { navController.navigate("SignIn") })
 
         }
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
+
+
         ) {
             if (isloading.value == true) {
                 CircularProgressIndicator(
@@ -139,6 +140,10 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
                 )
             }
         }
+
+        Image(painter = painterResource(id = R.drawable.weather_icon), contentDescription = "weather icon"
+        )
+        Text(text = "22 °C")
 
     }
 

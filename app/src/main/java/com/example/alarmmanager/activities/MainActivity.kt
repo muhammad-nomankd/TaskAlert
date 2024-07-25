@@ -16,6 +16,7 @@ import androidx.navigation.navArgument
 import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.screens.CreatTask
 import com.example.alarmmanager.screens.HomeScreen
+import com.example.alarmmanager.screens.ProfileScreen
 import com.example.alarmmanager.screens.TaskListScreen
 import com.example.alarmmanager.viewmodels.AuthViewModel
 
@@ -34,6 +35,9 @@ class MainActivity : ComponentActivity() {
                         viewModel = AuthViewModel(AuthRepository()),
                         navController = navController
                     )
+                }
+                composable("profile"){
+                    ProfileScreen().ProfileContent(navControler = navController)
                 }
                 composable(
                     "createTask?taskId={taskId}&taskTitle={taskTitle}&taskDescription={taskDescription}&startDate={startDate}&endDate={endDate}&startTime={startTime}&endTime={endTime}&priority={priority}",

@@ -14,14 +14,25 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
@@ -46,15 +57,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierInfo
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,7 +73,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
@@ -71,9 +80,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -100,7 +106,7 @@ class HomeScreen : ComponentActivity() {
         var selectedCategoryState by remember { mutableStateOf("All") }
         val contextThis = LocalContext.current
         val firestore = Firebase.firestore
-        val viewmodel:GetTaskViewModel =  viewModel()
+        val viewmodel: GetTaskViewModel = viewModel()
         val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
         val nonfilterTasks by viewmodel.tasksForUpCommingCategory.collectAsState()
         var showPopUp by rememberSaveable { mutableStateOf(false) }
@@ -558,43 +564,39 @@ class HomeScreen : ComponentActivity() {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
 
-                            text = "Hey ${userName.ifEmpty { nameFromEmail }},",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 22.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Let's get into your tasks",
-                            fontSize = 16.sp,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
 
-                    if (profileImageUrl.isNotEmpty()) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
+                        contentDescription = "Profile Image",
+                        Modifier
+                            .shadow(0.1.dp, CircleShape)
+                            .clip(CircleShape)
+                            .size(48.dp)
+                            .clickable {
+                                navController.navigate("profile")
+                            },
+                        contentScale = ContentScale.Fit
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
-                            painter = rememberAsyncImagePainter(model = profileImageUrl),
-                            contentDescription = "Profile Image",
-                            Modifier
-                                .shadow(0.1.dp, CircleShape)
-                                .clip(CircleShape)
-                                .size(48.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    } else {
-                        Image(
-                            painter = rememberAsyncImagePainter(model = R.drawable.person),
-                            contentDescription = "No image found",
+                            painter = painterResource(id = R.drawable.weather_icon),
+                            contentDescription = "weather icon",
                             modifier = Modifier
-                                .clip(CircleShape)
-                                .size(48.dp),
-                            contentScale = ContentScale.Crop,
-                            alignment = Alignment.CenterEnd
+                                .size(50.dp)
+                                .padding(bottom = 6.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "22°", fontFamily = FontFamily(
+                                Font(R.font.roboto_light, FontWeight.Normal)
+                            ), fontSize = 42.sp, color = Color.Gray
                         )
                     }
+
+
                 }
             }
             item { Spacer(modifier = Modifier.height(32.dp)) }
@@ -705,30 +707,30 @@ class HomeScreen : ComponentActivity() {
 
         }
 
-        Box(modifier = Modifier.fillMaxSize()){
-                Spacer(modifier = Modifier.height(32.dp))
+        Box(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.height(32.dp))
 
-                // Floating Action Button for Creating task Screen navigation
-                FloatingActionButton(
-                    onClick = { navController.navigate("createTask") },
-                    containerColor = colorResource(id = R.color.button_color),
-                    contentColor = Color.White,
-                    elevation = FloatingActionButtonDefaults.elevation(8.dp),
-                    shape = CircleShape,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(48.dp)
+            // Floating Action Button for Creating task Screen navigation
+            FloatingActionButton(
+                onClick = { navController.navigate("createTask") },
+                containerColor = colorResource(id = R.color.button_color),
+                contentColor = Color.White,
+                elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                shape = CircleShape,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(48.dp)
 
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Add task",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Add task",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
 
         }
-        Box(modifier = Modifier.fillMaxSize()){
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -747,31 +749,6 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
-
-        Text(
-            text = "Sign Out", modifier = Modifier.clickable {
-                isLoading = true
-                isSigningOut = true
-
-                coroutinescope.launch {
-                    delay(1000)
-                    FirebaseAuth.getInstance().signOut()
-                    if (FirebaseAuth.getInstance().currentUser == null) {
-                        navController.navigate("signup")
-                        isLoading = true
-                        isLoading = false
-                    } else {
-                        Toast.makeText(
-                            contextThis,
-                            "Sign-out failed. Please try again.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        isSigningOut = false
-                        isLoading = false
-                    }
-                }
-            }, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
-        )
     }
 
     // Formating Date

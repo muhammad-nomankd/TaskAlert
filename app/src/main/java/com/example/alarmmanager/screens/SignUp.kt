@@ -180,7 +180,7 @@ fun SignUp(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
                     text = "Forgot Password.",
-                    color = colorResource(id = R.color.other),
+                    color = Color.DarkGray,
                     textAlign = TextAlign.End,
                     modifier = Modifier
                         .clickable {
