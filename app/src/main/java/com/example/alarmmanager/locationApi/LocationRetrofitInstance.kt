@@ -4,7 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object LocationRetrofitInstance {
-    private const val BASE_URL = "https://wft-geo-db.p.rapidapi.com/v1/geo/"
+    private const val BASE_URL = "https://wft-geo-db.p.rapidapi.com/"
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }

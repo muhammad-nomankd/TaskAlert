@@ -1,13 +1,17 @@
-package com.example.alarmmanager.dataclasses
+package com.example.alarmmanager.models
 
 data class LocationResponse(
-    val `data`: List<Data>
+    val data: List<City>
 )
 
-data class Data(
-    val countryCode: String,
-    val latitude: String,
-    val longitude: String,
+data class City(
+    val id: Int,
     val name: String,
-    val stateCode: String
+    val country: String,
+    val countryCode: String,
+    val region: String,
+    val regionCode: String,
+    val latitude: Double,
+    val longitude: Double,
+    val population: Int?
 )
