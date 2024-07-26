@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -76,6 +77,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
+import com.example.alarmmanager.viewmodels.LocationViewModel
+import com.example.alarmmanager.viewmodels.WeatherViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -102,10 +105,8 @@ class HomeScreen : ComponentActivity() {
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
         var userName by rememberSaveable { mutableStateOf("") }
         var userEmail by rememberSaveable { mutableStateOf("") }
-        val userMail = FirebaseAuth.getInstance().currentUser?.email
         var selectedCategoryState by remember { mutableStateOf("All") }
-        val contextThis = LocalContext.current
-        val firestore = Firebase.firestore
+        val firestore = FirebaseFirestore.getInstance()
         val viewmodel: GetTaskViewModel = viewModel()
         val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
         val nonfilterTasks by viewmodel.tasksForUpCommingCategory.collectAsState()
@@ -114,9 +115,6 @@ class HomeScreen : ComponentActivity() {
         var taskStatus by rememberSaveable { mutableStateOf("") }
         var deleteTask by rememberSaveable { mutableStateOf(false) }
         var isLoading by rememberSaveable { mutableStateOf(false) }
-        var isSigningOut by rememberSaveable { mutableStateOf(false) }
-        val coroutinescope = rememberCoroutineScope()
-        val nameFromEmail = userMail?.substringBefore("@")
 
         // Getting User Detail from FireStore
         LaunchedEffect(Unit) {
@@ -145,8 +143,11 @@ class HomeScreen : ComponentActivity() {
 
         LaunchedEffect(Unit) {
             viewmodel.filterTasksForUpCommingCategory("In Progress and Pending")
-        }
+            WeatherViewModel().fetchWeather("London Lakes")
+            LocationViewModel().fetchCities("e6844bc411msh69a178d35f2fabbp1e01fbjsnc9a755db3e73", "islamabad")
 
+        }
+        //Delete task logic
         fun deleteTask(taskId: String, status: String, context: Context) {
             val db = FirebaseFirestore.getInstance()
             val uId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -175,7 +176,7 @@ class HomeScreen : ComponentActivity() {
                 }
         }
 
-
+        // Refresh tasks Category after deletion
         val coroutineScope = rememberCoroutineScope()
         if (deleteTask) {
             coroutineScope.launch {
@@ -241,9 +242,7 @@ class HomeScreen : ComponentActivity() {
                 })
         }
 
-
         // Category Button for selecting specific category like All, In Progress or Completed
-
         @Composable
         fun categoryButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
             val isSelected = selectedCategory == text
@@ -590,9 +589,22 @@ class HomeScreen : ComponentActivity() {
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = "22°", fontFamily = FontFamily(
-                                Font(R.font.roboto_light, FontWeight.Normal)
-                            ), fontSize = 42.sp, color = Color.Gray
+                            text = "22",
+                            fontFamily = FontFamily(Font(R.font.roboto_light)),
+                            fontSize = 42.sp,
+                            color = Color.DarkGray,
+                            fontWeight = FontWeight.Light
+                        )
+                        Text(
+                            text = "°",
+                            fontFamily = FontFamily(Font(R.font.roboto_light)),
+                            fontSize = 30.sp,
+                            color = Color.DarkGray,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .align(Alignment.Top)
+                                .padding(top = 6.dp)
                         )
                     }
 
