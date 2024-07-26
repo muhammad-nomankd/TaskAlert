@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable("profile"){
-                    ProfileScreen().ProfileContent(navControler = navController)
+                    ProfileScreen().ProfileContent(navController)
                 }
                 composable(
                     "createTask?taskId={taskId}&taskTitle={taskTitle}&taskDescription={taskDescription}&startDate={startDate}&endDate={endDate}&startTime={startTime}&endTime={endTime}&priority={priority}",

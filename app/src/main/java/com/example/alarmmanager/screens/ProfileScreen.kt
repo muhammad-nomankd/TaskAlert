@@ -53,6 +53,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.alarmmanager.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -60,7 +61,6 @@ import kotlinx.coroutines.launch
 class ProfileScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             ProfileContent(navControler = NavController(LocalContext.current))
         }
@@ -73,7 +73,7 @@ class ProfileScreen : ComponentActivity() {
         var userEmail by rememberSaveable { mutableStateOf("") }
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
         var context = LocalContext.current
-        var firestore = Firebase.firestore
+        var firestore = FirebaseFirestore.getInstance()
         var userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         val coroutinescope = rememberCoroutineScope()
         var isLoading by rememberSaveable { mutableStateOf(false) }

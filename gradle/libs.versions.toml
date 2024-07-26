@@ -20,6 +20,7 @@ firebaseAuth = "23.0.0"
 firebaseFirestoreKtx = "25.0.0"
 lifecycleRuntimeKtxVersion = "2.8.3"
 lifecycleViewmodelKtx = "2.8.3"
+loggingInterceptor = "4.9.0'"
 material = "1.6.8"
 navigationRuntimeKtx = "2.7.7"
 navigationCompose = "2.7.7"
@@ -62,6 +63,7 @@ androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navig
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterGson" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
