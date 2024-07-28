@@ -16,6 +16,7 @@ import androidx.navigation.navArgument
 import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.screens.CreatTask
 import com.example.alarmmanager.screens.HomeScreen
+import com.example.alarmmanager.screens.LocationDetailScreen
 import com.example.alarmmanager.screens.ProfileScreen
 import com.example.alarmmanager.screens.TaskListScreen
 import com.example.alarmmanager.viewmodels.AuthViewModel
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") { HomeScreen().HomeScreenUi(navController, this@MainActivity) }
+                composable("locationDetailScreen"){LocationDetailScreen().LocationDetailScreenContent()}
                 composable("signup") {
                     SignUp(
                         viewModel = AuthViewModel(AuthRepository()),

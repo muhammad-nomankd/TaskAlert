@@ -12,6 +12,7 @@
     <string name="title_activity_home_screen">HomeScreen</string>
     <string name="title_activity_creat_task">CreatTask</string>
     <string name="title_activity_task_detail_screen">TaskDetailScreen</string>
+    <string name="title_activity_location_detail_screen">LocationDetailScreen</string>
 
 
 </resources>

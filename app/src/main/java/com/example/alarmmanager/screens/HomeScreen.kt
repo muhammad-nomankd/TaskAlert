@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -77,12 +77,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
-import com.example.alarmmanager.viewmodels.LocationViewModel
 import com.example.alarmmanager.viewmodels.WeatherViewModel
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -108,6 +105,7 @@ class HomeScreen : ComponentActivity() {
         var selectedCategoryState by remember { mutableStateOf("All") }
         val firestore = FirebaseFirestore.getInstance()
         val viewmodel: GetTaskViewModel = viewModel()
+        val weatherViewModel: WeatherViewModel = viewModel()
         val tasks by viewmodel.filteredTasks.observeAsState(emptyList())
         val nonfilterTasks by viewmodel.tasksForUpCommingCategory.collectAsState()
         var showPopUp by rememberSaveable { mutableStateOf(false) }
@@ -115,6 +113,12 @@ class HomeScreen : ComponentActivity() {
         var taskStatus by rememberSaveable { mutableStateOf("") }
         var deleteTask by rememberSaveable { mutableStateOf(false) }
         var isLoading by rememberSaveable { mutableStateOf(false) }
+        var selectedWeatherLocation by rememberSaveable { mutableStateOf("") }
+        val currentTemprature by weatherViewModel.temperature.observeAsState()
+        val currentWeatherIcon by weatherViewModel.weatherIcon.observeAsState()
+        val currentWeatherDescription by weatherViewModel.weatherDescription.observeAsState()
+        val currentHumidity by weatherViewModel.weatherHumidity.observeAsState()
+        var currentWindSpeed by rememberSaveable { mutableStateOf("") }
 
         // Getting User Detail from FireStore
         LaunchedEffect(Unit) {
@@ -134,6 +138,26 @@ class HomeScreen : ComponentActivity() {
 
                 }
 
+            // Fetch tasks for UpComming Category
+            viewmodel.filterTasksForUpCommingCategory("In Progress and Pending")
+
+            // Fetching Weather Location and data from FireStore
+            firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
+                .collection("location")
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    for (document in querySnapshot.documents) {
+                        selectedWeatherLocation = document.getString("location") ?: ""
+                    }
+                    if (selectedWeatherLocation.isNotBlank()) {
+                        weatherViewModel.fetchWeather(selectedWeatherLocation)
+                        Log.d("Weather1", WeatherViewModel().temperature.value.toString())
+                    } else {
+                        Log.e("Weather Error", "Selected weather location is blank")
+                    }
+                }
+
+
         }
 
         // Getting filtered Tasks based on selected Category Button
@@ -142,9 +166,7 @@ class HomeScreen : ComponentActivity() {
         }
 
         LaunchedEffect(Unit) {
-            viewmodel.filterTasksForUpCommingCategory("In Progress and Pending")
-            WeatherViewModel().fetchWeather("London Lakes")
-            LocationViewModel().fetchCities("e6844bc411msh69a178d35f2fabbp1e01fbjsnc9a755db3e73", "islamabad")
+
 
         }
         //Delete task logic
@@ -577,36 +599,42 @@ class HomeScreen : ComponentActivity() {
                             },
                         contentScale = ContentScale.Fit
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.weather_icon),
-                            contentDescription = "weather icon",
-                            modifier = Modifier
-                                .size(50.dp)
-                                .padding(bottom = 6.dp)
-                        )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                        Text(
-                            text = "22",
-                            fontFamily = FontFamily(Font(R.font.roboto_light)),
-                            fontSize = 42.sp,
-                            color = Color.DarkGray,
-                            fontWeight = FontWeight.Light
-                        )
-                        Text(
-                            text = "°",
-                            fontFamily = FontFamily(Font(R.font.roboto_light)),
-                            fontSize = 30.sp,
-                            color = Color.DarkGray,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .align(Alignment.Top)
-                                .padding(top = 6.dp)
-                        )
+                        Text(text = selectedWeatherLocation.ifEmpty { "Loading..." }, fontSize = 16.sp, color = Color.DarkGray)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.weather_icon),
+                                contentDescription = "weather icon",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .padding(bottom = 6.dp)
+                                    .clickable {
+                                        navController.navigate("locationDetailScreen")
+                                    }
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = if (currentTemprature !=null)  "${currentTemprature!!.toInt()}°" else "Loading...",
+                                fontFamily = if(currentTemprature !=null) FontFamily(Font(R.font.roboto_light)) else FontFamily.Default,
+                                fontSize = if (currentTemprature !=null)42.sp else 12.sp,
+                                color = Color.DarkGray,
+                                fontWeight = FontWeight.Light
+                            )
+
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(text = currentWeatherDescription?:"Loading...", fontSize = 12.sp, color = Color.Gray)
+                        Text(text = "Humidity ${currentHumidity?:""}%", fontSize = 12.sp, color = Color.Gray)
                     }
+
 
 
                 }
