@@ -85,11 +85,10 @@ dependencies {
     implementation (libs.androidx.material)
     implementation (libs.ui.tooling.preview)
     implementation (libs.firebase.auth.ktx)
-    implementation (libs.accompanist.insets)
     implementation(libs.coil.compose)
     implementation (libs.converter.gson)
     implementation (libs.retrofit)
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation(libs.logging.interceptor.v4120)
 
 
 

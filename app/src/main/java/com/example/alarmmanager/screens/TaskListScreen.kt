@@ -307,7 +307,7 @@ class TaskListScreen : ComponentActivity() {
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                items(if (refreshtaskforday) filteredTasksForDay else filteredTasksForMonth) { task ->
+                items(if (refreshtaskforday) filteredTasksForDay else filteredTasksForMonth, key = { it.taskId }) { task ->
                     TaskItem(task, longClick = {
                         currenttask = task.taskId
                         showPopUp = true

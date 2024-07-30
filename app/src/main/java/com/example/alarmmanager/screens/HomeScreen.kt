@@ -118,7 +118,7 @@ class HomeScreen : ComponentActivity() {
         val currentWeatherIcon by weatherViewModel.weatherIcon.observeAsState()
         val currentWeatherDescription by weatherViewModel.weatherDescription.observeAsState()
         val currentHumidity by weatherViewModel.weatherHumidity.observeAsState()
-        var currentWindSpeed by rememberSaveable { mutableStateOf("") }
+
 
         // Getting User Detail from FireStore
         LaunchedEffect(Unit) {
@@ -151,7 +151,6 @@ class HomeScreen : ComponentActivity() {
                     }
                     if (selectedWeatherLocation.isNotBlank()) {
                         weatherViewModel.fetchWeather(selectedWeatherLocation)
-                        Log.d("Weather1", WeatherViewModel().temperature.value.toString())
                     } else {
                         Log.e("Weather Error", "Selected weather location is blank")
                     }
@@ -586,55 +585,77 @@ class HomeScreen : ComponentActivity() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
 
-
-                    Image(
-                        painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
-                        contentDescription = "Profile Image",
-                        Modifier
-                            .shadow(0.1.dp, CircleShape)
-                            .clip(CircleShape)
-                            .size(48.dp)
-                            .clickable {
-                                navController.navigate("profile")
-                            },
-                        contentScale = ContentScale.Fit
-                    )
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                        Text(text = selectedWeatherLocation.ifEmpty { "Loading..." }, fontSize = 16.sp, color = Color.DarkGray)
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                painter = painterResource(id = R.drawable.weather_icon),
-                                contentDescription = "weather icon",
+                    Box(modifier = Modifier
+                        .clickable {
+                            navController.navigate("profile")
+                        }) {
+                        Image(
+                            painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
+                            contentDescription = "Profile Image",
+                            Modifier
+                                .shadow(0.1.dp, CircleShape)
+                                .clip(CircleShape)
+                                .size(48.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                        // Show badge if user name is empty
+                        if (userName.isEmpty()) {
+                            Box(
                                 modifier = Modifier
-                                    .size(50.dp)
-                                    .padding(bottom = 6.dp)
-                                    .clickable {
-                                        navController.navigate("locationDetailScreen")
-                                    }
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Gray)
+                                    .align(Alignment.BottomEnd)
                             )
+                        }
+                    }
+                    if (selectedWeatherLocation.isEmpty()) {
+                        Text(
+                            text = "Select Location to view weather.",
+                            modifier = Modifier.clickable { navController.navigate("locationDetailScreen") })
+                    } else {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                            Text(
+                                text = selectedWeatherLocation.ifEmpty { "Loading..." },
+                                fontSize = 16.sp,
+                                color = Color.DarkGray,
+                                modifier = Modifier
+                                    .clickable { navController.navigate("locationDetailScreen") }
+
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+
+
+
+
 
                             Spacer(modifier = Modifier.width(8.dp))
 
                             Text(
-                                text = if (currentTemprature !=null)  "${currentTemprature!!.toInt()}°" else "Loading...",
-                                fontFamily = if(currentTemprature !=null) FontFamily(Font(R.font.roboto_light)) else FontFamily.Default,
-                                fontSize = if (currentTemprature !=null)42.sp else 12.sp,
+                                text = if (currentTemprature != null) "${currentTemprature!!.toInt()}°" else "Loading...",
+                                fontFamily = if (currentTemprature != null) FontFamily(Font(R.font.roboto_light)) else FontFamily.Default,
+                                fontSize = if (currentTemprature != null) 42.sp else 12.sp,
                                 color = Color.DarkGray,
                                 fontWeight = FontWeight.Light
                             )
 
+
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = currentWeatherDescription ?: "Loading...",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = "Humidity ${currentHumidity ?: ""}%",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
                         }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(text = currentWeatherDescription?:"Loading...", fontSize = 12.sp, color = Color.Gray)
-                        Text(text = "Humidity ${currentHumidity?:""}%", fontSize = 12.sp, color = Color.Gray)
                     }
-
 
 
                 }
@@ -681,7 +702,7 @@ class HomeScreen : ComponentActivity() {
                         .fillMaxWidth()
                         .padding(start = 32.dp, end = 32.dp)
                 ) {
-                    items(tasks) { task ->
+                    items(tasks, key = { it.taskId }) { task ->
                         taskItem(task, longClick = {
                             currenttask = task.taskId
                             showPopUp = true

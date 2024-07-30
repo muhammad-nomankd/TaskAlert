@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") { HomeScreen().HomeScreenUi(navController, this@MainActivity) }
-                composable("locationDetailScreen"){LocationDetailScreen().LocationDetailScreenContent()}
+                composable("locationDetailScreen"){LocationDetailScreen().LocationDetailScreenContent(navController)}
                 composable("signup") {
                     SignUp(
                         viewModel = AuthViewModel(AuthRepository()),

@@ -29,11 +29,12 @@ class WeatherViewModel : ViewModel() {
             try {
                 val weatherResponse = RetroFitInstance.api.getWeather(city, apiKey)
                 _temperature.value = weatherResponse.main.temp
-                _weatherIcon.value = weatherResponse.weather[0].icon
+                _weatherIcon.value = "https://openweathermap.org/img/wn/${weatherResponse.weather.firstOrNull()?.icon}@2x.png"
                 _weatherDescription.value = weatherResponse.weather[0].description
                 _weatherHumidity.value = weatherResponse.main.humidity
 
                 Log.d("API Response", "Temperature: ${weatherDescription.value}")
+                Log.d("API Response", "Weather Icon: ${weatherIcon.value}")
                 Log.d("API Response", "Response: $weatherResponse")
             } catch (e: retrofit2.HttpException) {
                 Log.e("API Error", "HTTP error: ${e.message()}")

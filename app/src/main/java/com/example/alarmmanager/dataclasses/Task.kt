@@ -1,7 +1,9 @@
 package com.example.alarmmanager.dataclasses
+import androidx.compose.runtime.Immutable
 
+@Immutable
 data class Task(
-    val taskId: String ="",
+    val taskId: String = "",
     val title: String = "",
     val description: String = "",
     val startDate: String = "",
