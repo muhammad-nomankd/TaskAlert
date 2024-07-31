@@ -132,10 +132,8 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
         ) {
             if (isloading.value == true) {
                 CircularProgressIndicator(
-                    strokeWidth = 2.dp,
+                    strokeWidth = 1.dp,
                     modifier = Modifier
-                        .height(32.dp)
-                        .width(32.dp)
                         .align(alignment = Alignment.CenterHorizontally), color = Color.Gray
                 )
             }
