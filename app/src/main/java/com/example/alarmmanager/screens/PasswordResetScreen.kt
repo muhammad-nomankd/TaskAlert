@@ -23,9 +23,11 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +47,7 @@ import com.example.alarmmanager.R
 import com.example.alarmmanager.repositories.ResetPasswordRepository
 import com.google.firebase.firestore.FirebaseFirestore
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.FROYO)
 @Composable
 fun PasswordResetScreen(context: Context, navController: NavController) {
@@ -53,15 +56,12 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
         mutableStateOf(false)
     }
     val scrollstate = rememberScrollState()
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = colorResource(id = R.color.custom_white))
-    ) {
+
         Column(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxSize()
+                .background(color = colorResource(id = R.color.custom_white))
                 .verticalScroll(scrollstate),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -88,13 +88,17 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
                     Modifier
                         .fillMaxWidth()
                         .padding(end = 16.dp, start = 16.dp),
-                    label = { Text("username") },
+                    label = { Text("email") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Email, contentDescription = null)
                     },
                     shape = RoundedCornerShape(16.dp),
-                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black)
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = colorResource(id = R.color.light_pink),
+                        cursorColor = colorResource(id = R.color.button_color)
+                    ),
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.DarkGray, fontSize = 18.sp)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -162,10 +166,9 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
             }
         }
 
-    }
+
 
 }
-
 
 fun checkUser(email: String): Boolean {
     var value = false
