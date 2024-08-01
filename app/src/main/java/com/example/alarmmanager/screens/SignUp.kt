@@ -1,8 +1,8 @@
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,11 +51,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ContentInfoCompat.Flags
 import androidx.navigation.NavController
 import com.example.alarmmanager.R
 import com.example.alarmmanager.activities.MainActivity
-import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.viewmodels.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -86,19 +84,27 @@ fun SignUp(
                 context.startActivity(intent)
                 Toast.makeText(
                     context,
-                    "Welcome ${FirebaseAuth.getInstance().currentUser?.displayName ?: FirebaseAuth.getInstance().currentUser?.email?.substringBefore("@")}",
+                    "Welcome ${
+                        FirebaseAuth.getInstance().currentUser?.displayName ?: FirebaseAuth.getInstance().currentUser?.email?.substringBefore(
+                            "@"
+                        )
+                    }",
                     Toast.LENGTH_LONG
                 ).show()
             }, onError = {
                 isLoading.value = false
-                Toast.makeText(context,"Google authentication Failed Enter a valid email and ", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    "Google authentication Failed Enter a valid email and ",
+                    Toast.LENGTH_LONG
+                ).show()
             })
         } else {
             isLoading.value = false
-            Toast.makeText(context, "Google Sign-In failed. Please try again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Google Sign-In failed. Please try again.", Toast.LENGTH_LONG)
+                .show()
         }
     }
-
 
 
     val textColor = TextFieldDefaults.outlinedTextFieldColors(
@@ -186,6 +192,8 @@ fun SignUp(
                         .clickable {
                             try {
                                 navController.navigate("ResetPassword")
+                                Log.d("Navigation", "Current route: ${navController.currentBackStackEntry?.destination?.route}")
+
                             } catch (E: Exception) {
                                 E.printStackTrace()
                             }
@@ -214,7 +222,9 @@ fun SignUp(
                                 context,
                                 "Welcome ${
                                     if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
-                                    else FirebaseAuth.getInstance().currentUser?.email?.substringBefore("@")
+                                    else FirebaseAuth.getInstance().currentUser?.email?.substringBefore(
+                                        "@"
+                                    )
                                 }",
                                 Toast.LENGTH_SHORT
                             )
@@ -227,7 +237,6 @@ fun SignUp(
                                 Toast.LENGTH_SHORT
                             ).show()
                         }, context, navController)
-
                     } else {
                         Toast.makeText(
                             context,

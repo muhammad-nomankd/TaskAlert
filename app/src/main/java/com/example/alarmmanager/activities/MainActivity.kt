@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +18,7 @@ import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.screens.CreatTask
 import com.example.alarmmanager.screens.HomeScreen
 import com.example.alarmmanager.screens.LocationDetailScreen
+import com.example.alarmmanager.screens.PasswordResetScreen
 import com.example.alarmmanager.screens.ProfileScreen
 import com.example.alarmmanager.screens.TaskListScreen
 import com.example.alarmmanager.viewmodels.AuthViewModel
@@ -31,6 +33,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") { HomeScreen().HomeScreenUi(navController, this@MainActivity) }
+                composable("ResetPassword") { PasswordResetScreen(context = LocalContext.current, navController) }
                 composable("locationDetailScreen"){LocationDetailScreen().LocationDetailScreenContent(navController)}
                 composable("signup") {
                     SignUp(

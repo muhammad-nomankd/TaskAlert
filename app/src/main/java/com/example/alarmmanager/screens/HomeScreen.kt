@@ -598,7 +598,7 @@ class HomeScreen : ComponentActivity() {
                                 .size(48.dp),
                             contentScale = ContentScale.Fit
                         )
-                        // Show badge if user name is empty
+                        // Show badge if user name is empty show a dot on profile icon
                         if (userName.isEmpty()) {
                             Box(
                                 modifier = Modifier
