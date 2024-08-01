@@ -38,6 +38,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -596,8 +597,9 @@ class HomeScreen : ComponentActivity() {
                                 .shadow(0.1.dp, CircleShape)
                                 .clip(CircleShape)
                                 .size(48.dp),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.Crop
                         )
+
                         // Show badge if user name is empty show a dot on profile icon
                         if (userName.isEmpty()) {
                             Box(

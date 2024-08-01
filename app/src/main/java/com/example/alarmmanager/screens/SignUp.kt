@@ -7,7 +7,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -108,235 +107,232 @@ fun SignUp(
 
 
     val textColor = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = colorResource(id = R.color.light_pink),
         unfocusedBorderColor = colorResource(id = R.color.light_pink),
         cursorColor = colorResource(id = R.color.button_color)
     )
-
-    Box(
+    Column(
         modifier = Modifier
+            .padding(16.dp)
             .fillMaxSize()
             .background(color = colorResource(id = R.color.custom_white))
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
+        Text(
+            text = "SignIn",
+            fontSize = 30.sp,
+            color = colorResource(id = R.color.black),
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Spacer(modifier = Modifier.height(64.dp))
+        OutlinedTextField(
+            textStyle = TextStyle(color = Color.DarkGray, fontSize = 18.sp),
+            shape = RoundedCornerShape(16.dp),
+            colors = textColor,
+            value = email,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Email
+            ),
+            onValueChange = {
+                email = it
+                mailerror = if (it.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(it)
+                        .matches()
+                ) "Enter a valid Email address." else null
+            },
+            label = { Text("username") }, modifier = Modifier.fillMaxWidth(),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Email, contentDescription = null
+                )
+            },
+        )
+        mailerror?.let {
+            Text(text = it, fontSize = 12.sp, color = Color.Red)
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedTextField(
+            shape = RoundedCornerShape(16.dp),
+            value = password,
+            colors = textColor,
+            textStyle = TextStyle(color = Color.DarkGray, fontSize = 18.sp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password
+            ),
+            onValueChange = {
+                password = it
+                passworderror = if (it.isEmpty()) "Enter Password." else null
+            },
+            label = { Text("password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Lock, contentDescription = null
+                )
+            })
+        passworderror?.let {
+            Text(text = it, fontSize = 12.sp, color = Color.Red)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Text(
+                text = "Forgot Password.",
+                color = Color.DarkGray,
+                textAlign = TextAlign.End,
+                modifier = Modifier
+                    .clickable {
+                        try {
+                            navController.navigate("ResetPassword")
+                            Log.d(
+                                "Navigation",
+                                "Current route: ${navController.currentBackStackEntry?.destination?.route}"
+                            )
+
+                        } catch (E: Exception) {
+                            E.printStackTrace()
+                        }
+                    },
+                fontSize = 12.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_color)),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
+            onClick = {
+                if (password.isNotEmpty() && email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(
+                        email
+                    ).matches()
+                ) {
+                    isLoading.value = true
+                    viewModel.signin(email, password, onSuccess = {
+                        val intent1 = Intent(context, MainActivity::class.java).apply {
+                            flags =
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        context.startActivity(intent1)
+                        Toast.makeText(
+                            context,
+                            "Welcome ${
+                                if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
+                                else FirebaseAuth.getInstance().currentUser?.email?.substringBefore(
+                                    "@"
+                                )
+                            }",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }, onError = {
+                        isLoading.value = false
+                        Toast.makeText(
+                            context,
+                            "Authentication failed Enter a valid email and .",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }, context, navController)
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Please make sure all fields are correctly filled.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@Button
+                }
+
+            },
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxSize()
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .height(55.dp),
+            shape = RoundedCornerShape(16.dp),
         ) {
             Text(
                 text = "SignIn",
-                fontSize = 30.sp,
-                color = colorResource(id = R.color.black),
-                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
                 style = MaterialTheme.typography.bodyLarge
             )
-            Spacer(modifier = Modifier.height(64.dp))
-            OutlinedTextField(
-                textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
-                shape = RoundedCornerShape(16.dp),
-                colors = textColor,
-                value = email,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Email
-                ),
-                onValueChange = {
-                    email = it
-                    mailerror = if (it.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(it)
-                            .matches()
-                    ) "Enter a valid Email address." else null
-                },
-                label = { Text("username") }, modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Email, contentDescription = null
-                    )
-                },
-            )
-            mailerror?.let {
-                Text(text = it, fontSize = 12.sp, color = Color.Red)
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            OutlinedTextField(
-                shape = RoundedCornerShape(16.dp),
-                value = password,
-                colors = textColor,
-                textStyle = TextStyle(fontSize = 18.sp),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Password
-                ),
-                onValueChange = {
-                    password = it
-                    passworderror = if (it.isEmpty()) "Enter Password." else null
-                },
-                label = { Text("password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock, contentDescription = null
-                    )
-                })
-            passworderror?.let {
-                Text(text = it, fontSize = 12.sp, color = Color.Red)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Text(
-                    text = "Forgot Password.",
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier
-                        .clickable {
-                            try {
-                                navController.navigate("ResetPassword")
-                                Log.d("Navigation", "Current route: ${navController.currentBackStackEntry?.destination?.route}")
-
-                            } catch (E: Exception) {
-                                E.printStackTrace()
-                            }
-                        },
-                    fontSize = 12.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_color)),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-                onClick = {
-                    if (password.isNotEmpty() && email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(
-                            email
-                        ).matches()
-                    ) {
-                        isLoading.value = true
-                        viewModel.signin(email, password, onSuccess = {
-                            val intent = Intent(context, MainActivity::class.java).apply {
-                                flags =
-                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            }
-                            context.startActivity(intent)
-                            Toast.makeText(
-                                context,
-                                "Welcome ${
-                                    if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
-                                    else FirebaseAuth.getInstance().currentUser?.email?.substringBefore(
-                                        "@"
-                                    )
-                                }",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        }, onError = {
-                            isLoading.value = false
-                            Toast.makeText(
-                                context,
-                                "Authentication failed Enter a valid email and .",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }, context, navController)
-                    } else {
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "Or continue with",
+            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                isLoading.value = true
+                viewModel.googleSignIn(
+                    context,
+                    googleSignInLauncher,
+                    intent,
+                    onSuccess = {
+                        val intentn = Intent(context, MainActivity::class.java).apply {
+                            flags =
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        context.startActivity(intentn)
                         Toast.makeText(
                             context,
-                            "Please make sure all fields are correctly filled.",
+                            "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
                             Toast.LENGTH_LONG
                         ).show()
-                        return@Button
-                    }
-
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Text(
-                    text = "SignIn",
-                    fontSize = 18.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                text = "Or continue with",
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    isLoading.value = true
-                    viewModel.googleSignIn(
-                        context,
-                        googleSignInLauncher,
-                        intent,
-                        onSuccess = {
-                            val intentn = Intent(context, MainActivity::class.java).apply {
-                                flags =
-                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            }
-                            context.startActivity(intentn)
-                            Toast.makeText(
-                                context,
-                                "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        },
-                        onError = {
-                            Toast.makeText(
-                                context,
-                                "Sign in failed please try again",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        })
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.gsi_bckg)),
-                shape = RoundedCornerShape(16.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.google),
-                        contentDescription = "Google Sign-In",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "SignIn with Google",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }
-
-        }
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
+                    },
+                    onError = {
+                        Toast.makeText(
+                            context,
+                            "Sign in failed please try again",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    })
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.gsi_bckg)),
+            shape = RoundedCornerShape(16.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
-            if (isLoading.value) {
-                CircularProgressIndicator(
-                    strokeWidth = 1.dp,
-                    modifier = Modifier
-                        .align(alignment = Alignment.CenterHorizontally),
-                    color = Color.Gray
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .padding(4.dp)
+                    .fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.google),
+                    contentDescription = "Google Sign-In",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "SignIn with Google",
+                    color = Color.Black,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
                 )
             }
+        }
+
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.Start
+    ) {
+        if (isLoading.value) {
+            CircularProgressIndicator(
+                strokeWidth = 1.dp,
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally),
+                color = Color.Gray
+            )
         }
     }
+
 }

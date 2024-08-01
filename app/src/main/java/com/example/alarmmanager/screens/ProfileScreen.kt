@@ -1,21 +1,28 @@
 package com.example.alarmmanager.screens
 
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,6 +36,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -46,7 +54,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -55,14 +65,18 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.alarmmanager.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class ProfileScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
         setContent {
             ProfileContent(navControler = NavController(LocalContext.current))
         }
@@ -84,7 +98,7 @@ class ProfileScreen : ComponentActivity() {
         var isNameUpdated by rememberSaveable { mutableStateOf(false) }
 
 
-        LaunchedEffect(Unit,isNameUpdated) {
+        LaunchedEffect(Unit, isNameUpdated) {
             isLoading = true
             firestore.collection("User").document(userId)
                 .get().addOnSuccessListener { document ->
@@ -102,39 +116,115 @@ class ProfileScreen : ComponentActivity() {
 
 
         }
+
+        val imagePickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+            onResult = { uri: Uri? ->
+                uri?.let {
+                    coroutinescope.launch {
+                        try {
+                            isLoading = true
+                            val downloadUrl = uploadImageToFirestore(uri, userId, context)
+                            if (downloadUrl.isNotEmpty()) {
+                                profileImageUrl = downloadUrl
+                                firestore.collection("User").document(userId)
+                                    .update("imageUrl", downloadUrl)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(
+                                            context,
+                                            "Image uploaded successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        isLoading = false
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(
+                                            context,
+                                            "Image upload failed: ${it.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        isLoading = false
+                                    }
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                context,
+                                "Image upload failed: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            isLoading = false
+                        }
+
+                    }
+                }
+            })
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Color.Gray, strokeWidth = 1.dp)
             }
+
         } else {
             Column(
-                verticalArrangement = Arrangement.Top, modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+               modifier = Modifier
+                   .fillMaxSize()
+                   .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "back arrow",
+                Row(
                     modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(top = 32.dp, start = 18.dp)
-                        .clickable { navControler.navigateUp() })
+                        .fillMaxWidth()
+                        .padding(top = 18.dp, start = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "back arrow",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { navControler.navigateUp() })
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Profile",
+                        fontSize = 20.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color.LightGray)
+                    .height(0.5.dp))
+
 
                 Spacer(modifier = Modifier.height(32.dp))
+                Box(modifier = Modifier.size(130.dp)){
+                    Image(
+                        painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
+                        contentDescription = "profile image",
+                        modifier = Modifier
+                            .shadow(0.5.dp, CircleShape)
+                            .clip(CircleShape)
+                            .size(125.dp)
+                            .clickable {
+                                imagePickerLauncher.launch("image/*")
+                            },
+                        contentScale = ContentScale.Crop
+                    )
+                Box(modifier = Modifier
+                    .size(40.dp)
+                    .align(Alignment.BottomEnd)
+                    .clip(CircleShape)){
+                    Image(painter = painterResource(id = R.drawable.camera), contentDescription = "camera icon",
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .background(color = colorResource(id = R.color.lightBlue))
+                            .clickable { imagePickerLauncher.launch("image/*") })
+                }
+                 
+                }
 
-                Image(
-                    painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
-                    contentDescription = "profile image",
-                    modifier = Modifier
-                        .padding(start = 32.dp)
-                        .shadow(0.5.dp, CircleShape)
-                        .clip(CircleShape)
-                        .size(75.dp),
-                    contentScale = ContentScale.Crop
-                )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(48.dp))
                 if (userName.isEmpty() && isNameUpdated.not()) {
 
                     OutlinedTextField(
@@ -214,7 +304,7 @@ class ProfileScreen : ComponentActivity() {
 
                 } else {
                     Text(
-                        userName, fontSize = 16.sp, color = Color.Black, modifier = Modifier
+                        "Name: $userName", fontSize = 16.sp, color = Color.Black, modifier = Modifier
                             .align(Alignment.Start)
                             .padding(start = 32.dp)
                     )
@@ -264,5 +354,21 @@ class ProfileScreen : ComponentActivity() {
                 }
             }
         }
+    }
+
+    suspend fun uploadImageToFirestore(imageUri: Uri, userId: String, context: Context): String {
+        return try {
+            val storageReference = FirebaseStorage.getInstance().reference
+            val imageReference = storageReference.child("iamges/$userId/${UUID.randomUUID()}.jpg")
+            imageReference.putFile(imageUri).await()
+            imageReference.downloadUrl.await().toString()
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Image upload Failed: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
+            }
+            ""
+        }
+
     }
 }

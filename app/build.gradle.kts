@@ -89,6 +89,7 @@ dependencies {
     implementation (libs.converter.gson)
     implementation (libs.retrofit)
     implementation(libs.logging.interceptor.v4120)
+    implementation(libs.firebase.storage)
 
 
 
