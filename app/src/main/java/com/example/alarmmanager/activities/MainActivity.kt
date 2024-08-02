@@ -7,9 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -33,15 +31,30 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") { HomeScreen().HomeScreenUi(navController, this@MainActivity) }
-                composable("ResetPassword") { PasswordResetScreen(context = LocalContext.current, navController) }
-                composable("locationDetailScreen"){LocationDetailScreen().LocationDetailScreenContent(navController)}
+                composable("ResetPassword") {
+                    PasswordResetScreen(
+                        context = LocalContext.current,
+                        navController
+                    )
+                }
+                composable("SignIn") {
+                    SignUp(
+                        viewModel = AuthViewModel(AuthRepository()),
+                        navController = navController
+                    )
+                }
+                composable("locationDetailScreen") {
+                    LocationDetailScreen().LocationDetailScreenContent(
+                        navController
+                    )
+                }
                 composable("signup") {
                     SignUp(
                         viewModel = AuthViewModel(AuthRepository()),
                         navController = navController
                     )
                 }
-                composable("profile"){
+                composable("profile") {
                     ProfileScreen().ProfileContent(navController)
                 }
                 composable(

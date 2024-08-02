@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,8 +50,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -76,7 +77,7 @@ import java.util.UUID
 class ProfileScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         setContent {
             ProfileContent(navControler = NavController(LocalContext.current))
         }
@@ -96,6 +97,8 @@ class ProfileScreen : ComponentActivity() {
         var isLoading by rememberSaveable { mutableStateOf(false) }
         var name by rememberSaveable { mutableStateOf("") }
         var isNameUpdated by rememberSaveable { mutableStateOf(false) }
+        var profileImageLoader by rememberSaveable { mutableStateOf(false) }
+
 
 
         LaunchedEffect(Unit, isNameUpdated) {
@@ -111,10 +114,7 @@ class ProfileScreen : ComponentActivity() {
                 }.addOnFailureListener {
                     Toast.makeText(context, "Failed to get user details", Toast.LENGTH_SHORT).show()
                     isLoading = false
-
                 }
-
-
         }
 
         val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -123,13 +123,15 @@ class ProfileScreen : ComponentActivity() {
                 uri?.let {
                     coroutinescope.launch {
                         try {
-                            isLoading = true
+                            profileImageLoader = true
+                            profileImageUrl = ""
                             val downloadUrl = uploadImageToFirestore(uri, userId, context)
                             if (downloadUrl.isNotEmpty()) {
                                 profileImageUrl = downloadUrl
                                 firestore.collection("User").document(userId)
                                     .update("imageUrl", downloadUrl)
                                     .addOnSuccessListener {
+                                        profileImageLoader = false
                                         Toast.makeText(
                                             context,
                                             "Image uploaded successfully",
@@ -138,6 +140,7 @@ class ProfileScreen : ComponentActivity() {
                                         isLoading = false
                                     }
                                     .addOnFailureListener {
+                                        profileImageLoader = false
                                         Toast.makeText(
                                             context,
                                             "Image upload failed: ${it.message}",
@@ -158,16 +161,20 @@ class ProfileScreen : ComponentActivity() {
                     }
                 }
             })
+
+        // Loading UI
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Color.Gray, strokeWidth = 1.dp)
             }
 
         } else {
+            // Profile UI
             Column(
-               modifier = Modifier
-                   .fillMaxSize()
-                   .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
                     modifier = Modifier
@@ -190,37 +197,51 @@ class ProfileScreen : ComponentActivity() {
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = Color.LightGray)
-                    .height(0.5.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = Color.LightGray)
+                        .height(0.9.dp)
+                )
 
 
                 Spacer(modifier = Modifier.height(32.dp))
-                Box(modifier = Modifier.size(130.dp)){
+                Box(modifier = Modifier.size(150.dp)) {
                     Image(
-                        painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
+                        painter = rememberAsyncImagePainter(model = if (profileImageUrl.isNotEmpty()) profileImageUrl else R.drawable.person),
                         contentDescription = "profile image",
                         modifier = Modifier
-                            .shadow(0.5.dp, CircleShape)
+                            .fillMaxSize()
                             .clip(CircleShape)
-                            .size(125.dp)
-                            .clickable {
-                                imagePickerLauncher.launch("image/*")
-                            },
+                            .background(Color.LightGray),
                         contentScale = ContentScale.Crop
                     )
-                Box(modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.BottomEnd)
-                    .clip(CircleShape)){
-                    Image(painter = painterResource(id = R.drawable.camera), contentDescription = "camera icon",
+                    if (profileImageLoader) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(32.dp)
+                        ) {
+                            CircularProgressIndicator(color = Color.Gray, strokeWidth = 2.dp)
+                        }
+                    }
+                    Box(
                         modifier = Modifier
+                            .size(40.dp)
                             .align(Alignment.BottomEnd)
-                            .background(color = colorResource(id = R.color.lightBlue))
-                            .clickable { imagePickerLauncher.launch("image/*") })
-                }
-                 
+                            .clip(CircleShape)
+                            .background(color = colorResource(id = R.color.darkBlue))
+                            .padding(4.dp)
+                    ) {
+                        Image(painter = painterResource(id = R.drawable.camera),
+                            contentDescription = "camera icon",
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .fillMaxSize()
+                                .clickable { imagePickerLauncher.launch("image/*") })
+                    }
+
                 }
 
 
@@ -303,23 +324,54 @@ class ProfileScreen : ComponentActivity() {
 
 
                 } else {
-                    Text(
-                        "Name: $userName", fontSize = 16.sp, color = Color.Black, modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(start = 32.dp)
-                    )
+                    Box(modifier = Modifier.fillMaxWidth()){
+                    Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 32.dp)) {
+                        Image(painter = painterResource(id = R.drawable.person2), contentDescription = "name icon", modifier = Modifier
+                            .size(16.dp)
+                            .background(
+                                color = colorResource(
+                                    id = R.color.custom_white
+                                )
+                            ),
+                            colorFilter = ColorFilter.tint(Color.Gray))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(horizontalAlignment = Alignment.Start) {
+                            Text(text = "Name", color = Color.Gray, fontSize = 16.sp)
+                            Text(userName,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                    }
+
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .size(0.8.dp)
+                    .padding(start = 32.dp, end = 32.dp)
+                    .background(Color.LightGray))
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(modifier = Modifier.fillMaxWidth()){
+                    Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 32.dp)) {
+                        Image(painter = painterResource(id = R.drawable.email), contentDescription = "name icon", modifier = Modifier
+                            .size(16.dp),
+                            colorFilter = ColorFilter.tint(Color.Gray))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(horizontalAlignment = Alignment.Start) {
+                            Text(text = "Email", color = Color.Gray, fontSize = 16.sp)
+                            Text(userEmail,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                        }
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    userEmail, fontSize = 16.sp, color = Color.Black, modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(start = 32.dp)
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
+                Spacer(modifier = Modifier.weight(1f))
                 Button(
                     onClick = {
                         coroutinescope.launch {
@@ -343,10 +395,10 @@ class ProfileScreen : ComponentActivity() {
                     },
                     shape = RoundedCornerShape(16.dp),
                     elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
-                    colors = ButtonDefaults.buttonColors(colorResource(id = R.color.button_color)),
+                    colors = ButtonDefaults.buttonColors(Color.Red),
                     modifier = Modifier
-                        .wrapContentWidth()
                         .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 32.dp)
                 ) {
                     Text(
                         text = "Sign Out", fontSize = 16.sp
@@ -371,4 +423,5 @@ class ProfileScreen : ComponentActivity() {
         }
 
     }
+
 }

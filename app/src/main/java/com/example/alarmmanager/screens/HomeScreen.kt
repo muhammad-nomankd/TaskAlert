@@ -116,7 +116,6 @@ class HomeScreen : ComponentActivity() {
         var isLoading by rememberSaveable { mutableStateOf(false) }
         var selectedWeatherLocation by rememberSaveable { mutableStateOf("") }
         val currentTemprature by weatherViewModel.temperature.observeAsState()
-        val currentWeatherIcon by weatherViewModel.weatherIcon.observeAsState()
         val currentWeatherDescription by weatherViewModel.weatherDescription.observeAsState()
         val currentHumidity by weatherViewModel.weatherHumidity.observeAsState()
 
@@ -594,9 +593,8 @@ class HomeScreen : ComponentActivity() {
                             painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
                             contentDescription = "Profile Image",
                             Modifier
-                                .shadow(0.1.dp, CircleShape)
                                 .clip(CircleShape)
-                                .size(48.dp),
+                                .size(60.dp),
                             contentScale = ContentScale.Crop
                         )
 

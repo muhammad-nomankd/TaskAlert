@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -76,24 +79,28 @@ class LocationDetailScreen : ComponentActivity() {
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize()
                 .background(colorResource(id = R.color.custom_white))
-                .padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally
+            , horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(start = 18.dp, top = 18.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back",
                     modifier = Modifier
+                        .size(24.dp)
                         .clickable { navController.navigateUp() })
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = "Location Detail Screen",
                     color = Color.DarkGray,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     fontSize = 20.sp
                 )
-                Spacer(modifier = Modifier.weight(1f))
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .size(0.8.dp)
+                .background(Color.LightGray))
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(85.dp))
             Text(text = "Selected Location")
             Spacer(modifier = Modifier.height(16.dp))
             CityDropdownMenu(apiKey = apiKey)
@@ -122,8 +129,6 @@ class LocationDetailScreen : ComponentActivity() {
                 }
         }
         Column() {
-            val borderColor =
-
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded }, modifier = Modifier
