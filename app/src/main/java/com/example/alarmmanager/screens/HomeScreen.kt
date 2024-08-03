@@ -594,7 +594,8 @@ class HomeScreen : ComponentActivity() {
                             contentDescription = "Profile Image",
                             Modifier
                                 .clip(CircleShape)
-                                .size(60.dp),
+                                .size(60.dp)
+                                .background(Color.LightGray),
                             contentScale = ContentScale.Crop
                         )
 

@@ -8,7 +8,6 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.icu.util.Calendar
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -51,7 +50,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -112,15 +110,31 @@ class TaskListScreen : ComponentActivity() {
         var showPickerDialogue: Boolean by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current
         var refreshtaskforday by rememberSaveable { mutableStateOf(false) }
+        var isLoading by rememberSaveable { mutableStateOf(false) }
 
 
-       val coroutines = rememberCoroutineScope()
+        val coroutines = rememberCoroutineScope()
         coroutines.launch {
+            isLoading = true
             currentMonth = dateFormat.format(calendar.time)
             viewModel.fetchTaskForMonth(
                 calendar.get(Calendar.MONTH) + 1,
                 calendar.get(Calendar.YEAR)
             )
+            isLoading = false
+        }
+
+        LaunchedEffect(calendar.time) {
+            viewModel.fetchTaskForMonth(
+                calendar.get(Calendar.MONTH) + 1,
+                calendar.get(Calendar.YEAR)
+            )
+        }
+
+        if (isLoading){
+            Box(modifier = Modifier.fillMaxSize()){
+                CircularProgressIndicator( color = Color.Gray, strokeWidth = 2.dp)
+            }
         }
 
         fun deleteTask(taskId: String, status: String, context: Context) {
@@ -307,7 +321,9 @@ class TaskListScreen : ComponentActivity() {
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                items(if (refreshtaskforday) filteredTasksForDay else filteredTasksForMonth, key = { it.taskId }) { task ->
+                items(
+                    if (refreshtaskforday) filteredTasksForDay else filteredTasksForMonth,
+                    key = { it.taskId }) { task ->
                     TaskItem(task, longClick = {
                         currenttask = task.taskId
                         showPopUp = true
@@ -437,6 +453,7 @@ class TaskListScreen : ComponentActivity() {
             }
         }
     }
+
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
@@ -615,4 +632,5 @@ class TaskListScreen : ComponentActivity() {
             "invalid formatted time"
         }
     }
+
 }

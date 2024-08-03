@@ -241,18 +241,19 @@ class CreatTask : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally
         )
         {
-            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
             ) {
 
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Go back",
-                    tint = Color.Gray,
-                    modifier = Modifier.clickable {
-                        navController.navigateUp()
-                    })
-                Spacer(modifier = Modifier.weight(1f))
+                    tint = Color.DarkGray,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            navController.navigateUp()
+                        })
+                Spacer(modifier = Modifier.width(16.dp) )
                 Text(
                     text = if (taskid == null) "Create Task" else "Update Task",
                     style = MaterialTheme.typography.bodyLarge,
