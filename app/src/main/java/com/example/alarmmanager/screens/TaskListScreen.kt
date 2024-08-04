@@ -357,7 +357,8 @@ class TaskListScreen : ComponentActivity() {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Go back",
-                    tint = Color.Gray
+                    tint = Color.DarkGray,
+                    modifier = Modifier.size(24.dp)
                 )
             }
 

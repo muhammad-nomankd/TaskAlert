@@ -13,4 +13,12 @@ object RetroFitInstance {
             .build()
             .create(WeatherService::class.java)
     }
+    val forcastApi: WeatherService by lazy {
+        Retrofit.Builder()
+            .baseUrl(Base_Url)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WeatherService::class.java)
+    }
+
 }

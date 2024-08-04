@@ -77,6 +77,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
+import com.example.alarmmanager.dataclasses.Weather
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
 import com.example.alarmmanager.viewmodels.WeatherViewModel
 import com.google.firebase.auth.FirebaseAuth
