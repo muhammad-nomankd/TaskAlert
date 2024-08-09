@@ -26,9 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,7 +48,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -135,18 +132,18 @@ class LocationDetailScreen : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun CityDropdownMenu(apiKey: String, viewModel: LocationViewModel = viewModel()) {
-            var cityInput by remember { mutableStateOf("") }
-            var expanded by remember { mutableStateOf(false) }
-            val context = LocalContext.current
-            var currentlySelectedLocation by rememberSaveable { mutableStateOf("") }
-            val firestore = FirebaseFirestore.getInstance()
-            val forecastViewModel: WeatherViewModel = viewModel()
-            val forecasteIcon by forecastViewModel.weatherIconForForecaste.observeAsState()
-            val forecasteTempMin by forecastViewModel.weatherForecasteTempMin.observeAsState()
-            val forecasteTempMax by forecastViewModel.weatherForecasteTempMax.observeAsState()
-            val forecastePrec by forecastViewModel.weatherForecastePrecipitation.observeAsState()
-            var isLoading by rememberSaveable { mutableStateOf(false) }
-            val fiveDayWeatherList by forecastViewModel.fiveDaysWeatherList.observeAsState()
+        var cityInput by remember { mutableStateOf("") }
+        var expanded by remember { mutableStateOf(false) }
+        val context = LocalContext.current
+        var currentlySelectedLocation by rememberSaveable { mutableStateOf("") }
+        val firestore = FirebaseFirestore.getInstance()
+        val forecastViewModel: WeatherViewModel = viewModel()
+        val forecasteIcon by forecastViewModel.weatherIconForForecaste.observeAsState()
+        val forecasteTempMin by forecastViewModel.weatherForecasteTempMin.observeAsState()
+        val forecasteTempMax by forecastViewModel.weatherForecasteTempMax.observeAsState()
+        val forecastePrec by forecastViewModel.weatherForecastePrecipitation.observeAsState()
+        var isLoading by rememberSaveable { mutableStateOf(false) }
+        val fiveDayWeatherList by forecastViewModel.fiveDaysWeatherList.observeAsState()
 
 
         LaunchedEffect(Unit) {
@@ -260,30 +257,39 @@ class LocationDetailScreen : ComponentActivity() {
                 }
                 Spacer(modifier = Modifier.height(32.dp))
 
-                    Card (modifier = Modifier.padding(start = 12.dp, end = 32.dp, top = 8.dp, bottom = 32.dp), colors = CardDefaults.cardColors(
-                        containerColor = colorResource(id = R.color.task_color)),shape = RoundedCornerShape(16.dp)){
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Upcoming forecast of $currentlySelectedLocation",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontSize = 20.sp,
-                            color = Color.DarkGray,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(start = 12.dp).fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        fiveDayWeatherList?.forEachIndexed() { index,forecastItem ->
-
-                            val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                            val outputFormat = SimpleDateFormat("EEEE ha", Locale.getDefault()) // EEEE gives full day name
-                            val parsedDate = inputFormat.parse(forecastItem.dt_txt)
-                            val dayOfWeek = parsedDate?.let {
-                                if (index == 0) {
-                                    "Today"
-                                } else {
-                                    outputFormat.format(it)
-                                }
-                            } ?: forecastItem.dt_txt
+                Card(
+                    modifier = Modifier.padding(
+                        start = 12.dp,
+                        end = 32.dp,
+                        top = 8.dp,
+                        bottom = 32.dp
+                    ), colors = CardDefaults.cardColors(
+                        containerColor = colorResource(id = R.color.task_color)
+                    ), shape = RoundedCornerShape(16.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Upcoming forecast of $currentlySelectedLocation",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 20.sp,
+                        color = Color.DarkGray,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    fiveDayWeatherList?.forEachIndexed() { index, forecastItem ->
+                        val inputFormat =
+                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                        val outputFormat = SimpleDateFormat(
+                            "EEEE ha",
+                            Locale.getDefault()
+                        ) // EEEE gives full day name
+                        val parsedDate = inputFormat.parse(forecastItem.dt_txt)
+                        val dayOfWeek = parsedDate?.let {
+                            outputFormat.format(it)
+                        } ?: forecastItem.dt_txt
 
                         Row(
                             modifier = Modifier
@@ -296,7 +302,9 @@ class LocationDetailScreen : ComponentActivity() {
                                 text = dayOfWeek,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.DarkGray,
-                                modifier = Modifier.padding(start = 32.dp).weight(1.3f),
+                                modifier = Modifier
+                                    .padding(start = 32.dp)
+                                    .weight(1.3f),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Normal
                             )
@@ -305,21 +313,25 @@ class LocationDetailScreen : ComponentActivity() {
 
                             Row(Modifier.weight(1f)) {
                                 Image(
-                                    painter = painterResource(id = R.drawable.drop),
+                                    painter = painterResource(if (forecastItem.pop > 0.7) R.drawable.drop else if (forecastItem.pop > 0.3 && forecastItem.pop < 0.7) R.drawable.halffilleddrop else R.drawable.emptydrop),
                                     contentDescription = "chance of rain",
                                     Modifier.size(12.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(text = "${(forecastItem.pop* 100).toInt()}%", fontWeight = FontWeight.Normal)
+                                Text(
+                                    text = "${(forecastItem.pop * 100).toInt()}%",
+                                    fontWeight = FontWeight.Normal
+                                )
                             }
-
                             AsyncImage(
-                                model = "https://openweathermap.org/img/wn/${forecastItem.weather[0].icon}@2x.png".ifEmpty { R.drawable.drop },
+                                model = "https://openweathermap.org/img/wn/${forecastItem.weather[0].icon}@2x.png",
                                 contentDescription = "Weather Icon",
                                 modifier = Modifier.size(20.dp),
-                                colorFilter = ColorFilter.tint(Color.DarkGray)
+                                placeholder = painterResource(R.drawable.weather_icon), // Use anactual placeholder resource
+                                error = painterResource(R.drawable.cloudy) // Use an actual error resource
                             )
 
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "${forecastItem.main.temp_min.toInt()}°/${forecastItem.main.temp_max.toInt()}°",
                                 color = Color.DarkGray, fontWeight = FontWeight.Normal
