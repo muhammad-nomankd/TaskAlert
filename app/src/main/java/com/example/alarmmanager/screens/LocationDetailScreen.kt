@@ -25,6 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,6 +68,8 @@ import com.example.alarmmanager.viewmodels.LocationViewModel
 import com.example.alarmmanager.viewmodels.WeatherViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class LocationDetailScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,17 +135,19 @@ class LocationDetailScreen : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun CityDropdownMenu(apiKey: String, viewModel: LocationViewModel = viewModel()) {
-        var cityInput by remember { mutableStateOf("") }
-        var expanded by remember { mutableStateOf(false) }
-        val context = LocalContext.current
-        var currentlySelectedLocation by rememberSaveable { mutableStateOf("") }
-        val firestore = FirebaseFirestore.getInstance()
-        val forecastViewModel: WeatherViewModel = viewModel()
-        val forecasteIcon by forecastViewModel.weatherIconForForecaste.observeAsState()
-        val forecasteTempMin by forecastViewModel.weatherForecasteTempMin.observeAsState()
-        val forecasteTempMax by forecastViewModel.weatherForecasteTempMax.observeAsState()
-        val forecastePrec by forecastViewModel.weatherForecastePrecipitation.observeAsState()
-        var isLoading by rememberSaveable { mutableStateOf(false) }
+            var cityInput by remember { mutableStateOf("") }
+            var expanded by remember { mutableStateOf(false) }
+            val context = LocalContext.current
+            var currentlySelectedLocation by rememberSaveable { mutableStateOf("") }
+            val firestore = FirebaseFirestore.getInstance()
+            val forecastViewModel: WeatherViewModel = viewModel()
+            val forecasteIcon by forecastViewModel.weatherIconForForecaste.observeAsState()
+            val forecasteTempMin by forecastViewModel.weatherForecasteTempMin.observeAsState()
+            val forecasteTempMax by forecastViewModel.weatherForecasteTempMax.observeAsState()
+            val forecastePrec by forecastViewModel.weatherForecastePrecipitation.observeAsState()
+            var isLoading by rememberSaveable { mutableStateOf(false) }
+            val fiveDayWeatherList by forecastViewModel.fiveDaysWeatherList.observeAsState()
+
 
         LaunchedEffect(Unit) {
             isLoading = true
@@ -159,125 +167,172 @@ class LocationDetailScreen : ComponentActivity() {
                 }
             Log.d("temp", forecasteTempMin.toString())
         }
-        if (isLoading){
+        if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        }
-        else{
-        Column() {
+        } else {
+            Column() {
 
-            Text(
-                text = currentlySelectedLocation,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.DarkGray,
-                modifier = Modifier.padding(start = 32.dp),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }, modifier = Modifier
-                    .background(
-                        colorResource(id = R.color.custom_white),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .fillMaxWidth()
-            ) {
-                TextField(
-                    value = cityInput,
-                    onValueChange = {
-                        cityInput = it
-                        if (cityInput.isNotEmpty()) {
-                            viewModel.fetchCities(apiKey, cityInput)
-                            expanded = true
-                        }
-                    }, readOnly = false,
-                    label = {
-                        Text(text = "Change location..")
-                    },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color.Transparent,
-                        cursorColor = Color.DarkGray,
-                        focusedIndicatorColor = Color(0xFFDADADA),
-                        unfocusedIndicatorColor = Color(0xFFDADADA)
-                    ),
-                    textStyle = TextStyle(Color.DarkGray, fontSize = 16.sp)
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expanded, onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
-                ) {
-                    viewModel.cities.forEach {
-                        DropdownMenuItem(
-                            text = {
-                                androidx.wear.compose.material.Text(
-                                    text = "${it.name}, ${it.country}",
-                                    color = Color.DarkGray
-                                )
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    color = Color.White,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(8.dp),
-                            onClick = {
-                                expanded = false
-                                viewModel.saveUserLocation(
-                                    it.name,
-                                    "12345",
-                                    it.country,
-                                    context = context
-                                )
-                                currentlySelectedLocation = it.name
-                                cityInput = ""
-                                Toast.makeText(
-                                    context,
-                                    "Location changed to ${it.name} ${it.country}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            })
-                    }
-                }
-            }
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    text = "",
+                    text = currentlySelectedLocation,
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.DarkGray,
                     modifier = Modifier.padding(start = 32.dp),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium
                 )
-
-                Row {
-                    Image(
-                        painter = painterResource(id = R.drawable.email),
-                        contentDescription = "chance of rain"
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }, modifier = Modifier
+                        .background(
+                            colorResource(id = R.color.custom_white),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 32.dp, vertical = 8.dp)
+                        .fillMaxWidth()
+                ) {
+                    TextField(
+                        value = cityInput,
+                        onValueChange = {
+                            cityInput = it
+                            if (cityInput.isNotEmpty()) {
+                                viewModel.fetchCities(apiKey, cityInput)
+                                expanded = true
+                            }
+                        }, readOnly = false,
+                        label = {
+                            Text(text = "Change location..")
+                        },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color.Transparent,
+                            cursorColor = Color.DarkGray,
+                            focusedIndicatorColor = Color(0xFFDADADA),
+                            unfocusedIndicatorColor = Color(0xFFDADADA)
+                        ),
+                        textStyle = TextStyle(Color.DarkGray, fontSize = 16.sp)
                     )
-                    Text(text = "")
+
+                    ExposedDropdownMenu(
+                        expanded = expanded, onDismissRequest = { expanded = false },
+                        modifier = Modifier
+                            .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
+                    ) {
+                        viewModel.cities.forEach {
+                            DropdownMenuItem(
+                                text = {
+                                    androidx.wear.compose.material.Text(
+                                        text = "${it.name}, ${it.country}",
+                                        color = Color.DarkGray
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = Color.White,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(8.dp),
+                                onClick = {
+                                    expanded = false
+                                    viewModel.saveUserLocation(
+                                        it.name,
+                                        "12345",
+                                        it.country,
+                                        context = context
+                                    )
+                                    currentlySelectedLocation = it.name
+                                    cityInput = ""
+                                    Toast.makeText(
+                                        context,
+                                        "Location changed to ${it.name} ${it.country}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                })
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+
+                    Card (modifier = Modifier.padding(start = 12.dp, end = 32.dp, top = 8.dp, bottom = 32.dp), colors = CardDefaults.cardColors(
+                        containerColor = colorResource(id = R.color.task_color)),shape = RoundedCornerShape(16.dp)){
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Upcoming forecast of $currentlySelectedLocation",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontSize = 20.sp,
+                            color = Color.DarkGray,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(start = 12.dp).fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        fiveDayWeatherList?.forEachIndexed() { index,forecastItem ->
+
+                            val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            val outputFormat = SimpleDateFormat("EEEE ha", Locale.getDefault()) // EEEE gives full day name
+                            val parsedDate = inputFormat.parse(forecastItem.dt_txt)
+                            val dayOfWeek = parsedDate?.let {
+                                if (index == 0) {
+                                    "Today"
+                                } else {
+                                    outputFormat.format(it)
+                                }
+                            } ?: forecastItem.dt_txt
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, start = 8.dp, end = 32.dp),
+                            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = dayOfWeek,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.DarkGray,
+                                modifier = Modifier.padding(start = 32.dp).weight(1.3f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Row(Modifier.weight(1f)) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.drop),
+                                    contentDescription = "chance of rain",
+                                    Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(text = "${(forecastItem.pop* 100).toInt()}%", fontWeight = FontWeight.Normal)
+                            }
+
+                            AsyncImage(
+                                model = "https://openweathermap.org/img/wn/${forecastItem.weather[0].icon}@2x.png".ifEmpty { R.drawable.drop },
+                                contentDescription = "Weather Icon",
+                                modifier = Modifier.size(20.dp),
+                                colorFilter = ColorFilter.tint(Color.DarkGray)
+                            )
+
+                            Text(
+                                text = "${forecastItem.main.temp_min.toInt()}°/${forecastItem.main.temp_max.toInt()}°",
+                                color = Color.DarkGray, fontWeight = FontWeight.Normal
+                            )
+
+                        }
+                    }
+
+
                 }
 
-                AsyncImage(model = forecasteIcon, contentDescription = "Weather Icon", modifier = Modifier.size(20.dp), colorFilter = ColorFilter.tint(Color.Gray))
-
-                Text(text = "${forecasteTempMin}/${forecasteTempMax}", color = Color.DarkGray)
 
             }
-
-
         }
-            }
     }
 }

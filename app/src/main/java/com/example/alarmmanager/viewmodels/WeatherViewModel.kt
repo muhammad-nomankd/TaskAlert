@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.alarmmanager.dataclasses.ForecasteData
 import com.example.alarmmanager.dataclasses.ForecasteResponse
 import com.example.alarmmanager.weatherApi.RetroFitInstance
 import kotlinx.coroutines.launch
@@ -33,6 +34,9 @@ class WeatherViewModel : ViewModel() {
     private val _weatherForecasteTempMax = MutableLiveData<Int>()
     val weatherForecasteTempMax: LiveData<Int> = _weatherForecasteTempMax
 
+    private val _fiveDaysWeatherList = MutableLiveData<List<ForecasteData>>()
+    val fiveDaysWeatherList:LiveData<List<ForecasteData>> = _fiveDaysWeatherList
+
     private val apiKey = "d00134e85867c1394e1b58ef16362488"
 
     fun fetchWeather(city: String) {
@@ -60,7 +64,7 @@ class WeatherViewModel : ViewModel() {
               Log.d("forcast",forcastResponse.toString())
               _weatherForecasteTempMin.value = forcastResponse.list[0].main.temp_min.toInt()
               _weatherForecasteTempMax.value = forcastResponse.list[0].main.temp_max.toInt()
-
+              _fiveDaysWeatherList.value = forcastResponse.list
               Log.d("minimum tem",_weatherForecasteTempMin.value.toString())
 
           } catch (e:Exception){

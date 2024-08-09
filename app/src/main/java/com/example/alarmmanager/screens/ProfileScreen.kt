@@ -336,24 +336,25 @@ class ProfileScreen : ComponentActivity() {
                             colorFilter = ColorFilter.tint(Color.Gray))
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(horizontalAlignment = Alignment.Start) {
-                            Text(text = "Name", color = Color.Gray, fontSize = 16.sp)
+                            Text(text = "Name", color = Color.Gray, fontSize = 16.sp,style = MaterialTheme.typography.bodyLarge)
                             Text(userName,
                                 fontSize = 16.sp,
-                                color = Color.Black
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodyLarge
                             )
                         }
                     }
                     }
 
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Box(modifier = Modifier
                     .fillMaxWidth()
-                    .size(0.8.dp)
+                    .size(0.4.dp)
                     .padding(start = 32.dp, end = 32.dp)
                     .background(Color.LightGray))
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Box(modifier = Modifier.fillMaxWidth()){
                     Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 32.dp)) {
@@ -362,10 +363,11 @@ class ProfileScreen : ComponentActivity() {
                             colorFilter = ColorFilter.tint(Color.Gray))
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(horizontalAlignment = Alignment.Start) {
-                            Text(text = "Email", color = Color.Gray, fontSize = 16.sp)
+                            Text(text = "Email", color = Color.Gray, fontSize = 16.sp,style = MaterialTheme.typography.bodyLarge)
                             Text(userEmail,
                                 fontSize = 16.sp,
-                                color = Color.Black
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodyLarge
                             )
                         }
                     }
