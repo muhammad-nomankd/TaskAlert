@@ -1,5 +1,7 @@
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -203,44 +205,49 @@ fun SignUp(
             colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_color)),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
             onClick = {
-                if (password.isNotEmpty() && email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(
-                        email
-                    ).matches()
-                ) {
-                    isLoading.value = true
-                    viewModel.signin(email, password, onSuccess = {
-                        val intent1 = Intent(context, MainActivity::class.java).apply {
-                            flags =
-                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        }
-                        context.startActivity(intent1)
+                if (isNetworkAvailable(context)){
+                    if (password.isNotEmpty() && email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(
+                            email
+                        ).matches()
+                    ) {
+                        isLoading.value = true
+                        viewModel.signin(email, password, onSuccess = {
+                            val intent1 = Intent(context, MainActivity::class.java).apply {
+                                flags =
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            context.startActivity(intent1)
+                            Toast.makeText(
+                                context,
+                                "Welcome ${
+                                    if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
+                                    else FirebaseAuth.getInstance().currentUser?.email?.substringBefore(
+                                        "@"
+                                    )
+                                }",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }, onError = {
+                            isLoading.value = false
+                            Toast.makeText(
+                                context,
+                                "Authentication failed Enter a valid email and .",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }, context, navController)
+                    } else {
                         Toast.makeText(
                             context,
-                            "Welcome ${
-                                if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName
-                                else FirebaseAuth.getInstance().currentUser?.email?.substringBefore(
-                                    "@"
-                                )
-                            }",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }, onError = {
-                        isLoading.value = false
-                        Toast.makeText(
-                            context,
-                            "Authentication failed Enter a valid email and .",
-                            Toast.LENGTH_SHORT
+                            "Please make sure all fields are correctly filled.",
+                            Toast.LENGTH_LONG
                         ).show()
-                    }, context, navController)
-                } else {
-                    Toast.makeText(
-                        context,
-                        "Please make sure all fields are correctly filled.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return@Button
+                        return@Button
+                    }
+                }else {
+                    Toast.makeText(context,"Please connect to a network and try again",Toast.LENGTH_LONG).show()
                 }
+
 
             },
             modifier = Modifier
@@ -265,30 +272,35 @@ fun SignUp(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                isLoading.value = true
-                viewModel.googleSignIn(
-                    context,
-                    googleSignInLauncher,
-                    intent,
-                    onSuccess = {
-                        val intentn = Intent(context, MainActivity::class.java).apply {
-                            flags =
-                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        }
-                        context.startActivity(intentn)
-                        Toast.makeText(
-                            context,
-                            "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    },
-                    onError = {
-                        Toast.makeText(
-                            context,
-                            "Sign in failed please try again",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    })
+                if (isNetworkAvailable(context)){
+                    isLoading.value = true
+                    viewModel.googleSignIn(
+                        context,
+                        googleSignInLauncher,
+                        intent,
+                        onSuccess = {
+                            val intentn = Intent(context, MainActivity::class.java).apply {
+                                flags =
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            context.startActivity(intentn)
+                            Toast.makeText(
+                                context,
+                                "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        },
+                        onError = {
+                            Toast.makeText(
+                                context,
+                                "Sign in failed please try again",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        })
+                } else {
+                    Toast.makeText(context,"Please connect to a network and try again",Toast.LENGTH_LONG).show()
+                }
+
             },
             colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.gsi_bckg)),
             shape = RoundedCornerShape(16.dp),
@@ -335,4 +347,11 @@ fun SignUp(
         }
     }
 
+
+
+}
+private fun isNetworkAvailable(context: Context): Boolean {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val activeNetwork = connectivityManager.activeNetworkInfo
+    return activeNetwork?.isConnectedOrConnecting == true
 }

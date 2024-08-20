@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.alarmmanager.dataclasses.ForecasteData
-import com.example.alarmmanager.dataclasses.ForecasteResponse
 import com.example.alarmmanager.weatherApi.RetroFitInstance
 import kotlinx.coroutines.launch
 
@@ -21,21 +20,8 @@ class WeatherViewModel : ViewModel() {
     private val _weatherHumidity = MutableLiveData<Int>()
     val weatherHumidity: LiveData<Int> = _weatherHumidity
 
-    private val _weatherIconForForecast = MutableLiveData<ForecasteResponse>()
-    val weatherIconForForecaste: LiveData<ForecasteResponse> = _weatherIconForForecast
-
-
-    private val _weatherForecastePrecipitation = MutableLiveData<Int>()
-    val weatherForecastePrecipitation: LiveData<Int> = _weatherForecastePrecipitation
-
-    private val _weatherForecasteTempMin = MutableLiveData<Int>()
-    val weatherForecasteTempMin: LiveData<Int> = _weatherForecasteTempMin
-
-    private val _weatherForecasteTempMax = MutableLiveData<Int>()
-    val weatherForecasteTempMax: LiveData<Int> = _weatherForecasteTempMax
-
     private val _fiveDaysWeatherList = MutableLiveData<List<ForecasteData>>()
-    val fiveDaysWeatherList:LiveData<List<ForecasteData>> = _fiveDaysWeatherList
+    val fiveDaysWeatherList: LiveData<List<ForecasteData>> = _fiveDaysWeatherList
 
     private val apiKey = "d00134e85867c1394e1b58ef16362488"
 
@@ -58,21 +44,16 @@ class WeatherViewModel : ViewModel() {
     }
 
     fun fetchForecast(city: String) {
-      viewModelScope.launch {
-          try {
-              val forcastResponse = RetroFitInstance.forcastApi.getForcast(city, apiKey)
-              Log.d("forcast",forcastResponse.toString())
-              _weatherForecasteTempMin.value = forcastResponse.list[0].main.temp_min.toInt()
-              _weatherForecasteTempMax.value = forcastResponse.list[0].main.temp_max.toInt()
-              _fiveDaysWeatherList.value = forcastResponse.list
-              Log.d("minimum tem",_weatherForecasteTempMin.value.toString())
-
-          } catch (e:Exception){
-              e.printStackTrace()
-              Log.e("API Error", "Error: ${e.message}")
-          }
+        viewModelScope.launch {
+            try {
+                val forcastResponse = RetroFitInstance.forcastApi.getForcast(city, apiKey)
+                _fiveDaysWeatherList.value = forcastResponse.list
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("API Error", "Error: ${e.message}")
+            }
 
 
-      }
+        }
     }
 }

@@ -21,11 +21,9 @@ class LocationViewModel : ViewModel() {
     fun fetchCities(apiKey: String, namePrefix: String) {
         viewModelScope.launch {
             try {
-                delay(1000)
                 val response =
                     LocationRetrofitInstance.locationApi.getCities(apiKey, namePrefix = namePrefix)
                 cities = response.data
-                Log.d("CityViewModel", "Cities: ${cities}")
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e("CityViewModel", "Error fetching cities", e)

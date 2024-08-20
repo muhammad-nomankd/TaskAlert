@@ -17,14 +17,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -90,14 +88,16 @@ class ProfileScreen : ComponentActivity() {
         var userName by rememberSaveable { mutableStateOf("") }
         var userEmail by rememberSaveable { mutableStateOf("") }
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
+        var name by rememberSaveable { mutableStateOf("") }
+        var profileImageLoader by rememberSaveable { mutableStateOf(false) }
+
+        // Required instances
         val context = LocalContext.current
         val firestore = FirebaseFirestore.getInstance()
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        val coroutinescope = rememberCoroutineScope()
         var isLoading by rememberSaveable { mutableStateOf(false) }
-        var name by rememberSaveable { mutableStateOf("") }
         var isNameUpdated by rememberSaveable { mutableStateOf(false) }
-        var profileImageLoader by rememberSaveable { mutableStateOf(false) }
+        val coroutinescope = rememberCoroutineScope()
 
 
 
@@ -324,47 +324,77 @@ class ProfileScreen : ComponentActivity() {
 
 
                 } else {
-                    Box(modifier = Modifier.fillMaxWidth()){
-                    Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 32.dp)) {
-                        Image(painter = painterResource(id = R.drawable.person2), contentDescription = "name icon", modifier = Modifier
-                            .size(16.dp)
-                            .background(
-                                color = colorResource(
-                                    id = R.color.custom_white
-                                )
-                            ),
-                            colorFilter = ColorFilter.tint(Color.Gray))
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(horizontalAlignment = Alignment.Start) {
-                            Text(text = "Name", color = Color.Gray, fontSize = 16.sp,style = MaterialTheme.typography.bodyLarge)
-                            Text(userName,
-                                fontSize = 16.sp,
-                                color = Color.Black,
-                                style = MaterialTheme.typography.bodyLarge
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 32.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.person2),
+                                contentDescription = "name icon",
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .background(
+                                        color = colorResource(
+                                            id = R.color.custom_white
+                                        )
+                                    ),
+                                colorFilter = ColorFilter.tint(Color.Gray)
                             )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column(horizontalAlignment = Alignment.Start) {
+                                Text(
+                                    text = "Name",
+                                    color = Color.Gray,
+                                    fontSize = 16.sp,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    userName,
+                                    fontSize = 16.sp,
+                                    color = Color.Black,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                         }
-                    }
                     }
 
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .size(0.4.dp)
-                    .padding(start = 32.dp, end = 32.dp)
-                    .background(Color.LightGray))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .size(0.4.dp)
+                        .padding(start = 32.dp, end = 32.dp)
+                        .background(Color.LightGray)
+                )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Box(modifier = Modifier.fillMaxWidth()){
-                    Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 32.dp)) {
-                        Image(painter = painterResource(id = R.drawable.email), contentDescription = "name icon", modifier = Modifier
-                            .size(16.dp),
-                            colorFilter = ColorFilter.tint(Color.Gray))
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 32.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.email),
+                            contentDescription = "name icon",
+                            modifier = Modifier
+                                .size(16.dp),
+                            colorFilter = ColorFilter.tint(Color.Gray)
+                        )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(horizontalAlignment = Alignment.Start) {
-                            Text(text = "Email", color = Color.Gray, fontSize = 16.sp,style = MaterialTheme.typography.bodyLarge)
-                            Text(userEmail,
+                            Text(
+                                text = "Email",
+                                color = Color.Gray,
+                                fontSize = 16.sp,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                userEmail,
                                 fontSize = 16.sp,
                                 color = Color.Black,
                                 style = MaterialTheme.typography.bodyLarge
@@ -425,5 +455,4 @@ class ProfileScreen : ComponentActivity() {
         }
 
     }
-
 }

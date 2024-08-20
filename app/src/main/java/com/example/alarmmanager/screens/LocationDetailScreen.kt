@@ -1,7 +1,8 @@
 package com.example.alarmmanager.screens
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,8 +24,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,7 +46,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -76,77 +79,39 @@ class LocationDetailScreen : ComponentActivity() {
         setContent {
             AlarmManagerTheme {
                 val navControler = rememberNavController()
-                LocationDetailScreenContent(navControler)
+                LocationDetailContent(navController = navControler)
             }
 
         }
-    }
-
-    @Composable
-    fun LocationDetailScreenContent(navController: NavController) {
-
-        val apiKey = "e6844bc411msh69a178d35f2fabbp1e01fbjsnc9a755db3e73"
-
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize()
-                .background(colorResource(id = R.color.custom_white))
-        ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(start = 18.dp, top = 18.dp, bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable { navController.navigateUp() })
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = "Location Detail Screen",
-                    color = Color.DarkGray,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 20.sp
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .size(0.8.dp)
-                    .background(Color.LightGray)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Currently Selected Location", modifier = Modifier.padding(start = 32.dp))
-            Spacer(modifier = Modifier.height(8.dp))
-            CityDropdownMenu(apiKey = apiKey)
-
-        }
-
     }
 
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun CityDropdownMenu(apiKey: String, viewModel: LocationViewModel = viewModel()) {
-        var cityInput by remember { mutableStateOf("") }
-        var expanded by remember { mutableStateOf(false) }
+    fun LocationDetailContent(
+        viewModel: LocationViewModel = viewModel(),
+        navController: NavController
+    ) {
+        var cityInput by rememberSaveable { mutableStateOf("") }
+        var expanded by rememberSaveable { mutableStateOf(false) }
         val context = LocalContext.current
         var currentlySelectedLocation by rememberSaveable { mutableStateOf("") }
+        var currentlySelectedCountry by rememberSaveable { mutableStateOf("") }
+        var city by rememberSaveable { mutableStateOf("") }
+        var country by rememberSaveable { mutableStateOf("") }
         val firestore = FirebaseFirestore.getInstance()
         val forecastViewModel: WeatherViewModel = viewModel()
-        val forecasteIcon by forecastViewModel.weatherIconForForecaste.observeAsState()
-        val forecasteTempMin by forecastViewModel.weatherForecasteTempMin.observeAsState()
-        val forecasteTempMax by forecastViewModel.weatherForecasteTempMax.observeAsState()
-        val forecastePrec by forecastViewModel.weatherForecastePrecipitation.observeAsState()
         var isLoading by rememberSaveable { mutableStateOf(false) }
         val fiveDayWeatherList by forecastViewModel.fiveDaysWeatherList.observeAsState()
+        var isShowPopUp by rememberSaveable { mutableStateOf(false) }
+        var confirmAndUpdate by rememberSaveable { mutableStateOf(false) }
+        var isUpdated by rememberSaveable {
+            mutableStateOf(false)
+        }
+        val apiKey = "e6844bc411msh69a178d35f2fabbp1e01fbjsnc9a755db3e73"
 
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(Unit, currentlySelectedLocation, isUpdated) {
             isLoading = true
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .collection("location")
@@ -154,6 +119,7 @@ class LocationDetailScreen : ComponentActivity() {
                 .addOnSuccessListener { querySnapshot ->
                     for (document in querySnapshot.documents) {
                         currentlySelectedLocation = document.getString("location") ?: ""
+                        currentlySelectedCountry = document.getString("country") ?: ""
                         forecastViewModel.fetchForecast(currentlySelectedLocation)
                     }
                     isLoading = false
@@ -162,30 +128,54 @@ class LocationDetailScreen : ComponentActivity() {
                     isLoading = false
                     Toast.makeText(context, "Failed to get location", Toast.LENGTH_SHORT).show()
                 }
-            Log.d("temp", forecasteTempMin.toString())
         }
+
+
+
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    strokeWidth = 1.dp,
+                    color = Color.Gray
+                )
             }
         } else {
-            Column() {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .background(colorResource(id = R.color.custom_white))
+            ) {
 
-                Text(
-                    text = currentlySelectedLocation,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.DarkGray,
-                    modifier = Modifier.padding(start = 32.dp),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(start = 18.dp, top = 18.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { navController.navigateUp() })
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Location Detail Screen",
+                        color = Color.DarkGray,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 20.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .size(0.5.dp)
+                        .background(Color.LightGray)
                 )
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded }, modifier = Modifier
-                        .background(
-                            colorResource(id = R.color.custom_white),
-                            shape = RoundedCornerShape(8.dp)
-                        )
                         .padding(horizontal = 32.dp, vertical = 8.dp)
                         .fillMaxWidth()
                 ) {
@@ -199,7 +189,7 @@ class LocationDetailScreen : ComponentActivity() {
                             }
                         }, readOnly = false,
                         label = {
-                            Text(text = "Change location..")
+                            Text(text = if (currentlySelectedLocation.isNotEmpty()) "Change location.." else "select Location")
                         },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
@@ -219,47 +209,43 @@ class LocationDetailScreen : ComponentActivity() {
                     ExposedDropdownMenu(
                         expanded = expanded, onDismissRequest = { expanded = false },
                         modifier = Modifier
-                            .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
+                            .background(
+                                colorResource(id = R.color.custom_white),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .height(160.dp)
                     ) {
                         viewModel.cities.forEach {
                             DropdownMenuItem(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp)
+                                    .padding(start = 10.dp, end = 10.dp, bottom = 4.dp)
+                                    .background(
+                                        color = Color.White,
+                                        shape = RoundedCornerShape(32.dp)
+                                    ),
                                 text = {
                                     androidx.wear.compose.material.Text(
                                         text = "${it.name}, ${it.country}",
                                         color = Color.DarkGray
                                     )
                                 },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = Color.White,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(8.dp),
                                 onClick = {
+                                    country = it.country
+                                    city = it.name
+                                    isShowPopUp = true
                                     expanded = false
-                                    viewModel.saveUserLocation(
-                                        it.name,
-                                        "12345",
-                                        it.country,
-                                        context = context
-                                    )
-                                    currentlySelectedLocation = it.name
-                                    cityInput = ""
-                                    Toast.makeText(
-                                        context,
-                                        "Location changed to ${it.name} ${it.country}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+
                                 })
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Card(
                     modifier = Modifier.padding(
-                        start = 12.dp,
+                        start = 32.dp,
                         end = 32.dp,
                         top = 8.dp,
                         bottom = 32.dp
@@ -269,7 +255,7 @@ class LocationDetailScreen : ComponentActivity() {
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Upcoming forecast of $currentlySelectedLocation",
+                        text = if (currentlySelectedLocation.isNotEmpty()) "Upcoming forecast of $currentlySelectedLocation" else "No Location selected",
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 20.sp,
                         color = Color.DarkGray,
@@ -285,7 +271,7 @@ class LocationDetailScreen : ComponentActivity() {
                         val outputFormat = SimpleDateFormat(
                             "EEEE ha",
                             Locale.getDefault()
-                        ) // EEEE gives full day name
+                        )
                         val parsedDate = inputFormat.parse(forecastItem.dt_txt)
                         val dayOfWeek = parsedDate?.let {
                             outputFormat.format(it)
@@ -304,7 +290,7 @@ class LocationDetailScreen : ComponentActivity() {
                                 color = Color.DarkGray,
                                 modifier = Modifier
                                     .padding(start = 32.dp)
-                                    .weight(1.3f),
+                                    .weight(1.6f),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Normal
                             )
@@ -313,7 +299,11 @@ class LocationDetailScreen : ComponentActivity() {
 
                             Row(Modifier.weight(1f)) {
                                 Image(
-                                    painter = painterResource(if (forecastItem.pop > 0.7) R.drawable.drop else if (forecastItem.pop > 0.3 && forecastItem.pop < 0.7) R.drawable.halffilleddrop else R.drawable.emptydrop),
+                                    painter = painterResource(
+                                        if (forecastItem.pop > 0.7) R.drawable.drop
+                                        else if (forecastItem.pop > 0.3 && forecastItem.pop < 0.7) R.drawable.halffilleddrop
+                                        else R.drawable.emptydrop
+                                    ),
                                     contentDescription = "chance of rain",
                                     Modifier.size(12.dp)
                                 )
@@ -346,5 +336,85 @@ class LocationDetailScreen : ComponentActivity() {
 
             }
         }
+        if (isShowPopUp) {
+            AlertDialog(onDismissRequest = { isShowPopUp = false },
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = colorResource(
+                    id = R.color.task_color
+                ),
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            isShowPopUp = false
+                            viewModel.saveUserLocation(
+                                city,
+                                "12345",
+                                country,
+                                context = context
+                            )
+                            isUpdated = true
+                            cityInput = ""
+                            Toast
+                                .makeText(
+                                    context,
+                                    "Location changed to $city $country",
+                                    Toast.LENGTH_SHORT
+                                )
+                                .show()
+
+
+                        },
+                        elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(
+                                id = R.color.button_color
+                            )
+                        )
+                    ) {
+                        Text(
+                            text = "Change",
+                            color = Color.White, modifier = Modifier
+                        )
+                    }
+
+                },
+                title = {
+                    Text(
+                        text = "Change Location",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Are you sure you  want to change location?",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { isShowPopUp = false },
+                        elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            colorResource(id = R.color.darkBlue)
+                        )
+                    ) {
+                        Text(text = "Cancel", color = Color.White)
+                    }
+                })
+        }
+
+
+
+    }
+
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnectedOrConnecting == true
     }
 }

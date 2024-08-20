@@ -20,6 +20,7 @@ import com.example.alarmmanager.screens.PasswordResetScreen
 import com.example.alarmmanager.screens.ProfileScreen
 import com.example.alarmmanager.screens.TaskListScreen
 import com.example.alarmmanager.viewmodels.AuthViewModel
+import com.example.alarmmanager.viewmodels.LocationViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -44,8 +45,8 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable("locationDetailScreen") {
-                    LocationDetailScreen().LocationDetailScreenContent(
-                        navController
+                    LocationDetailScreen().LocationDetailContent(
+                        LocationViewModel(),navController
                     )
                 }
                 composable("signup") {

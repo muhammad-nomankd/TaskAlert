@@ -91,6 +91,8 @@ dependencies {
     implementation(libs.logging.interceptor.v4120)
     implementation(libs.firebase.storage)
     implementation (libs.ucropnedit)
+    implementation (libs.play.services.location)
+    implementation (libs.play.services.maps)
 
 
 

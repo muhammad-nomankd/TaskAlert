@@ -1,14 +1,21 @@
 package com.example.alarmmanager.screens
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -38,7 +45,6 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,7 +66,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -72,21 +77,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.alarmmanager.R
 import com.example.alarmmanager.dataclasses.Task
-import com.example.alarmmanager.dataclasses.Weather
 import com.example.alarmmanager.viewmodels.GetTaskViewModel
 import com.example.alarmmanager.viewmodels.WeatherViewModel
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HomeScreen : ComponentActivity() {
+    var loading: Boolean by mutableStateOf(false)
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +107,7 @@ class HomeScreen : ComponentActivity() {
 
     @OptIn(ExperimentalFoundationApi::class)
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("NotConstructor", "CoroutineCreationDuringComposition")
+    @SuppressLint("NotConstructor", "CoroutineCreationDuringComposition", "MissingPermission")
     @Composable
     fun HomeScreenUi(navController: NavController, context: Context) {
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
@@ -119,10 +128,30 @@ class HomeScreen : ComponentActivity() {
         val currentTemprature by weatherViewModel.temperature.observeAsState()
         val currentWeatherDescription by weatherViewModel.weatherDescription.observeAsState()
         val currentHumidity by weatherViewModel.weatherHumidity.observeAsState()
+        var isWeatherLoading by rememberSaveable { mutableStateOf(false) }
+        var isPermisionGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
+        val sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val isLocationSaved = sharedPreferences.getBoolean("location_saved", false)
 
-        // Getting User Detail from FireStore
-        LaunchedEffect(Unit) {
+        val locationPermissionLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                isPermisionGranted = true
+                isWeatherLoading = true
+                getUserLocation(context)
+                Toast.makeText(context, "Location permission Granted", Toast.LENGTH_SHORT).show()
+            } else {
+                isWeatherLoading = false
+                Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+        LaunchedEffect(Unit, loading) {
+            // Getting User Detail from FireStore
             isLoading = true
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .get().addOnSuccessListener { document ->
@@ -139,36 +168,62 @@ class HomeScreen : ComponentActivity() {
 
                 }
 
-            // Fetch tasks for UpComming Category
+            // Fetch tasks for UpComing Category
             viewmodel.filterTasksForUpCommingCategory("In Progress and Pending")
 
             // Fetching Weather Location and data from FireStore
+            isWeatherLoading = true
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .collection("location")
                 .get()
                 .addOnSuccessListener { querySnapshot ->
+                    isWeatherLoading = false
                     for (document in querySnapshot.documents) {
                         selectedWeatherLocation = document.getString("location") ?: ""
                     }
                     if (selectedWeatherLocation.isNotBlank()) {
                         weatherViewModel.fetchWeather(selectedWeatherLocation)
                     } else {
+
                         Log.e("Weather Error", "Selected weather location is blank")
                     }
                 }
+                .addOnFailureListener {
+                    isWeatherLoading = false
+                    Log.d("weather data error", "error fetching weather data from firestore")
+                }
+
+
+            //Ask for location permission
+            if (!isLocationEnabled(context)) {
+                Toast.makeText(
+                    context,
+                    "Please enable device location to access weather services",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else{
+                if (isPermisionGranted && !isLocationSaved) {
+                    getUserLocation(context)
+                    with(sharedPreferences.edit()) {
+                        putBoolean("location_saved", true)
+                        apply()
+                    }
+
+                } else if (!isPermisionGranted) {
+                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            }
 
 
         }
+
 
         // Getting filtered Tasks based on selected Category Button
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
         }
 
-        LaunchedEffect(Unit) {
-
-
-        }
         //Delete task logic
         fun deleteTask(taskId: String, status: String, context: Context) {
             val db = FirebaseFirestore.getInstance()
@@ -569,7 +624,6 @@ class HomeScreen : ComponentActivity() {
             }
         }
 
-
         // MainHome Screen UI
         LazyColumn(
             modifier = Modifier
@@ -611,10 +665,17 @@ class HomeScreen : ComponentActivity() {
                             )
                         }
                     }
-                    if (selectedWeatherLocation.isEmpty()) {
-                        Text(
-                            text = "Select Location to view weather.",
-                            modifier = Modifier.clickable { navController.navigate("locationDetailScreen") })
+                    if (isWeatherLoading) {
+                        coroutineScope.launch {
+                            delay(1000)
+                        }
+                        Box {
+                            CircularProgressIndicator(strokeWidth = 1.dp, color = Color.Gray)
+                        }
+
+                    } else if (selectedWeatherLocation.isEmpty()) {
+                        Text(text = "select location to view weather", modifier = Modifier
+                            .clickable { navController.navigate("locationDetailScreen") })
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
@@ -626,13 +687,8 @@ class HomeScreen : ComponentActivity() {
                                     .clickable { navController.navigate("locationDetailScreen") }
 
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
-
-
-
-
-                            Spacer(modifier = Modifier.width(8.dp))
 
                             Text(
                                 text = if (currentTemprature != null) "${currentTemprature!!.toInt()}°" else "Loading...",
@@ -696,7 +752,6 @@ class HomeScreen : ComponentActivity() {
             }
             item { Spacer(modifier = Modifier.height(32.dp)) }
 
-
             // LazyRow for horizontal scrollable tasks
             item {
                 LazyRow(
@@ -717,7 +772,6 @@ class HomeScreen : ComponentActivity() {
                 }
             }
             item { Spacer(modifier = Modifier.height(8.dp)) }
-
             // View all tasks
             item {
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -767,7 +821,6 @@ class HomeScreen : ComponentActivity() {
                     }
                 }
             }
-
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -833,12 +886,10 @@ class HomeScreen : ComponentActivity() {
     }
 
     // Formating Time
-
     private fun timeFormater(timeString: String): String {
 
         val fetchedTime = SimpleDateFormat("HH:mm", Locale.getDefault())
         val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())
-
         return try {
             val time = fetchedTime.parse(timeString)
             dDF.format(time ?: "")
@@ -848,5 +899,76 @@ class HomeScreen : ComponentActivity() {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun getUserLocation(context: Context) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location ->
+                location?.let {
+                    if (isNetworkAvailable(context)) {
+                        val geocoder = Geocoder(context, Locale.getDefault())
+                        try {
+                            val addresses =
+                                geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                            if (addresses != null) {
+                                if (addresses.isNotEmpty()) {
+                                    val locationName = addresses[0].locality ?: "Unknown location"
+                                    saveLocationToFireStore(locationName, context)
+                                    loading = true
+                                }
+                            } else {
+                                Log.d("null address", "null address")
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Toast.makeText(context, "Geocoding issue", Toast.LENGTH_LONG).show()
+                        }
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "No network connection available",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    }
+                }
+            }.addOnFailureListener {
+                Toast.makeText(context, "Error getting device location", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    private fun saveLocationToFireStore(locationName: String, context: Context) {
+        val firestore = FirebaseFirestore.getInstance()
+        val docRef =
+            firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
+                .collection("location").document("12345")
+        docRef.set(
+            mapOf(
+                "location" to locationName,
+                "locationId" to "12345",
+                "country" to ""
+
+            )
+        )
+            .addOnSuccessListener {
+                Toast.makeText(context, "Location saved $locationName", Toast.LENGTH_LONG).show()
+                loading = true
+                WeatherViewModel().fetchWeather(locationName)
+            }
+
+    }
+
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnectedOrConnecting == true
+    }
+
+    private fun isLocationEnabled(context: Context): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
 
 }
