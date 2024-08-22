@@ -141,13 +141,10 @@ class HomeScreen : ComponentActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
             if (isGranted) {
-                isPermisionGranted = true
                 isWeatherLoading = true
                 getUserLocation(context)
-                Toast.makeText(context, "Location permission Granted", Toast.LENGTH_SHORT).show()
             } else {
                 isWeatherLoading = false
-                Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
             }
         }
         LaunchedEffect(Unit, loading) {
@@ -162,11 +159,7 @@ class HomeScreen : ComponentActivity() {
                 .addOnSuccessListener {
                     isLoading = false
                 }
-                .addOnFailureListener {
-                    Toast.makeText(context, "Failed to get user details", Toast.LENGTH_SHORT).show()
-                    isLoading = false
 
-                }
 
             // Fetch tasks for UpComing Category
             viewmodel.filterTasksForUpCommingCategory("In Progress and Pending")
@@ -235,12 +228,7 @@ class HomeScreen : ComponentActivity() {
                     for (document in querySnapShot.documents) {
                         if (status == "Completed") {
                             taskRef.document(document.id).delete().addOnSuccessListener {
-                                Toast.makeText(context, "Task Deleted", Toast.LENGTH_SHORT).show()
                                 deleteTask = true
-                            }.addOnFailureListener {
-                                Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT)
-                                    .show()
-
                             }
                         } else {
                             Toast.makeText(
@@ -687,7 +675,7 @@ class HomeScreen : ComponentActivity() {
                                     .clickable { navController.navigate("locationDetailScreen") }
 
                             )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
 
 
                             Text(
@@ -921,7 +909,6 @@ class HomeScreen : ComponentActivity() {
                             }
                         } catch (e: Exception) {
                             e.printStackTrace()
-                            Toast.makeText(context, "Geocoding issue", Toast.LENGTH_LONG).show()
                         }
                     } else {
                         Toast.makeText(
@@ -932,8 +919,6 @@ class HomeScreen : ComponentActivity() {
                             .show()
                     }
                 }
-            }.addOnFailureListener {
-                Toast.makeText(context, "Error getting device location", Toast.LENGTH_LONG).show()
             }
     }
 
@@ -950,11 +935,6 @@ class HomeScreen : ComponentActivity() {
 
             )
         )
-            .addOnSuccessListener {
-                Toast.makeText(context, "Location saved $locationName", Toast.LENGTH_LONG).show()
-                loading = true
-                WeatherViewModel().fetchWeather(locationName)
-            }
 
     }
 

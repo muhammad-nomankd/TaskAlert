@@ -7,7 +7,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,115 +56,117 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
     }
     val scrollstate = rememberScrollState()
 
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize()
+            .background(color = colorResource(id = R.color.custom_white))
+            .verticalScroll(scrollstate),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Reset Password",
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "Enter the email address associated\n with your account.",
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxSize()
-                .background(color = colorResource(id = R.color.custom_white))
-                .verticalScroll(scrollstate),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Reset Password",
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                text = "Enter the email address associated\n with your account.",
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Column(
-                modifier = Modifier,
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.Start
-            ) {
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp, start = 16.dp),
-                    label = { Text("email") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Email, contentDescription = null)
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        unfocusedBorderColor = colorResource(id = R.color.light_pink),
-                        cursorColor = colorResource(id = R.color.button_color)
-                    ),
-                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.DarkGray, fontSize = 18.sp)
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    if (email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email)
-                            .matches() && !checkUser(email)
-                    ) {
-                        isloading.value = true
-                        ResetPasswordRepository(email, context, navController, onSuccess = {
-                            email = ""
-                            isloading.value = false
-                            Toast.makeText(
-                                context,
-                                "Password Reset Email sent.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            navController.navigate("SignIn")
-                        }, onFailure = {
-                            isloading.value = false
-                            Toast.makeText(
-                                context,
-                                "Error sending Password reset email.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        })
-                    } else {
-                        Toast.makeText(context, "Enter a valid email address.", Toast.LENGTH_LONG)
-                            .show()
-                    }
-                }, shape = RoundedCornerShape(16.dp), modifier = Modifier
-                    .height(55.dp)
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp), colors = ButtonDefaults.buttonColors(
-                    colorResource(id = R.color.button_color)
-                )
-            ) {
-                Text(text = "Recover Password", color = Color.White, fontSize = 18.sp)
-
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(text = "Go to SignIn",
-                color = Color.DarkGray,
-                modifier = Modifier.clickable {
-                    navController.navigate("SignIn") {
-                        popUpTo("SignIn") {
-                            inclusive = true
-                        }
-                    }
-                })
-
-        }
-        Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier,
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start
         ) {
-            if (isloading.value) {
-                CircularProgressIndicator(
-                    strokeWidth = 1.dp,
-                    modifier = Modifier
-                        .align(alignment = Alignment.CenterHorizontally),
-                    color = Color.Gray
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp, start = 16.dp),
+                label = { Text("email") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Email, contentDescription = null)
+                },
+                shape = RoundedCornerShape(16.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    unfocusedBorderColor = colorResource(id = R.color.light_pink),
+                    cursorColor = colorResource(id = R.color.button_color)
+                ),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    color = Color.DarkGray,
+                    fontSize = 18.sp
                 )
-            }
+            )
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                if (email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email)
+                        .matches() && !checkUser(email)
+                ) {
+                    isloading.value = true
+                    ResetPasswordRepository(email, context, navController, onSuccess = {
+                        email = ""
+                        isloading.value = false
+                        Toast.makeText(
+                            context,
+                            "Password Reset Email sent.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        navController.navigate("SignIn")
+                    }, onFailure = {
+                        isloading.value = false
+                        Toast.makeText(
+                            context,
+                            "Error sending Password reset email.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    })
+                } else {
+                    Toast.makeText(context, "Enter a valid email address.", Toast.LENGTH_LONG)
+                        .show()
+                }
+            }, shape = RoundedCornerShape(16.dp), modifier = Modifier
+                .height(55.dp)
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp), colors = ButtonDefaults.buttonColors(
+                colorResource(id = R.color.button_color)
+            )
+        ) {
+            Text(text = "Recover Password", color = Color.White, fontSize = 18.sp)
 
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(text = "Go to SignIn",
+            color = Color.DarkGray,
+            modifier = Modifier.clickable {
+                navController.navigate("SignIn") {
+                    popUpTo("SignIn") {
+                        inclusive = true
+                    }
+                }
+            })
+
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        if (isloading.value) {
+            CircularProgressIndicator(
+                strokeWidth = 1.dp,
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally),
+                color = Color.Gray
+            )
+        }
+    }
 
 
 }

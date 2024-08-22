@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -112,7 +111,6 @@ class ProfileScreen : ComponentActivity() {
                     isLoading = false
                     Log.d("user mail", userEmail)
                 }.addOnFailureListener {
-                    Toast.makeText(context, "Failed to get user details", Toast.LENGTH_SHORT).show()
                     isLoading = false
                 }
         }
@@ -132,29 +130,14 @@ class ProfileScreen : ComponentActivity() {
                                     .update("imageUrl", downloadUrl)
                                     .addOnSuccessListener {
                                         profileImageLoader = false
-                                        Toast.makeText(
-                                            context,
-                                            "Image uploaded successfully",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                         isLoading = false
                                     }
                                     .addOnFailureListener {
                                         profileImageLoader = false
-                                        Toast.makeText(
-                                            context,
-                                            "Image upload failed: ${it.message}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                         isLoading = false
                                     }
                             }
                         } catch (e: Exception) {
-                            Toast.makeText(
-                                context,
-                                "Image upload failed: ${e.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
                             isLoading = false
                         }
 
@@ -295,28 +278,14 @@ class ProfileScreen : ComponentActivity() {
                                     .update("name", name)
                                     .addOnSuccessListener {
                                         isNameUpdated = true
-                                        Toast.makeText(
-                                            context,
-                                            "Name updated successfully",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                         isLoading = false
                                     }
                                     .addOnFailureListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Failed to update name",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                         isLoading = false
 
                                     }
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Please enter your name",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                               Log.d("error","error updating name")
                             }
                         }) {
                         Text(text = "Add Name", fontSize = 12.sp, color = Color.White)
@@ -415,11 +384,6 @@ class ProfileScreen : ComponentActivity() {
                                     navControler.navigate("signup")
                                     isLoading = false
                                 } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Sig out failed. Please try again.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                     isLoading = false
                                 }
                             }
@@ -447,12 +411,8 @@ class ProfileScreen : ComponentActivity() {
             imageReference.putFile(imageUri).await()
             imageReference.downloadUrl.await().toString()
         } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Image upload Failed: ${e.message}", Toast.LENGTH_SHORT)
-                    .show()
-            }
-            ""
-        }
+            e.printStackTrace()
+        }.toString()
 
     }
 }

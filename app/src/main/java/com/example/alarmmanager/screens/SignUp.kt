@@ -83,15 +83,6 @@ fun SignUp(
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
                 context.startActivity(intent)
-                Toast.makeText(
-                    context,
-                    "Welcome ${
-                        FirebaseAuth.getInstance().currentUser?.displayName ?: FirebaseAuth.getInstance().currentUser?.email?.substringBefore(
-                            "@"
-                        )
-                    }",
-                    Toast.LENGTH_LONG
-                ).show()
             }, onError = {
                 isLoading.value = false
                 Toast.makeText(
@@ -232,7 +223,7 @@ fun SignUp(
                             isLoading.value = false
                             Toast.makeText(
                                 context,
-                                "Authentication failed Enter a valid email and .",
+                                "Authentication failed Enter a valid email and password.",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }, context, navController)
@@ -284,11 +275,6 @@ fun SignUp(
                                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             }
                             context.startActivity(intentn)
-                            Toast.makeText(
-                                context,
-                                "Welcome ${if (FirebaseAuth.getInstance().currentUser?.displayName !== null) FirebaseAuth.getInstance().currentUser?.displayName else FirebaseAuth.getInstance().currentUser?.email} You are successfully signed in with Google.",
-                                Toast.LENGTH_LONG
-                            ).show()
                         },
                         onError = {
                             Toast.makeText(

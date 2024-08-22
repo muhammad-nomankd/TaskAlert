@@ -460,12 +460,6 @@ class CreatTask : ComponentActivity() {
                                     return@Button
                                 }
                                 if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
-                                    Toast.makeText(
-                                        context,
-                                        "Please fill all the fields",
-                                        Toast.LENGTH_LONG
-                                    )
-                                        .show()
                                     return@Button
                                 }
                                 if (isNetworkAvailable(context)) {
@@ -479,11 +473,6 @@ class CreatTask : ComponentActivity() {
                                         endTime = endTime,
                                         taskPriority = selectedPriorityState,
                                         onSuccess = {
-                                            Toast.makeText(
-                                                context,
-                                                "Task updated successfully",
-                                                Toast.LENGTH_LONG
-                                            ).show()
                                             navController.navigate("home") {
                                                 popUpTo(navController.graph.startDestinationId) {
                                                     inclusive = true
@@ -494,11 +483,6 @@ class CreatTask : ComponentActivity() {
                                         },
                                         onFailure = {
                                             isloading = false
-                                            Toast.makeText(
-                                                context,
-                                                "Error updating task",
-                                                Toast.LENGTH_LONG
-                                            ).show()
                                         }
                                     )
                                 } else {
@@ -521,12 +505,6 @@ class CreatTask : ComponentActivity() {
                                     endTime = endTime,
                                     taskPriority = selectedPriorityState,
                                     onSuccess = {
-                                        Toast.makeText(
-                                            context,
-                                            "Task added successfully",
-                                            Toast.LENGTH_LONG
-                                        )
-                                            .show()
                                         navController.navigate("home") {
                                             popUpTo("home") {
                                                 inclusive = true
@@ -535,22 +513,11 @@ class CreatTask : ComponentActivity() {
                                     },
                                     onFailure = {
                                         isloading = false
-                                        Toast.makeText(
-                                            context,
-                                            "Error saving task",
-                                            Toast.LENGTH_LONG
-                                        )
-                                            .show()
                                     },
                                     status
                                 )
                             } else {
                                 isloading = false
-                                Toast.makeText(
-                                    context,
-                                    "Please connect to a network and try again",
-                                    Toast.LENGTH_LONG
-                                ).show()
                             }
 
                         }

@@ -3,7 +3,6 @@ package com.example.alarmmanager.screens
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -104,7 +103,6 @@ class LocationDetailScreen : ComponentActivity() {
         var isLoading by rememberSaveable { mutableStateOf(false) }
         val fiveDayWeatherList by forecastViewModel.fiveDaysWeatherList.observeAsState()
         var isShowPopUp by rememberSaveable { mutableStateOf(false) }
-        var confirmAndUpdate by rememberSaveable { mutableStateOf(false) }
         var isUpdated by rememberSaveable {
             mutableStateOf(false)
         }
@@ -126,8 +124,8 @@ class LocationDetailScreen : ComponentActivity() {
                 }
                 .addOnFailureListener {
                     isLoading = false
-                    Toast.makeText(context, "Failed to get location", Toast.LENGTH_SHORT).show()
                 }
+            isUpdated = false
         }
 
 
@@ -345,6 +343,7 @@ class LocationDetailScreen : ComponentActivity() {
                 confirmButton = {
                     Button(
                         onClick = {
+                            isUpdated = true
                             isShowPopUp = false
                             viewModel.saveUserLocation(
                                 city,
@@ -352,15 +351,8 @@ class LocationDetailScreen : ComponentActivity() {
                                 country,
                                 context = context
                             )
-                            isUpdated = true
+                            WeatherViewModel().fetchWeather(city)
                             cityInput = ""
-                            Toast
-                                .makeText(
-                                    context,
-                                    "Location changed to $city $country",
-                                    Toast.LENGTH_SHORT
-                                )
-                                .show()
 
 
                         },
@@ -409,12 +401,5 @@ class LocationDetailScreen : ComponentActivity() {
 
 
 
-    }
-
-    private fun isNetworkAvailable(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetworkInfo
-        return activeNetwork?.isConnectedOrConnecting == true
     }
 }

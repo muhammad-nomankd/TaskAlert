@@ -147,12 +147,7 @@ class TaskListScreen : ComponentActivity() {
                     for (document in querySnapShot.documents) {
                         if (status == "Completed") {
                             taskRef.document(document.id).delete().addOnSuccessListener {
-                                Toast.makeText(context, "Task Deleted", Toast.LENGTH_SHORT).show()
                                 deleteTask = true
-                            }.addOnFailureListener {
-                                Toast.makeText(context, "Failed to delete task", Toast.LENGTH_SHORT)
-                                    .show()
-
                             }
                         } else {
                             Toast.makeText(
