@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -61,8 +62,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -308,9 +311,7 @@ class TaskListScreen : ComponentActivity() {
                 showPickerDialogue = false
             }
 
-
-
-
+           // Task List
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -366,21 +367,22 @@ class TaskListScreen : ComponentActivity() {
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                         contentDescription = "Previous Month",
                         Modifier.size(28.dp),
-                        tint = colorResource(id = R.color.button_color)
+                        tint = Color.DarkGray
                     )
                 }
                 Text(
                     text = currentmonth,
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
+                    color = Color.DarkGray,
+                    fontWeight = FontWeight.Bold
                 )
                 IconButton(onClick = onNextMonthClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Next Month",
                         Modifier.size(28.dp),
-                        tint = colorResource(id = R.color.button_color)
+                        tint = Color.DarkGray
                     )
                 }
             }
@@ -390,7 +392,7 @@ class TaskListScreen : ComponentActivity() {
                     imageVector = Icons.Default.DateRange,
                     contentDescription = "Next Month",
                     Modifier.size(28.dp),
-                    tint = colorResource(id = R.color.button_color)
+                    tint = Color.DarkGray
                 )
             }
         }
@@ -493,8 +495,9 @@ class TaskListScreen : ComponentActivity() {
                             Text(
                                 text = task.title,
                                 fontSize = 20.sp,
+                                color = colorResource(id = R.color.dark_gray),
                                 fontFamily = FontFamily.SansSerif,
-                                fontWeight = FontWeight.SemiBold,
+                                fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .padding(top = 8.dp)
                                     .width(IntrinsicSize.Max)
@@ -505,39 +508,37 @@ class TaskListScreen : ComponentActivity() {
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            Card(
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                                    .wrapContentWidth(),
-                                backgroundColor = when (task.priority) {
-                                    "Low" -> colorResource(id = R.color.lightYellow)
-                                    "Medium" -> colorResource(id = R.color.lightBlue)
-                                    "High" -> colorResource(id = R.color.light_pink)
-                                    else -> Color.White
-                                },
-                                contentColor = when (task.priority) {
-                                    "Low" -> colorResource(id = R.color.darkYellow)
-                                    "Medium" -> colorResource(id = R.color.darkBlue)
-                                    "High" -> colorResource(id = R.color.dark_pink)
-                                    else -> Color.White
-                                }
-                            ) {
-                                Text(
-                                    text = task.priority,
-                                    fontSize = 12.sp,
-                                    color = when (task.priority) {
+                            if (task.priority.isEmpty()) {
+                                Text(text = "")
+                            } else {
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    backgroundColor = when (task.priority) {
+                                        "High" -> colorResource(id = R.color.dark_pink)
+                                        "Medium" -> colorResource(id = R.color.darkYellow)
+                                        "Low" -> colorResource(id = R.color.darkBlue)
+                                        else -> Color.White
+                                    },
+                                    contentColor = when (task.priority) {
                                         "High" -> colorResource(id = R.color.dark_pink)
                                         "Medium" -> colorResource(id = R.color.darkBlue)
                                         "Low" -> colorResource(id = R.color.darkYellow)
                                         else -> Color.Black
                                     },
-                                    modifier = Modifier.padding(
-                                        start = 6.dp,
-                                        end = 6.dp,
-                                        top = 3.dp,
-                                        bottom = 3.dp
+                                    modifier = Modifier
+                                        .padding(start = 4.dp, top = 6.dp)
+                                ) {
+                                    Text(
+                                        text = task.priority,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(
+                                            start = 4.dp, end = 4.dp
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }
@@ -545,10 +546,10 @@ class TaskListScreen : ComponentActivity() {
 
                     Text(
                         text = task.description,
-                        fontSize = 16.sp,
-                        color = Color.DarkGray,
+                        fontSize = 14.sp,
+                        color = colorResource(id = R.color.medium_gray),
                         fontFamily = FontFamily.SansSerif,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Normal,
                         modifier = Modifier
                             .padding(top = 8.dp)
                     )
@@ -556,42 +557,54 @@ class TaskListScreen : ComponentActivity() {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = timeFormated(task.startTime) + " - " + timeFormated(task.endTime),
-                        color = Color.DarkGray,
-                        fontSize = 16.sp
+                        color = colorResource(id = R.color.medium_gray),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = dateFormater(task.startDate),
-                        color = Color.DarkGray,
-                        fontSize = 14.sp,
+                        color = colorResource(id = R.color.medium_gray),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier
                             .wrapContentWidth(Alignment.End)
                     )
                     Text(
-                        text = "To", color = Color.DarkGray,
-                        fontSize = 12.sp,
+                        text = "To", color = colorResource(id = R.color.medium_gray),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = dateFormater(task.endDate),
-                        color = Color.DarkGray,
-                        fontSize = 14.sp,
+                        color = colorResource(id = R.color.medium_gray),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier
                             .wrapContentWidth(Alignment.End)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = task.status,
-                        fontSize = 14.sp,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = when (task.status) {
-                            "Completed" -> colorResource(id = R.color.green)
-                            "In Progress" -> colorResource(id = R.color.darkYellow)
-                            "Pending" -> Color.Black
-                            else -> Color.Gray
-                        }
-                    )
+                    when (task.status) {
+                        "In Progress" ->
+                            Image(
+                                painter = painterResource(id = R.drawable.inprogressicon),
+                                contentDescription = "check icon",
+                                modifier = Modifier
+                                    .size(24.dp)
+                            )
+
+                        "Pending" ->
+                            Image(
+                                painter = painterResource(id = R.drawable.pending),
+                                modifier = Modifier.size(24.dp),
+                                contentDescription = "pending",
+                                colorFilter = ColorFilter.tint(Color(0xFFFFA500))
+                            )
+                        "Completed" ->
+                            Image(painter = painterResource(id = R.drawable.checkicon), contentDescription = "Completed",
+                                modifier = Modifier.size(24.dp))
+                    }
                 }
             }
         }

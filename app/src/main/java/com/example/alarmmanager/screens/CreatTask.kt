@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -111,10 +112,9 @@ class CreatTask : ComponentActivity() {
         val status by rememberSaveable { mutableStateOf("") }
 
         val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = colorResource(id = R.color.light_pink),
-            unfocusedBorderColor = colorResource(id = R.color.light_pink),
-            cursorColor = colorResource(id = R.color.button_color),
-            focusedLabelColor = colorResource(id = R.color.button_color)
+            unfocusedBorderColor = Color.LightGray,
+            focusedBorderColor = Color.DarkGray,
+            cursorColor = Color.DarkGray
         )
 
         fun showDatePicker(isStartDate: Boolean) {
@@ -163,20 +163,18 @@ class CreatTask : ComponentActivity() {
         fun priorityButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
 
             val isSelected = selectedCategory == text
-
             val containerColor = if (isSelected) {
                 when (text) {
                     "High" -> colorResource(id = R.color.dark_pink)
-                    "Medium" -> colorResource(id = R.color.darkBlue)
-                    "Low" -> colorResource(R.color.darkYellow)
+                    "Medium" -> colorResource(id = R.color.darkYellow)
+                    "Low" -> colorResource(R.color.darkBlue)
                     else -> Color.White
                 }
-
             } else {
                 when (text) {
-                    "High" -> colorResource(id = R.color.light_pink)
-                    "Medium" -> colorResource(id = R.color.lightBlue)
-                    "Low" -> colorResource(id = R.color.lightYellow)
+                    "High" -> Color(0x80F5B7B1)
+                    "Medium" -> Color(0x80F7E794)
+                    "Low" -> Color(0x80B3E5FC)
                     else -> Color.White
                 }
             }
@@ -185,23 +183,23 @@ class CreatTask : ComponentActivity() {
             } else {
                 when (text) {
                     "High" -> colorResource(id = R.color.dark_pink)
-                    "Medium" -> colorResource(id = R.color.darkBlue)
-                    "Low" -> colorResource(id = R.color.darkYellow)
+                    "Medium" -> colorResource(id = R.color.veryDarkYellow)
+                    "Low" -> colorResource(R.color.darkBlue)
                     else -> Color.White
                 }
             }
             Button(
                 onClick = { onClick(text) },
-
+               elevation = ButtonDefaults.buttonElevation(8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = containerColor,
-                    contentColor = contentColor,
+                    contentColor = contentColor
                 )
             ) {
                 Text(
                     text,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -258,8 +256,8 @@ class CreatTask : ComponentActivity() {
                     Text(
                         text = if (taskid == null) "Create Task" else "Update Task",
                         style = MaterialTheme.typography.bodyLarge,
-                        fontSize = 24.sp,
-                        color = Color.DarkGray,
+                        fontSize = 20.sp,
+                        color = colorResource(id = R.color.dark_gray),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
@@ -273,8 +271,8 @@ class CreatTask : ComponentActivity() {
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 20.sp,
                     modifier = Modifier.align(Alignment.Start),
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.DarkGray
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.dark_gray)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -284,8 +282,8 @@ class CreatTask : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     colors = textFieldColors,
                     maxLines = 1,
-                    textStyle = TextStyle(fontSize = 18.sp),
-                    label = { Text(text = "Title") })
+                    textStyle = TextStyle(fontSize = 16.sp),
+                    label = { Text(text = "Title", color = Color.Gray) })
                 titleError?.let {
                     Text(
                         text = it, fontSize = 12.sp, color = Color.Red,
@@ -300,7 +298,7 @@ class CreatTask : ComponentActivity() {
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.DarkGray,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -313,7 +311,7 @@ class CreatTask : ComponentActivity() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
-                    label = { Text("Write a note...") },
+                    label = { Text("Write a note...", color = Color.Gray) },
                     colors = textFieldColors
                 )
 
@@ -322,7 +320,7 @@ class CreatTask : ComponentActivity() {
                     text = ("Deadlines"),
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Start),
                     color = Color.DarkGray
                 )
@@ -335,22 +333,22 @@ class CreatTask : ComponentActivity() {
                     Icon(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = "Calender",
-                        tint = colorResource(
-                            id = R.color.button_color
-                        )
+                        tint = Color.Gray
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = startDate.ifEmpty { "Start Date" },
-                        color = Color.DarkGray,
+                        color = colorResource(id = R.color.medium_gray),
                         fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.clickable {
                             showDatePicker(true)
                         })
                     Text(text = "  -  ", fontWeight = FontWeight.Bold)
 
                     Text(text = endDate.ifEmpty { "End Date" },
-                        color = Color.DarkGray,
+                        color = colorResource(id = R.color.medium_gray),
                         fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.clickable {
                             showDatePicker(false)
                         })
@@ -365,6 +363,7 @@ class CreatTask : ComponentActivity() {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             painter = painterResource(id = R.drawable.clock),
+                            colorFilter = ColorFilter.tint(Color.Gray),
                             contentDescription = "clock",
                             modifier = Modifier
                                 .size(22.dp)
@@ -372,16 +371,18 @@ class CreatTask : ComponentActivity() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = startTime.ifEmpty { "Start Time" },
-                            color = Color.DarkGray,
+                            color = colorResource(id = R.color.medium_gray),
                             fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier.clickable {
                                 showTimePicker(true)
                             })
                         Text(text = "  -  ", fontWeight = FontWeight.Bold)
 
                         Text(text = endTime.ifEmpty { "End Time" },
-                            color = Color.DarkGray,
+                            color = colorResource(id = R.color.medium_gray),
                             fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier.clickable {
                                 showTimePicker(false)
                             })
@@ -392,10 +393,10 @@ class CreatTask : ComponentActivity() {
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
                     text = "Priorities",
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.DarkGray,
+                    color = colorResource(id = R.color.dark_gray),
                     modifier = Modifier.align(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -416,31 +417,30 @@ class CreatTask : ComponentActivity() {
                     }
                 }
                 Spacer(modifier = Modifier.height(48.dp))
-                Button(
+                Button( elevation = ButtonDefaults.buttonElevation(8.dp),
                     onClick = {
-                        titleError = if (taskTitle.isEmpty()) "Enter the title" else null
-
-                        if (convertStrToTime(endTime)!! < convertStrToTime(startTime)) {
-                            Toast.makeText(
-                                context,
-                                "Start Time shouldn't be after end Time",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            return@Button
-                        }
-                        if (convertStrToDate(endDate)!! < convertStrToDate(startDate)) {
-                            Toast.makeText(
-                                context,
-                                "Start Date shouldn't be after end Date",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            return@Button
-                        }
                         if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
                             Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_LONG)
                                 .show()
+                            titleError = "Title cannot be empty"
                             return@Button
                         } else {
+                            if (convertStrToTime(endTime)!! < convertStrToTime(startTime)) {
+                                Toast.makeText(
+                                    context,
+                                    "Start Time shouldn't be after end Time",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@Button
+                            }
+                            if (convertStrToDate(endDate)!! < convertStrToDate(startDate)) {
+                                Toast.makeText(
+                                    context,
+                                    "Start Date shouldn't be after end Date",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@Button
+                            }
                             isloading = true
                             if (taskid != null) {
                                 if (convertStrToTime(endTime)!! < convertStrToTime(startTime)) {

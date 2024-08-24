@@ -17,11 +17,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +69,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -129,6 +136,8 @@ class HomeScreen : ComponentActivity() {
         val currentWeatherDescription by weatherViewModel.weatherDescription.observeAsState()
         val currentHumidity by weatherViewModel.weatherHumidity.observeAsState()
         var isWeatherLoading by rememberSaveable { mutableStateOf(false) }
+        var isPressed by remember { mutableStateOf(false) }
+        val scale by animateFloatAsState(if (isPressed) 1.1f else 1.0f)
         var isPermisionGranted = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -194,8 +203,7 @@ class HomeScreen : ComponentActivity() {
                     "Please enable device location to access weather services",
                     Toast.LENGTH_SHORT
                 ).show()
-            }
-            else{
+            } else {
                 if (isPermisionGranted && !isLocationSaved) {
                     getUserLocation(context)
                     with(sharedPreferences.edit()) {
@@ -254,9 +262,7 @@ class HomeScreen : ComponentActivity() {
         if (showPopUp) {
             AlertDialog(onDismissRequest = { showPopUp = false },
                 shape = RoundedCornerShape(16.dp),
-                backgroundColor = colorResource(
-                    id = R.color.task_color
-                ),
+                backgroundColor = Color.White,
                 confirmButton = {
                     Button(
                         onClick = {
@@ -283,6 +289,7 @@ class HomeScreen : ComponentActivity() {
                         text = "Delete Task",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
+                        color = Color.Black,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 },
@@ -291,6 +298,7 @@ class HomeScreen : ComponentActivity() {
                         text = "Are you sure you  want to delete this task?",
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
+                        color = Color.DarkGray,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 },
@@ -321,7 +329,8 @@ class HomeScreen : ComponentActivity() {
                 Text(
                     text,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
             }
         }
@@ -376,15 +385,28 @@ class HomeScreen : ComponentActivity() {
         @Composable
         fun taskItem(task: Task, longClick: () -> Unit, onClick: () -> Unit) {
             Card(
+                backgroundColor = Color.White,
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp)
+                    .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, spotColor = Color.Black)
                     .width(160.dp)
+                    .scale(scale)
                     .clip(shape = RoundedCornerShape(16.dp))
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                isPressed = true
+                                tryAwaitRelease()
+                                isPressed = false
+                            },
+                            onLongPress = { longClick() },
+                            onTap = { onClick() }
+                        )
+                    }
                     .combinedClickable(
                         onClick = { onClick() },
                         onLongClick = { longClick() },
-                    ),
-                backgroundColor = Color.White,
+                    ), elevation = 4.dp
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
@@ -399,67 +421,80 @@ class HomeScreen : ComponentActivity() {
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.dark_gray),
                         fontSize = 20.sp,
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = dateFormater(task.startDate),
                         fontSize = 16.sp,
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodyLarge
+                        color = colorResource(id = R.color.medium_gray),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Normal
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Box(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = task.status,
-                            fontSize = 12.sp,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = when (task.status) {
-                                "Completed" -> colorResource(id = R.color.green)
-                                "In Progress" -> colorResource(id = R.color.darkYellow)
-                                "Pending" -> Color.Black
-                                else -> Color.Gray
-                            },
-                            modifier = Modifier.align(Alignment.CenterStart)
-                        )
-                        Card(
-                            shape = RoundedCornerShape(4.dp),
-                            backgroundColor = when (task.priority) {
-                                "High" -> colorResource(id = R.color.light_pink)
-                                "Medium" -> colorResource(id = R.color.lightBlue)
-                                "Low" -> colorResource(id = R.color.lightYellow)
-                                else -> Color.White
-                            },
-                            contentColor = when (task.priority) {
-                                "High" -> colorResource(id = R.color.dark_pink)
-                                "Medium" -> colorResource(id = R.color.darkBlue)
-                                "Low" -> colorResource(id = R.color.darkYellow)
-                                else -> Color.Black
-                            },
-                            modifier = Modifier.align(Alignment.CenterEnd)
-                        ) {
-                            Text(
-                                text = task.priority,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = when (task.priority) {
+                        when (task.status) {
+                            "Completed" -> Image(
+                                painter = painterResource(id = R.drawable.checkicon),
+                                contentDescription = "check icon",
+                                modifier = Modifier
+                                    .size(24.dp)
+
+                            )
+                            "Pending" -> Image(
+                                painter = painterResource(id = R.drawable.pending),
+                                contentDescription = "pending",
+                                colorFilter = ColorFilter.tint(Color(0xFFFFA500)),
+                                modifier = Modifier.size(24.dp)
+                            )
+
+                            "In Progress" -> Image(
+                                painter = painterResource(id = R.drawable.inprogressicon),
+                                contentDescription = "In Progress",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        if (task.priority.isEmpty()) {
+                            Text(text = "")
+                        } else {
+                            Card(
+                                shape = RoundedCornerShape(8.dp),
+                                backgroundColor = when (task.priority) {
+                                    "High" -> colorResource(id = R.color.dark_pink)
+                                    "Medium" -> colorResource(id = R.color.darkYellow)
+                                    "Low" -> colorResource(id = R.color.darkBlue)
+                                    else -> Color.White
+                                },
+                                contentColor = when (task.priority) {
                                     "High" -> colorResource(id = R.color.dark_pink)
                                     "Medium" -> colorResource(id = R.color.darkBlue)
                                     "Low" -> colorResource(id = R.color.darkYellow)
                                     else -> Color.Black
                                 },
-                                modifier = Modifier.padding(
-                                    start = 4.dp, end = 4.dp
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .padding(start = 4.dp)
+                            ) {
+                                Text(
+                                    text = task.priority,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(
+                                        start = 4.dp, end = 4.dp
+                                    )
                                 )
-                            )
+                            }
                         }
+
+
                     }
                 }
             }
@@ -508,8 +543,9 @@ class HomeScreen : ComponentActivity() {
                                 Text(
                                     text = task.title,
                                     fontSize = 20.sp,
+                                    color = colorResource(id = R.color.dark_gray),
                                     fontFamily = FontFamily.SansSerif,
-                                    fontWeight = FontWeight.SemiBold,
+                                    fontWeight = FontWeight.Bold,
                                     modifier = Modifier
                                         .padding(top = 8.dp)
                                         .width(IntrinsicSize.Max)
@@ -520,39 +556,37 @@ class HomeScreen : ComponentActivity() {
 
                                 Spacer(modifier = Modifier.width(8.dp))
 
-                                Card(
-                                    modifier = Modifier
-                                        .padding(top = 8.dp)
-                                        .wrapContentWidth(),
-                                    backgroundColor = when (task.priority) {
-                                        "Low" -> colorResource(id = R.color.lightYellow)
-                                        "Medium" -> colorResource(id = R.color.lightBlue)
-                                        "High" -> colorResource(id = R.color.light_pink)
-                                        else -> Color.White
-                                    },
-                                    contentColor = when (task.priority) {
-                                        "Low" -> colorResource(id = R.color.darkYellow)
-                                        "Medium" -> colorResource(id = R.color.darkBlue)
-                                        "High" -> colorResource(id = R.color.dark_pink)
-                                        else -> Color.White
-                                    }
-                                ) {
-                                    Text(
-                                        text = task.priority,
-                                        fontSize = 12.sp,
-                                        color = when (task.priority) {
+                                if (task.priority.isEmpty()) {
+                                    Text(text = "")
+                                } else {
+                                    Card(
+                                        shape = RoundedCornerShape(8.dp),
+                                        backgroundColor = when (task.priority) {
+                                            "High" -> colorResource(id = R.color.dark_pink)
+                                            "Medium" -> colorResource(id = R.color.darkYellow)
+                                            "Low" -> colorResource(id = R.color.darkBlue)
+                                            else -> Color.White
+                                        },
+                                        contentColor = when (task.priority) {
                                             "High" -> colorResource(id = R.color.dark_pink)
                                             "Medium" -> colorResource(id = R.color.darkBlue)
                                             "Low" -> colorResource(id = R.color.darkYellow)
                                             else -> Color.Black
                                         },
-                                        modifier = Modifier.padding(
-                                            start = 6.dp,
-                                            end = 6.dp,
-                                            top = 3.dp,
-                                            bottom = 3.dp
+                                        modifier = Modifier
+                                            .padding(start = 4.dp,top = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = task.priority,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            modifier = Modifier.padding(
+                                                start = 4.dp, end = 4.dp
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                             }
                         }
@@ -560,10 +594,10 @@ class HomeScreen : ComponentActivity() {
 
                         Text(
                             text = task.description,
-                            fontSize = 16.sp,
-                            color = Color.DarkGray,
+                            fontSize = 14.sp,
+                            color = colorResource(id = R.color.medium_gray),
                             fontFamily = FontFamily.SansSerif,
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.Normal,
                             modifier = Modifier
                                 .padding(top = 8.dp)
                         )
@@ -571,42 +605,51 @@ class HomeScreen : ComponentActivity() {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = timeFormater(task.startTime) + " - " + timeFormater(task.endTime),
-                            color = Color.DarkGray,
-                            fontSize = 16.sp
+                            color = colorResource(id = R.color.medium_gray),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = dateFormater(task.startDate),
-                            color = Color.DarkGray,
-                            fontSize = 14.sp,
+                            color = colorResource(id = R.color.medium_gray),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
                                 .wrapContentWidth(Alignment.End)
                         )
                         Text(
-                            text = "To", color = Color.DarkGray,
-                            fontSize = 12.sp,
+                            text = "To", color = colorResource(id = R.color.medium_gray),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = dateFormater(task.endDate),
-                            color = Color.DarkGray,
-                            fontSize = 14.sp,
+                            color = colorResource(id = R.color.medium_gray),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
                                 .wrapContentWidth(Alignment.End)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = task.status,
-                            fontSize = 14.sp,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = when (task.status) {
-                                "Completed" -> colorResource(id = R.color.green)
-                                "In Progress" -> colorResource(id = R.color.darkYellow)
-                                "Pending" -> Color.Black
-                                else -> Color.Gray
-                            }
-                        )
+                        when (task.status) {
+                            "In Progress" ->
+                                Image(
+                                    painter = painterResource(id = R.drawable.inprogressicon),
+                                    contentDescription = "check icon",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                )
+
+                            "Pending" ->
+                                Image(
+                                    painter = painterResource(id = R.drawable.pending),
+                                    modifier = Modifier.size(24.dp),
+                                    contentDescription = "pending",
+                                    colorFilter = ColorFilter.tint(Color(0xFFFFA500))
+                                )
+                        }
                     }
                 }
             }
@@ -638,6 +681,7 @@ class HomeScreen : ComponentActivity() {
                             Modifier
                                 .clip(CircleShape)
                                 .size(60.dp)
+                                .border(1.dp, Color.White, CircleShape)
                                 .background(Color.LightGray),
                             contentScale = ContentScale.Crop
                         )
@@ -670,7 +714,8 @@ class HomeScreen : ComponentActivity() {
                             Text(
                                 text = selectedWeatherLocation.ifEmpty { "Loading..." },
                                 fontSize = 16.sp,
-                                color = Color.DarkGray,
+                                fontWeight = FontWeight.Medium,
+                                color = colorResource(id = R.color.dark_gray),
                                 modifier = Modifier
                                     .clickable { navController.navigate("locationDetailScreen") }
 
@@ -681,9 +726,9 @@ class HomeScreen : ComponentActivity() {
                             Text(
                                 text = if (currentTemprature != null) "${currentTemprature!!.toInt()}°" else "Loading...",
                                 fontFamily = if (currentTemprature != null) FontFamily(Font(R.font.roboto_light)) else FontFamily.Default,
-                                fontSize = if (currentTemprature != null) 42.sp else 12.sp,
-                                color = Color.DarkGray,
-                                fontWeight = FontWeight.Light
+                                fontSize = if (currentTemprature != null) 32.sp else 12.sp,
+                                color = colorResource(id = R.color.dark_gray),
+                                fontWeight = FontWeight.Bold
                             )
 
 
@@ -692,13 +737,14 @@ class HomeScreen : ComponentActivity() {
 
                             Text(
                                 text = currentWeatherDescription ?: "Loading...",
-                                fontSize = 12.sp,
-                                color = Color.Gray
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = colorResource(id = R.color.medium_gray)
                             )
                             Text(
                                 text = "Humidity ${currentHumidity ?: ""}%",
-                                fontSize = 12.sp,
-                                color = Color.Gray
+                                fontSize = 14.sp,
+                                color = colorResource(id = R.color.medium_gray),
                             )
                         }
                     }
@@ -710,9 +756,9 @@ class HomeScreen : ComponentActivity() {
             item {
                 Text(
                     "Categories",
-                    color = Color.DarkGray,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    color = colorResource(id = R.color.dark_gray),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .padding(start = 32.dp)
                 )
@@ -787,9 +833,10 @@ class HomeScreen : ComponentActivity() {
                     Column(Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp)) {
                         Text(
                             text = "Upcoming Tasks",
-                            fontSize = 22.sp,
+                            fontSize = 20.sp,
+                            color = colorResource(id = R.color.dark_gray),
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -817,7 +864,7 @@ class HomeScreen : ComponentActivity() {
             // Floating Action Button for Creating task Screen navigation
             FloatingActionButton(
                 onClick = { navController.navigate("createTask") },
-                containerColor = colorResource(id = R.color.button_color),
+                containerColor = colorResource(id = R.color.fab_color),
                 contentColor = Color.White,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp),
                 shape = CircleShape,

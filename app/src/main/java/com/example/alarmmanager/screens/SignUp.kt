@@ -100,8 +100,9 @@ fun SignUp(
 
 
     val textColor = TextFieldDefaults.outlinedTextFieldColors(
-        unfocusedBorderColor = colorResource(id = R.color.light_pink),
-        cursorColor = colorResource(id = R.color.button_color)
+        unfocusedBorderColor = Color.LightGray,
+        focusedBorderColor = colorResource(id = R.color.dark_gray),
+        cursorColor = colorResource(id = R.color.dark_gray)
     )
     Column(
         modifier = Modifier
@@ -114,15 +115,15 @@ fun SignUp(
     ) {
         Text(
             text = "SignIn",
-            fontSize = 30.sp,
-            color = colorResource(id = R.color.black),
+            fontSize = 20.sp,
+            color = Color.DarkGray,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(64.dp))
         OutlinedTextField(
             textStyle = TextStyle(color = Color.DarkGray, fontSize = 18.sp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(18.dp),
             colors = textColor,
             value = email,
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -178,11 +179,6 @@ fun SignUp(
                     .clickable {
                         try {
                             navController.navigate("ResetPassword")
-                            Log.d(
-                                "Navigation",
-                                "Current route: ${navController.currentBackStackEntry?.destination?.route}"
-                            )
-
                         } catch (E: Exception) {
                             E.printStackTrace()
                         }
@@ -191,7 +187,7 @@ fun SignUp(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Button(
             colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_color)),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),

@@ -67,13 +67,15 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
     ) {
         Text(
             text = "Reset Password",
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = colorResource(id = R.color.dark_gray)
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "Enter the email address associated\n with your account.",
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = colorResource(id = R.color.medium_gray)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Column(
@@ -94,12 +96,13 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
                 },
                 shape = RoundedCornerShape(16.dp),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = colorResource(id = R.color.light_pink),
-                    cursorColor = colorResource(id = R.color.button_color)
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedBorderColor = colorResource(id = R.color.dark_gray),
+                    cursorColor = Color.DarkGray,
                 ),
                 textStyle = androidx.compose.ui.text.TextStyle(
                     color = Color.DarkGray,
-                    fontSize = 18.sp
+                    fontSize = 16.sp
                 )
             )
         }
@@ -143,7 +146,7 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
         }
         Spacer(modifier = Modifier.height(32.dp))
         Text(text = "Go to SignIn",
-            color = Color.DarkGray,
+            color = colorResource(id = R.color.button_color),
             modifier = Modifier.clickable {
                 navController.navigate("SignIn") {
                     popUpTo("SignIn") {

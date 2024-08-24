@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -173,7 +174,7 @@ class ProfileScreen : ComponentActivity() {
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = "Profile",
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         color = Color.Black,
                         fontWeight = FontWeight.Medium,
                         style = MaterialTheme.typography.bodyLarge
@@ -196,6 +197,7 @@ class ProfileScreen : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
+                            .border(2.dp,Color.White, CircleShape)
                             .background(Color.LightGray),
                         contentScale = ContentScale.Crop
                     )
@@ -303,26 +305,26 @@ class ProfileScreen : ComponentActivity() {
                                 painter = painterResource(id = R.drawable.person2),
                                 contentDescription = "name icon",
                                 modifier = Modifier
-                                    .size(16.dp)
+                                    .size(20.dp)
                                     .background(
                                         color = colorResource(
                                             id = R.color.custom_white
                                         )
                                     ),
-                                colorFilter = ColorFilter.tint(Color.Gray)
+                                colorFilter = ColorFilter.tint(color = Color(0xFFBDBDBD))
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(horizontalAlignment = Alignment.Start) {
                                 Text(
                                     text = "Name",
-                                    color = Color.Gray,
-                                    fontSize = 16.sp,
+                                    color = Color(0xFF333333),
+                                    fontSize = 14.sp,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                                 Text(
                                     userName,
                                     fontSize = 16.sp,
-                                    color = Color.Black,
+                                    color = Color(0xFF333333),
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -351,21 +353,21 @@ class ProfileScreen : ComponentActivity() {
                             painter = painterResource(id = R.drawable.email),
                             contentDescription = "name icon",
                             modifier = Modifier
-                                .size(16.dp),
-                            colorFilter = ColorFilter.tint(Color.Gray)
+                                .size(20.dp),
+                            colorFilter = ColorFilter.tint(color = Color(0xFFBDBDBD))
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(horizontalAlignment = Alignment.Start) {
                             Text(
                                 text = "Email",
-                                color = Color.Gray,
-                                fontSize = 16.sp,
+                                color = Color(0xFF333333),
+                                fontSize = 14.sp,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
                                 userEmail,
                                 fontSize = 16.sp,
-                                color = Color.Black,
+                                color = Color(0xFF333333),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -391,20 +393,20 @@ class ProfileScreen : ComponentActivity() {
                     },
                     shape = RoundedCornerShape(16.dp),
                     elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
-                    colors = ButtonDefaults.buttonColors(Color.Red),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFFF0000)),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(bottom = 32.dp)
                 ) {
                     Text(
-                        text = "Sign Out", fontSize = 16.sp
+                        text = "Sign Out", fontSize = 16.sp, fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
     }
 
-    suspend fun uploadImageToFirestore(imageUri: Uri, userId: String, context: Context): String {
+    private suspend fun uploadImageToFirestore(imageUri: Uri, userId: String, context: Context): String {
         return try {
             val storageReference = FirebaseStorage.getInstance().reference
             val imageReference = storageReference.child("iamges/$userId/${UUID.randomUUID()}.jpg")

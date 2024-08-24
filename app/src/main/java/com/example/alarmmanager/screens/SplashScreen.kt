@@ -6,25 +6,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.alarmmanager.R
 import com.example.alarmmanager.activities.MainActivity
 import com.example.alarmmanager.repositories.AuthRepository
-import com.example.alarmmanager.viewmodels.AuthViewModel
 import com.example.alarmmanager.ui.theme.AlarmManagerTheme
+import com.example.alarmmanager.viewmodels.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,7 +35,7 @@ import kotlinx.coroutines.launch
 class SplashScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-         enableEdgeToEdge()
+        enableEdgeToEdge()
         setContent {
             AlarmManagerTheme {
                 val navController = rememberNavController()
@@ -52,11 +55,11 @@ class SplashScreen : ComponentActivity() {
                     composable("ResetPassword") {
                         PasswordResetScreen(context = LocalContext.current, navController)
                     }
-                    composable("HomeScreen"){
+                    composable("HomeScreen") {
                         HomeScreen()
                     }
-                    composable("MainActivity"){
-                       MainActivity()
+                    composable("MainActivity") {
+                        MainActivity()
                     }
                 }
             }
@@ -71,9 +74,11 @@ class SplashScreen : ComponentActivity() {
             coroutinescope.launch {
                 delay(1000)
                 if (FirebaseAuth.getInstance().currentUser?.uid != null) {
-                    val intent= Intent(this@SplashScreen,
-                        com.example.alarmmanager.activities.MainActivity::class.java).apply{
-                        flags= Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    val intent = Intent(
+                        this@SplashScreen,
+                        com.example.alarmmanager.activities.MainActivity::class.java
+                    ).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     }
                     startActivity(intent)
                 } else {
@@ -85,14 +90,33 @@ class SplashScreen : ComponentActivity() {
                 }
             }
         }
-        splash()
+        Splash()
     }
 
     @Composable
-    fun splash() {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(id = R.color.button_color)))
+    fun Splash() {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFB2EBF2), // Light Blue
+                            Color(0xFF9575CD)  // Light Purple
+                        ),
+                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        end = androidx.compose.ui.geometry.Offset.Infinite
+                    )
+                ),
+            contentAlignment = Alignment.Center
+
+        ){
+            Text(
+                text = "Stay on time, stay organized.",
+                fontSize = 16.sp,
+                color = Color.White
+            )
+        }
     }
 
 

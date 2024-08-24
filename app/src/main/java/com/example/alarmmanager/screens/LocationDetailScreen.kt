@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -128,8 +129,6 @@ class LocationDetailScreen : ComponentActivity() {
             isUpdated = false
         }
 
-
-
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
@@ -158,8 +157,8 @@ class LocationDetailScreen : ComponentActivity() {
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = "Location Detail Screen",
-                        color = Color.DarkGray,
-                        fontWeight = FontWeight.Medium,
+                        color = colorResource(id = R.color.dark_gray),
+                        fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
                 }
@@ -176,6 +175,7 @@ class LocationDetailScreen : ComponentActivity() {
                     onExpandedChange = { expanded = !expanded }, modifier = Modifier
                         .padding(horizontal = 32.dp, vertical = 8.dp)
                         .fillMaxWidth()
+                        .animateContentSize()
                 ) {
                     TextField(
                         value = cityInput,
@@ -187,7 +187,9 @@ class LocationDetailScreen : ComponentActivity() {
                             }
                         }, readOnly = false,
                         label = {
-                            Text(text = if (currentlySelectedLocation.isNotEmpty()) "Change location.." else "select Location")
+                            Text(text = if (currentlySelectedLocation.isNotEmpty()) "Change location.." else "select Location", color = colorResource(
+                                id = R.color.medium_gray
+                            ), fontSize = 18.sp)
                         },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
@@ -226,7 +228,8 @@ class LocationDetailScreen : ComponentActivity() {
                                 text = {
                                     androidx.wear.compose.material.Text(
                                         text = "${it.name}, ${it.country}",
-                                        color = Color.DarkGray
+                                        color = colorResource(id = R.color.medium_gray),
+                                        fontSize = 18.sp
                                     )
                                 },
                                 onClick = {
@@ -241,7 +244,7 @@ class LocationDetailScreen : ComponentActivity() {
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Card(
+                Card(elevation = CardDefaults.cardElevation(4.dp),
                     modifier = Modifier.padding(
                         start = 32.dp,
                         end = 32.dp,
@@ -256,8 +259,8 @@ class LocationDetailScreen : ComponentActivity() {
                         text = if (currentlySelectedLocation.isNotEmpty()) "Upcoming forecast of $currentlySelectedLocation" else "No Location selected",
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 20.sp,
-                        color = Color.DarkGray,
-                        fontWeight = FontWeight.Medium,
+                        color = colorResource(id = R.color.dark_gray),
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .padding(start = 12.dp)
                             .fillMaxWidth()
@@ -285,7 +288,7 @@ class LocationDetailScreen : ComponentActivity() {
                             Text(
                                 text = dayOfWeek,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.DarkGray,
+                                color = colorResource(id = R.color.medium_gray),
                                 modifier = Modifier
                                     .padding(start = 32.dp)
                                     .weight(1.6f),
@@ -343,7 +346,6 @@ class LocationDetailScreen : ComponentActivity() {
                 confirmButton = {
                     Button(
                         onClick = {
-                            isUpdated = true
                             isShowPopUp = false
                             viewModel.saveUserLocation(
                                 city,
@@ -353,6 +355,7 @@ class LocationDetailScreen : ComponentActivity() {
                             )
                             WeatherViewModel().fetchWeather(city)
                             cityInput = ""
+                            isUpdated = true
 
 
                         },
