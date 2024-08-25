@@ -48,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
@@ -157,6 +158,7 @@ class ProfileScreen : ComponentActivity() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(color = Color(0xFFF5F5F5))
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -174,9 +176,9 @@ class ProfileScreen : ComponentActivity() {
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = "Profile",
-                        fontSize = 18.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Medium,
+                        fontSize = 20.sp,
+                        color = colorResource(id = R.color.dark_gray),
+                        fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -187,8 +189,6 @@ class ProfileScreen : ComponentActivity() {
                         .background(color = Color.LightGray)
                         .height(0.9.dp)
                 )
-
-
                 Spacer(modifier = Modifier.height(32.dp))
                 Box(modifier = Modifier.size(150.dp)) {
                     Image(
@@ -197,8 +197,9 @@ class ProfileScreen : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .border(2.dp,Color.White, CircleShape)
-                            .background(Color.LightGray),
+                            .border(2.dp, Color.White, CircleShape)
+                            .background(Color.LightGray)
+                            .shadow(4.dp, ambientColor = Color.Black, shape = CircleShape),
                         contentScale = ContentScale.Crop
                     )
                     if (profileImageLoader) {
@@ -215,15 +216,16 @@ class ProfileScreen : ComponentActivity() {
                             .size(40.dp)
                             .align(Alignment.BottomEnd)
                             .clip(CircleShape)
-                            .background(color = colorResource(id = R.color.darkBlue))
+                            .background(Color(0xFFE3F2FD))
                             .padding(4.dp)
                     ) {
                         Image(painter = painterResource(id = R.drawable.camera),
                             contentDescription = "camera icon",
-                            colorFilter = ColorFilter.tint(Color.White),
+                            colorFilter = ColorFilter.tint(Color.Gray),
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .fillMaxSize()
+                                .padding(6.dp)
                                 .clickable { imagePickerLauncher.launch("image/*") })
                     }
 
@@ -256,9 +258,9 @@ class ProfileScreen : ComponentActivity() {
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedTextColor = Color.DarkGray,
                             unfocusedTextColor = Color.Gray,
-                            focusedBorderColor = colorResource(id = R.color.light_pink),
-                            unfocusedBorderColor = colorResource(id = R.color.light_pink),
-                            cursorColor = colorResource(id = R.color.button_color),
+                            focusedBorderColor = Color.DarkGray,
+                            unfocusedBorderColor = Color.LightGray,
+                            cursorColor = Color.Black,
                             focusedLabelColor = colorResource(id = R.color.light_pink),
                             unfocusedLabelColor = colorResource(id = R.color.light_pink)
                         ),
@@ -311,20 +313,21 @@ class ProfileScreen : ComponentActivity() {
                                             id = R.color.custom_white
                                         )
                                     ),
-                                colorFilter = ColorFilter.tint(color = Color(0xFFBDBDBD))
+                                colorFilter = ColorFilter.tint(Color.Gray)
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(horizontalAlignment = Alignment.Start) {
                                 Text(
                                     text = "Name",
-                                    color = Color(0xFF333333),
-                                    fontSize = 14.sp,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                                 Text(
                                     userName,
                                     fontSize = 16.sp,
-                                    color = Color(0xFF333333),
+                                    color = colorResource(id = R.color.dark_gray),
+                                    fontWeight = FontWeight.Medium,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -354,20 +357,21 @@ class ProfileScreen : ComponentActivity() {
                             contentDescription = "name icon",
                             modifier = Modifier
                                 .size(20.dp),
-                            colorFilter = ColorFilter.tint(color = Color(0xFFBDBDBD))
+                            colorFilter = ColorFilter.tint(Color.Gray)
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(horizontalAlignment = Alignment.Start) {
                             Text(
                                 text = "Email",
-                                color = Color(0xFF333333),
-                                fontSize = 14.sp,
+                                color = Color.Gray,
+                                fontSize = 12.sp,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
                                 userEmail,
                                 fontSize = 16.sp,
-                                color = Color(0xFF333333),
+                                color = colorResource(id = R.color.dark_gray),
+                                fontWeight = FontWeight.Medium,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }

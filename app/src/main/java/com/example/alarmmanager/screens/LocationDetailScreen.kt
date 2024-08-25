@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -141,7 +143,7 @@ class LocationDetailScreen : ComponentActivity() {
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .background(colorResource(id = R.color.custom_white))
+                    .background(Color(0xFFE1E4E8))
             ) {
 
                 Row(
@@ -175,7 +177,7 @@ class LocationDetailScreen : ComponentActivity() {
                     onExpandedChange = { expanded = !expanded }, modifier = Modifier
                         .padding(horizontal = 32.dp, vertical = 8.dp)
                         .fillMaxWidth()
-                        .animateContentSize()
+                        .background(color = Color.Gray, shape = RoundedCornerShape(16.dp))
                 ) {
                     TextField(
                         value = cityInput,
@@ -195,7 +197,12 @@ class LocationDetailScreen : ComponentActivity() {
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
-                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .border(
+                                width = 1.dp,
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .background(Color(0xFFFAFAFA), shape = RoundedCornerShape(16.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = Color.Transparent,
@@ -211,9 +218,10 @@ class LocationDetailScreen : ComponentActivity() {
                         modifier = Modifier
                             .background(
                                 colorResource(id = R.color.custom_white),
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(16.dp)
                             )
                             .height(160.dp)
+                            .animateContentSize()
                     ) {
                         viewModel.cities.forEach {
                             DropdownMenuItem(
@@ -245,13 +253,20 @@ class LocationDetailScreen : ComponentActivity() {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Card(elevation = CardDefaults.cardElevation(4.dp),
-                    modifier = Modifier.padding(
-                        start = 32.dp,
-                        end = 32.dp,
-                        top = 8.dp,
-                        bottom = 32.dp
-                    ), colors = CardDefaults.cardColors(
-                        containerColor = colorResource(id = R.color.task_color)
+                    modifier = Modifier
+                        .padding(
+                            start = 32.dp,
+                            end = 32.dp,
+                            top = 8.dp,
+                            bottom = 32.dp
+                        )
+                        .shadow(
+                            8.dp,
+                            RoundedCornerShape(16.dp),
+                            clip = false,
+                            spotColor = Color(0x30000000)
+                        ), colors = CardDefaults.cardColors(
+                        containerColor =    Color(0xFFE0F7FA)
                     ), shape = RoundedCornerShape(16.dp)
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))

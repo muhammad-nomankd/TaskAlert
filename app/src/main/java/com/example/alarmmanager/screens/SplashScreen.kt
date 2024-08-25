@@ -6,9 +6,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,11 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.alarmmanager.R
 import com.example.alarmmanager.activities.MainActivity
 import com.example.alarmmanager.repositories.AuthRepository
 import com.example.alarmmanager.ui.theme.AlarmManagerTheme
@@ -101,21 +109,28 @@ class SplashScreen : ComponentActivity() {
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFFB2EBF2), // Light Blue
-                            Color(0xFF9575CD)  // Light Purple
-                        ),
-                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        end = androidx.compose.ui.geometry.Offset.Infinite
+                            Color(0xFFB2EBF2),
+                            Color(0xFF9575CD)
+                        )
                     )
-                ),
-            contentAlignment = Alignment.Center
+                )
 
         ){
+            Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(painter = painterResource(id = R.drawable.applogo), contentDescription = "App logo",
+                    modifier = Modifier
+                        .size(150.dp))
+
+            }
             Text(
                 text = "Stay on time, stay organized.",
                 fontSize = 16.sp,
-                color = Color.White
+                color = Color(0x80FFFFFF),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.align(Alignment.BottomCenter)
+                    .padding(bottom = 32.dp)
             )
+
         }
     }
 
