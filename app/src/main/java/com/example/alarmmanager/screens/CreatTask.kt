@@ -8,7 +8,6 @@ import android.content.Context
 import android.icu.util.Calendar
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,15 +38,22 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +67,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.alarmmanager.R
 import com.example.alarmmanager.screens.ui.theme.AlarmManagerTheme
+import kotlinx.coroutines.launch
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -83,7 +90,7 @@ class CreatTask : ComponentActivity() {
     }
 
 
-    @SuppressLint("SuspiciousIndentation")
+    @SuppressLint("SuspiciousIndentation", "UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun CreateTaskcom(
@@ -110,6 +117,8 @@ class CreatTask : ComponentActivity() {
         val scrollState = rememberScrollState()
         var isloading by rememberSaveable { mutableStateOf(false) }
         val status by rememberSaveable { mutableStateOf("") }
+        var snackBarHost by remember { mutableStateOf(SnackbarHostState()) }
+        val coroutinesScope = rememberCoroutineScope()
 
         val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
             unfocusedBorderColor = Color.LightGray,
@@ -224,247 +233,300 @@ class CreatTask : ComponentActivity() {
 
 
         // Create task UI
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colorResource(id = R.color.custom_white))
-        )
-        {
-            Column(
+        Scaffold(modifier = Modifier.fillMaxSize(), snackbarHost = { SnackbarHost(hostState = snackBarHost)}) {
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(32.dp)
-                    .background(colorResource(id = R.color.custom_white)),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .background(colorResource(id = R.color.custom_white))
             )
             {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .padding(32.dp)
+                        .background(colorResource(id = R.color.custom_white)),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                )
+                {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
 
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Go back",
-                        tint = Color.DarkGray,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                navController.navigateUp()
-                            })
-                    Spacer(modifier = Modifier.width(16.dp))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Go back",
+                            tint = Color.DarkGray,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    navController.navigateUp()
+                                })
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = if (taskid == null) "Create Task" else "Update Task",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontSize = 20.sp,
+                            color = colorResource(id = R.color.dark_gray),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+
+                    Spacer(modifier = Modifier.height(48.dp))
                     Text(
-                        text = if (taskid == null) "Create Task" else "Update Task",
+                        text = "Task Title",
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 20.sp,
-                        color = colorResource(id = R.color.dark_gray),
+                        modifier = Modifier.align(Alignment.Start),
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        color = colorResource(id = R.color.dark_gray)
                     )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
 
-
-                Spacer(modifier = Modifier.height(48.dp))
-                Text(
-                    text = "Task Title",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    modifier = Modifier.align(Alignment.Start),
-                    fontWeight = FontWeight.Bold,
-                    color = colorResource(id = R.color.dark_gray)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = taskTitle,
-                    onValueChange = { taskTitle = it },
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors,
-                    maxLines = 1,
-                    textStyle = TextStyle(fontSize = 16.sp),
-                    label = { Text(text = "Title", color = Color.Gray) })
-                titleError?.let {
-                    Text(
-                        text = it, fontSize = 12.sp, color = Color.Red,
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(start = 8.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-                Text(
-                    text = "Description",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.DarkGray,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = taskDescription,
-                    onValueChange = { taskDescription = it },
-                    shape = RoundedCornerShape(18.dp),
-                    textStyle = TextStyle(fontSize = 18.sp),
-                    maxLines = 3,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    label = { Text("Write a note...", color = Color.Gray) },
-                    colors = textFieldColors
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-                Text(
-                    text = ("Deadlines"),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Start),
-                    color = Color.DarkGray
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = "Calender",
-                        tint = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = startDate.ifEmpty { "Start Date" },
-                        color = colorResource(id = R.color.medium_gray),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable {
-                            showDatePicker(true)
-                        })
-                    Text(text = "  -  ", fontWeight = FontWeight.Bold)
-
-                    Text(text = endDate.ifEmpty { "End Date" },
-                        color = colorResource(id = R.color.medium_gray),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable {
-                            showDatePicker(false)
-                        })
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.clock),
-                            colorFilter = ColorFilter.tint(Color.Gray),
-                            contentDescription = "clock",
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(value = taskTitle,
+                        onValueChange = { taskTitle = it
+                                        titleError = ""},
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors,
+                        maxLines = 1,
+                        textStyle = TextStyle(fontSize = 16.sp),
+                        label = { Text(text = "Title", color = Color.Gray) })
+                    titleError?.let {
+                        Text(
+                            text = it, fontSize = 12.sp, color = Color.Red,
                             modifier = Modifier
-                                .size(22.dp)
-                                .padding(start = 2.dp)
+                                .align(Alignment.Start)
+                                .padding(start = 8.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = "Description",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.DarkGray,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = taskDescription,
+                        onValueChange = { taskDescription = it },
+                        shape = RoundedCornerShape(18.dp),
+                        textStyle = TextStyle(fontSize = 18.sp),
+                        maxLines = 3,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        label = { Text("Write a note...", color = Color.Gray) },
+                        colors = textFieldColors
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = ("Deadlines"),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.Start),
+                        color = Color.DarkGray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Calender",
+                            tint = Color.Gray
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = startTime.ifEmpty { "Start Time" },
+                        Text(text = startDate.ifEmpty { "Start Date" },
                             color = colorResource(id = R.color.medium_gray),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.clickable {
-                                showTimePicker(true)
+                                showDatePicker(true)
                             })
                         Text(text = "  -  ", fontWeight = FontWeight.Bold)
 
-                        Text(text = endTime.ifEmpty { "End Time" },
+                        Text(text = endDate.ifEmpty { "End Date" },
                             color = colorResource(id = R.color.medium_gray),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.clickable {
-                                showTimePicker(false)
+                                showDatePicker(false)
                             })
                     }
 
-
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-                Text(
-                    text = "Priorities",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = colorResource(id = R.color.dark_gray),
-                    modifier = Modifier.align(Alignment.Start)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    priorityButton(text = "High", selectedPriorityState) {
-                        selectedPriorityState = it
-                    }
-                    priorityButton(
-                        text = "Medium", selectedPriorityState
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        selectedPriorityState = it
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.clock),
+                                colorFilter = ColorFilter.tint(Color.Gray),
+                                contentDescription = "clock",
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .padding(start = 2.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = startTime.ifEmpty { "Start Time" },
+                                color = colorResource(id = R.color.medium_gray),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.clickable {
+                                    showTimePicker(true)
+                                })
+                            Text(text = "  -  ", fontWeight = FontWeight.Bold)
+
+                            Text(text = endTime.ifEmpty { "End Time" },
+                                color = colorResource(id = R.color.medium_gray),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.clickable {
+                                    showTimePicker(false)
+                                })
+                        }
+
+
                     }
-                    priorityButton(text = "Low", selectedPriorityState) {
-                        selectedPriorityState = it
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = "Priorities",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = colorResource(id = R.color.dark_gray),
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        priorityButton(text = "High", selectedPriorityState) {
+                            selectedPriorityState = it
+                        }
+                        priorityButton(
+                            text = "Medium", selectedPriorityState
+                        ) {
+                            selectedPriorityState = it
+                        }
+                        priorityButton(text = "Low", selectedPriorityState) {
+                            selectedPriorityState = it
+                        }
                     }
-                }
-                Spacer(modifier = Modifier.height(48.dp))
-                Button( elevation = ButtonDefaults.buttonElevation(8.dp),
-                    onClick = {
-                        if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
-                            Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_LONG)
-                                .show()
-                            titleError = "Title cannot be empty"
-                            return@Button
-                        } else {
-                            if (convertStrToTime(endTime)!! < convertStrToTime(startTime)) {
-                                Toast.makeText(
-                                    context,
-                                    "Start Time shouldn't be after end Time",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                    Spacer(modifier = Modifier.height(48.dp))
+                    Button( elevation = ButtonDefaults.buttonElevation(8.dp),
+                        onClick = {
+                            if(taskTitle.isEmpty()){
+                                titleError = "Title cannot be empty"
                                 return@Button
                             }
-                            if (convertStrToDate(endDate)!! < convertStrToDate(startDate)) {
-                                Toast.makeText(
-                                    context,
-                                    "Start Date shouldn't be after end Date",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                            if(isNetworkAvailable(context)){
+                            if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
+                                coroutinesScope.launch {
+                                    snackBarHost.showSnackbar(
+                                        message = "Please fill all the fields",
+                                        actionLabel = "Close",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                                 return@Button
-                            }
-                            isloading = true
-                            if (taskid != null) {
+                            } else {
                                 if (convertStrToTime(endTime)!! < convertStrToTime(startTime)) {
-                                    Toast.makeText(
-                                        context,
-                                        "Start Time shouldn't be after end Time",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    coroutinesScope.launch {
+                                        snackBarHost.showSnackbar(
+                                            message = "Start Time shouldn't be after end Time",
+                                            actionLabel = "Close",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
                                     return@Button
                                 }
                                 if (convertStrToDate(endDate)!! < convertStrToDate(startDate)) {
-                                    Toast.makeText(
-                                        context,
-                                        "Start Date shouldn't be after end Date",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    coroutinesScope.launch {
+                                        snackBarHost.showSnackbar(
+                                            message = "Start Date shouldn't be after end Date",
+                                            actionLabel = "Close",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
                                     return@Button
                                 }
-                                if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
-                                    return@Button
-                                }
-                                if (isNetworkAvailable(context)) {
-                                    viewmodel.updateTask(
-                                        taskid = taskid,
+                                isloading = true
+                                if (taskid != null) {
+                                    if (convertStrToTime(endTime)!! < convertStrToTime(startTime)) {
+                                        coroutinesScope.launch {
+                                            snackBarHost.showSnackbar(
+                                                message = "Start Time shouldn't be after end Time",
+                                                actionLabel = "Close",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                        return@Button
+                                    }
+                                    if (convertStrToDate(endDate)!! < convertStrToDate(startDate)) {
+                                        coroutinesScope.launch {
+                                            snackBarHost.showSnackbar(
+                                                message = "Start Date shouldn't be after end Date",
+                                                actionLabel = "Close",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                        return@Button
+                                    }
+                                    if (taskTitle.isEmpty() || startDate.isEmpty() || startTime.isEmpty() || endDate.isEmpty() || endTime.isEmpty()) {
+                                        return@Button
+                                    }
+                                    if (isNetworkAvailable(context)) {
+                                        viewmodel.updateTask(
+                                            taskid = taskid,
+                                            taskTitle = taskTitle,
+                                            taskDescription = taskDescription,
+                                            startDate = startDate,
+                                            endDate = endDate,
+                                            startTime = startTime,
+                                            endTime = endTime,
+                                            taskPriority = selectedPriorityState,
+                                            onSuccess = {
+                                                navController.navigate("home") {
+                                                    popUpTo(navController.graph.startDestinationId) {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                                isloading = false
+
+                                            },
+                                            onFailure = {
+                                                isloading = false
+                                            }
+                                        )
+                                    } else {
+                                        isloading = false
+                                        coroutinesScope.launch {
+                                            snackBarHost.showSnackbar(
+                                                message = "Please connect to a network and try again",
+                                                actionLabel = "Close",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    }
+
+                                } else if (isNetworkAvailable(context)) {
+                                    viewmodel.saveTask(
+                                        taskid = UUID.randomUUID().toString(),
                                         taskTitle = taskTitle,
                                         taskDescription = taskDescription,
                                         startDate = startDate,
@@ -474,76 +536,54 @@ class CreatTask : ComponentActivity() {
                                         taskPriority = selectedPriorityState,
                                         onSuccess = {
                                             navController.navigate("home") {
-                                                popUpTo(navController.graph.startDestinationId) {
+                                                popUpTo("home") {
                                                     inclusive = true
                                                 }
                                             }
-                                            isloading = false
-
                                         },
                                         onFailure = {
                                             isloading = false
-                                        }
+                                        },
+                                        status
                                     )
                                 } else {
                                     isloading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Please connect to a network and try again",
-                                        Toast.LENGTH_LONG
-                                    ).show()
                                 }
 
-                            } else if (isNetworkAvailable(context)) {
-                                viewmodel.saveTask(
-                                    taskid = UUID.randomUUID().toString(),
-                                    taskTitle = taskTitle,
-                                    taskDescription = taskDescription,
-                                    startDate = startDate,
-                                    endDate = endDate,
-                                    startTime = startTime,
-                                    endTime = endTime,
-                                    taskPriority = selectedPriorityState,
-                                    onSuccess = {
-                                        navController.navigate("home") {
-                                            popUpTo("home") {
-                                                inclusive = true
-                                            }
-                                        }
-                                    },
-                                    onFailure = {
-                                        isloading = false
-                                    },
-                                    status
-                                )
-                            } else {
-                                isloading = false
+                            }} else {
+                                coroutinesScope.launch {
+                                    snackBarHost.showSnackbar(
+                                        message = "Connect to a network and try again",
+                                        actionLabel = "Close",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.button_color))
+                    ) {
+                        Text(
+                            if (taskid != null) "Update Task" else "Create Task",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.Start
+                    ) {
 
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(colorResource(id = R.color.button_color))
-                ) {
-                    Text(
-                        if (taskid != null) "Update Task" else "Create Task",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.Start
-                ) {
-
+                    }
                 }
             }
         }
+
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,

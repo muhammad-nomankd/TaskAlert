@@ -8,16 +8,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,25 +63,38 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
     }
     val scrollstate = rememberScrollState()
 
+
     Column(
         modifier = Modifier
-            .padding(8.dp)
             .fillMaxSize()
             .background(color = colorResource(id = R.color.custom_white))
-            .verticalScroll(scrollstate),
+            .verticalScroll(scrollstate)
+            .padding(start = 32.dp, top = 48.dp, end = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "Reset Password",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.dark_gray)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            Modifier
+                .fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { navController.navigateUp() })
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Reset Password",
+                color = colorResource(id = R.color.dark_gray),
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        }
+        Spacer(modifier = Modifier.weight(.1f))
         Text(
             text = "Enter the email address associated\n with your account.",
             textAlign = TextAlign.Center,
+            fontSize = 16.sp,
             color = colorResource(id = R.color.medium_gray)
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -87,12 +107,11 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
                 value = email,
                 onValueChange = { email = it },
                 Modifier
-                    .fillMaxWidth()
-                    .padding(end = 16.dp, start = 16.dp),
+                    .fillMaxWidth(),
                 label = { Text("email") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Email, contentDescription = null)
+                    Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = Color.Gray)
                 },
                 shape = RoundedCornerShape(16.dp),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -137,23 +156,14 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
             }, shape = RoundedCornerShape(16.dp), modifier = Modifier
                 .height(55.dp)
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp), colors = ButtonDefaults.buttonColors(
+            , colors = ButtonDefaults.buttonColors(
                 colorResource(id = R.color.button_color)
             )
         ) {
             Text(text = "Recover Password", color = Color.White, fontSize = 18.sp)
 
         }
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(text = "Go to SignIn",
-            color = colorResource(id = R.color.button_color),
-            modifier = Modifier.clickable {
-                navController.navigate("SignIn") {
-                    popUpTo("SignIn") {
-                        inclusive = true
-                    }
-                }
-            })
+        Spacer(modifier = Modifier.weight(0.5f))
 
     }
     Column(

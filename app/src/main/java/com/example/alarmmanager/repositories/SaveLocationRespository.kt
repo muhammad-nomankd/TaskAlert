@@ -32,32 +32,11 @@ class SaveLocationRespository {
                     } else {
                         locationRef.set(loc)
                             .addOnSuccessListener {
-                                Toast.makeText(
-                                    context,
-                                    "Location saved successfully",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Log.d("location", "Location saved successfully")
                             }
                     }
                 }
-            // Update or create the document with the provided fields
-            /* locationRef.set(
-                mapOf(
-                    "location" to loc.location,
-                    "locationId" to loc.locationId,
-                    "country" to loc.country
-                ),
-                SetOptions.merge() // Ensures only the provided fields are updated, or document is created if it doesn't exist
-            )
-                .addOnSuccessListener {
-                    Log.d("saveLocationRepository", "Location updated/created successfully")
-                }
-                .addOnFailureListener {
-                    Log.d("saveLocationRepository", "Error updating/creating location: ${it.message}")
-                }
-        } else {
-            Log.d("saveLocationRepository", "User not authenticated")
-        }*/
+
         }
     }
 }

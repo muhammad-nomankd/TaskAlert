@@ -1,7 +1,5 @@
 package com.example.alarmmanager.screens
 
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -53,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -112,7 +111,7 @@ class LocationDetailScreen : ComponentActivity() {
         val apiKey = "e6844bc411msh69a178d35f2fabbp1e01fbjsnc9a755db3e73"
 
 
-        LaunchedEffect(Unit, currentlySelectedLocation, isUpdated) {
+        LaunchedEffect(Unit, currentlySelectedLocation) {
             isLoading = true
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 .collection("location")
@@ -128,17 +127,24 @@ class LocationDetailScreen : ComponentActivity() {
                 .addOnFailureListener {
                     isLoading = false
                 }
-            isUpdated = false
+        }
+        LaunchedEffect(isUpdated) {
+            firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
+                .collection("location")
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    for (document in querySnapshot.documents) {
+                        currentlySelectedLocation = document.getString("location") ?: ""
+                        currentlySelectedCountry = document.getString("country") ?: ""
+                        forecastViewModel.fetchForecast(currentlySelectedLocation)
+                    }
+                    isUpdated = false
+                }
+                .addOnFailureListener {
+                    isUpdated = false
+                }
         }
 
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(
-                    strokeWidth = 1.dp,
-                    color = Color.Gray
-                )
-            }
-        } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -189,9 +195,13 @@ class LocationDetailScreen : ComponentActivity() {
                             }
                         }, readOnly = false,
                         label = {
-                            Text(text = if (currentlySelectedLocation.isNotEmpty()) "Change location.." else "select Location", color = colorResource(
-                                id = R.color.medium_gray
-                            ), fontSize = 18.sp)
+                            Text(
+                                text = if (currentlySelectedLocation.isNotEmpty()) "Change location.." else "select Location",
+                                color = colorResource(
+                                    id = R.color.medium_gray
+                                ),
+                                fontSize = 18.sp
+                            )
                         },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
@@ -245,14 +255,14 @@ class LocationDetailScreen : ComponentActivity() {
                                     city = it.name
                                     isShowPopUp = true
                                     expanded = false
-
                                 })
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Card(elevation = CardDefaults.cardElevation(4.dp),
+                Card(
+                    elevation = CardDefaults.cardElevation(4.dp),
                     modifier = Modifier
                         .padding(
                             start = 32.dp,
@@ -266,7 +276,7 @@ class LocationDetailScreen : ComponentActivity() {
                             clip = false,
                             spotColor = Color(0x30000000)
                         ), colors = CardDefaults.cardColors(
-                        containerColor =    Color(0xFFE0F7FA)
+                        containerColor = Color(0xFFE0F7FA)
                     ), shape = RoundedCornerShape(16.dp)
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -321,7 +331,8 @@ class LocationDetailScreen : ComponentActivity() {
                                         else R.drawable.emptydrop
                                     ),
                                     contentDescription = "chance of rain",
-                                    Modifier.size(12.dp)
+                                    Modifier.size(12.dp),
+                                    colorFilter = ColorFilter.tint(Color.Gray)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
@@ -330,11 +341,9 @@ class LocationDetailScreen : ComponentActivity() {
                                 )
                             }
                             AsyncImage(
-                                model = "https://openweathermap.org/img/wn/${forecastItem.weather[0].icon}@2x.png",
+                                model = if(forecastItem.weather[0].icon.isEmpty())"https://openweathermap.org/img/wn/${forecastItem.weather[0].icon}" else R.drawable.weather_icon,
                                 contentDescription = "Weather Icon",
                                 modifier = Modifier.size(20.dp),
-                                placeholder = painterResource(R.drawable.weather_icon), // Use anactual placeholder resource
-                                error = painterResource(R.drawable.cloudy) // Use an actual error resource
                             )
 
                             Spacer(modifier = Modifier.width(4.dp))
@@ -351,7 +360,15 @@ class LocationDetailScreen : ComponentActivity() {
 
 
             }
+        if (isLoading || isUpdated){
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    strokeWidth = 1.dp,
+                    color = Color.Gray
+                )
+            }
         }
+
         if (isShowPopUp) {
             AlertDialog(onDismissRequest = { isShowPopUp = false },
                 shape = RoundedCornerShape(16.dp),
@@ -416,7 +433,6 @@ class LocationDetailScreen : ComponentActivity() {
                     }
                 })
         }
-
 
 
     }

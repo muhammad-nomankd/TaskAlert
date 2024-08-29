@@ -1,7 +1,6 @@
 package com.example.alarmmanager.activities
 
 import CreateTaskViewModel
-import SignUp
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,6 +17,7 @@ import com.example.alarmmanager.screens.HomeScreen
 import com.example.alarmmanager.screens.LocationDetailScreen
 import com.example.alarmmanager.screens.PasswordResetScreen
 import com.example.alarmmanager.screens.ProfileScreen
+import com.example.alarmmanager.screens.SignUpActivity
 import com.example.alarmmanager.screens.TaskListScreen
 import com.example.alarmmanager.viewmodels.AuthViewModel
 import com.example.alarmmanager.viewmodels.LocationViewModel
@@ -39,10 +39,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable("SignIn") {
-                    SignUp(
-                        viewModel = AuthViewModel(AuthRepository()),
-                        navController = navController
-                    )
+                    SignUpActivity().SignUp(viewModel = AuthViewModel(AuthRepository()), navController = navController)
                 }
                 composable("locationDetailScreen") {
                     LocationDetailScreen().LocationDetailContent(
@@ -50,7 +47,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable("signup") {
-                    SignUp(
+                    SignUpActivity().SignUp(
                         viewModel = AuthViewModel(AuthRepository()),
                         navController = navController
                     )

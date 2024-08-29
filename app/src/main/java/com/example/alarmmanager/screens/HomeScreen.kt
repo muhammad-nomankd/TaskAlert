@@ -55,6 +55,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -137,6 +138,9 @@ class HomeScreen : ComponentActivity() {
         val currentHumidity by weatherViewModel.weatherHumidity.observeAsState()
         var isWeatherLoading by rememberSaveable { mutableStateOf(false) }
         var isPressed by remember { mutableStateOf(false) }
+        var snackBarHost by remember { mutableStateOf(SnackbarHostState()) }
+        val coroutineScope = rememberCoroutineScope()
+        var showSnackbar by remember { mutableStateOf(false) }
         val scale by animateFloatAsState(if (isPressed) 1.1f else 1.0f)
         var isPermisionGranted = ContextCompat.checkSelfPermission(
             context,
@@ -250,7 +254,6 @@ class HomeScreen : ComponentActivity() {
         }
 
         // Refresh tasks Category after deletion
-        val coroutineScope = rememberCoroutineScope()
         if (deleteTask) {
             coroutineScope.launch {
                 viewmodel.filterTasks(selectedCategoryState)
@@ -447,6 +450,7 @@ class HomeScreen : ComponentActivity() {
                                     .size(24.dp)
 
                             )
+
                             "Pending" -> Image(
                                 painter = painterResource(id = R.drawable.pending),
                                 contentDescription = "pending",
@@ -574,7 +578,7 @@ class HomeScreen : ComponentActivity() {
                                             else -> Color.Black
                                         },
                                         modifier = Modifier
-                                            .padding(start = 4.dp,top = 6.dp)
+                                            .padding(start = 4.dp, top = 6.dp)
                                     ) {
                                         Text(
                                             text = task.priority,
@@ -809,7 +813,7 @@ class HomeScreen : ComponentActivity() {
             // View all tasks
             item {
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "View all",
+                    Text(text = if (tasks.size > 2) "View all" else "",
                         color = colorResource(id = R.color.button_color),
                         fontSize = 16.sp,
                         modifier = Modifier
@@ -832,7 +836,7 @@ class HomeScreen : ComponentActivity() {
                 ) {
                     Column(Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp)) {
                         Text(
-                            text = "Upcoming Tasks",
+                            text = if (nonfilterTasks.isEmpty()) "No Upcoming Tasks" else "Upcoming Tasks",
                             fontSize = 20.sp,
                             color = colorResource(id = R.color.dark_gray),
                             style = MaterialTheme.typography.bodyLarge,

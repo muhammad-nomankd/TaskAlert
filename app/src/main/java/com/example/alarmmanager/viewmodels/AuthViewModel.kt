@@ -6,15 +6,14 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.example.alarmmanager.repositories.AuthRepository
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 
 class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
 
     fun signin(
         email: String,
         password: String,
-        onSuccess: () -> Unit,
-        onError: () -> Unit,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit,
         context: Context,
         navController: NavController
     ) {
@@ -33,16 +32,21 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         activityResultLauncher: ActivityResultLauncher<Intent>,
         data: Intent?,
         onSuccess: () -> Unit,
-        onError: () -> Unit
+        onError: (String) -> Unit
     ) {
         repository.initGoogleSignIn(context)
         repository.launchGoogleSignIn(activityResultLauncher)
-        repository.handleGoogleSignInResult(data, context, onSuccess, onError)
+        repository.handleGoogleSignInResult(data, onSuccess, onError)
 
     }
 
-    fun handleGoogleSignInResult(data: Intent?, context: Context, onSuccess: () -> Unit, onError: () -> Unit) {
-        repository.handleGoogleSignInResult(data, context,onSuccess,onError)
+    fun handleGoogleSignInResult(
+        data: Intent?,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+        context: Context
+    ) {
+        repository.handleGoogleSignInResult(data, onSuccess, onError)
     }
 
 

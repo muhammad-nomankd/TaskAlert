@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -198,8 +199,7 @@ class ProfileScreen : ComponentActivity() {
                             .fillMaxSize()
                             .clip(CircleShape)
                             .border(2.dp, Color.White, CircleShape)
-                            .background(Color.LightGray)
-                            .shadow(4.dp, ambientColor = Color.Black, shape = CircleShape),
+                            .background(Color.LightGray),
                         contentScale = ContentScale.Crop
                     )
                     if (profileImageLoader) {
@@ -410,15 +410,20 @@ class ProfileScreen : ComponentActivity() {
         }
     }
 
-    private suspend fun uploadImageToFirestore(imageUri: Uri, userId: String, context: Context): String {
+    suspend fun uploadImageToFirestore(imageUri: Uri, userId: String, context: Context): String {
         return try {
             val storageReference = FirebaseStorage.getInstance().reference
             val imageReference = storageReference.child("iamges/$userId/${UUID.randomUUID()}.jpg")
             imageReference.putFile(imageUri).await()
             imageReference.downloadUrl.await().toString()
         } catch (e: Exception) {
-            e.printStackTrace()
-        }.toString()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Image upload Failed: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
+            }
+            ""
+        }
 
     }
+
 }

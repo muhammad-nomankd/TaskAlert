@@ -3,7 +3,6 @@ package com.example.alarmmanager.repositories
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.NavController
 import com.example.alarmmanager.R
@@ -23,19 +22,14 @@ class AuthRepository() {
     fun SignIn(
         email: String,
         password: String,
-        onSuccess: () -> Unit,
-        onError: () -> Unit,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit,
         context: Context,
         navController: NavController
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(
-                        context,
-                        "You are successfully registered.",
-                        Toast.LENGTH_LONG
-                    ).show()
                     val user = User(
                         id = auth.currentUser?.uid ?: "",
                         email = auth.currentUser?.email ?: "",
@@ -46,17 +40,13 @@ class AuthRepository() {
                     firestore.document(auth.currentUser?.uid!!).set(user)
                         .addOnCompleteListener { task2 ->
                             if (task2.isSuccessful) {
-                                onSuccess()
+                                onSuccess("You are successfully registered")
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Something went wrong please try again.",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                onError("Something went wrong please try again.")
                             }
 
                         }.addOnFailureListener {
-                            onError()
+                            onError("Error saving user data")
                         }
                 }
 
@@ -64,14 +54,13 @@ class AuthRepository() {
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener {
                         if (it.isSuccessful) {
-                            onSuccess()
+                            onSuccess("You are successfully signed In")
                         } else {
-                            onError()
+                            onError("Error signing In")
                         }
                     }
             }
     }
-
 
 
     fun initGoogleSignIn(context: Context) {
@@ -89,21 +78,26 @@ class AuthRepository() {
         }
     }
 
-    fun handleGoogleSignInResult(data: Intent?, context: Context,onSuccess: () -> Unit, onError: () -> Unit,) {
+    fun handleGoogleSignInResult(
+        data: Intent?,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
         try {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
-            firebaseAuthWithGoogle(account, context,onSuccess,onError)
+            firebaseAuthWithGoogle(account, onSuccess, onError)
         } catch (e: ApiException) {
             Log.d("api exception", e.message.toString())
         }
     }
+
     fun firebaseAuthWithGoogle(
         account: GoogleSignInAccount,
-        context: Context,
         onSuccess: () -> Unit,
-        onError: () -> Unit,
+        onError: (String) -> Unit,
     ) {
+        val firestore = FirebaseFirestore.getInstance().collection("User")
         val credentials = GoogleAuthProvider.getCredential(account.idToken, null)
         auth.signInWithCredential(credentials)
             .addOnCompleteListener {
@@ -114,23 +108,17 @@ class AuthRepository() {
                         name = account.displayName ?: "",
                         imageUrl = account.photoUrl.toString()
                     )
-                    val firestore = FirebaseFirestore.getInstance().collection("User")
                     firestore.document(auth.currentUser?.uid!!).set(user)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 onSuccess()
                             } else {
-                                onError()
+                                onError("Error saving User data")
                             }
                         }
                 } else {
-                    Toast.makeText(context, "Authentication Failed.", Toast.LENGTH_LONG).show()
+                    onError("Something went wrong please try again.")
                 }
             }
     }
 }
-
-
-
-
-

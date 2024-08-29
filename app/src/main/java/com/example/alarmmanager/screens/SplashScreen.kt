@@ -1,6 +1,5 @@
 package com.example.alarmmanager.screens
 
-import SignUp
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,6 +43,7 @@ class SplashScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             AlarmManagerTheme {
                 val navController = rememberNavController()
@@ -52,10 +52,7 @@ class SplashScreen : ComponentActivity() {
                     navController = navController, startDestination = startDestination
                 ) {
                     composable("SignIn") {
-                        SignUp(
-                            viewModel = AuthViewModel(AuthRepository()),
-                            navController = navController
-                        )
+                        SignUpActivity().SignUp(viewModel = AuthViewModel(AuthRepository()), navController = navController)
                     }
                     composable("splash") {
                         authentication(navController = navController)
@@ -115,11 +112,17 @@ class SplashScreen : ComponentActivity() {
                     )
                 )
 
-        ){
-            Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(painter = painterResource(id = R.drawable.applogo), contentDescription = "App logo",
+        ) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.applogo),
+                    contentDescription = "App logo",
                     modifier = Modifier
-                        .size(150.dp))
+                        .size(150.dp)
+                )
 
             }
             Text(
@@ -127,7 +130,8 @@ class SplashScreen : ComponentActivity() {
                 fontSize = 16.sp,
                 color = Color(0x80FFFFFF),
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.align(Alignment.BottomCenter)
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .padding(bottom = 32.dp)
             )
 
