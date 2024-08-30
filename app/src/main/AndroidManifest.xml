@@ -8,7 +8,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION">
+    </uses-permission>
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -32,39 +33,34 @@
         android:theme="@style/Theme.AlarmManager"
         tools:targetApi="31">
         <activity
-            android:name=".screens.SignUpActivity"
+            android:name="com.example.durranitech.screens.SignUpActivity"
             android:exported="false"
             android:label="@string/title_activity_sign_up"
             android:theme="@style/Theme.AlarmManager" />
         <activity
-            android:name=".screens.LocationDetailScreen"
+            android:name="com.example.durranitech.screens.LocationDetailScreen"
             android:exported="false"
             android:label="@string/title_activity_location_detail_screen"
             android:theme="@style/Theme.AlarmManager" />
         <activity
-            android:name=".screens.TaskListScreen"
+            android:name="com.example.durranitech.screens.TaskListScreen"
             android:exported="false"
             android:label="@string/title_activity_task_detail_screen"
             android:theme="@style/Theme.AlarmManager"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".activities.MainActivity"
+            android:name="com.example.durranitech.activities.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.AlarmManager"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".activities.SignUpActivity"
-            android:exported="true"
-            android:theme="@style/Theme.AlarmManager"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".screens.HomeScreen"
+            android:name="com.example.durranitech.screens.HomeScreen"
             android:exported="true"
             android:label="AlarmManager"
             android:theme="@style/Theme.AlarmManager"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".screens.SplashScreen"
+            android:name="com.example.durranitech.screens.SplashScreen"
             android:exported="true"
             android:label="AlarmManager"
             android:theme="@style/Theme.AlarmManager"
