@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.durranitech.taskalert"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,11 +20,11 @@
         android:xlargeScreens="true" />
 
     <application
+        android:label="@string/app_name"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/appicon"
-        android:label="@string/app_name"
         android:roundIcon="@drawable/appicon"
         android:supportsRtl="true"
         android:theme="@style/Theme.AlarmManager"
@@ -31,11 +32,13 @@
         <activity
             android:name="com.durranitech.taskalert.screens.SignUpActivity"
             android:exported="false"
+            android:configChanges="layoutDirection"
             android:label="@string/title_activity_sign_up"
             android:theme="@style/Theme.AlarmManager" />
         <activity
             android:name="com.durranitech.taskalert.screens.LocationDetailScreen"
             android:exported="false"
+            android:configChanges="layoutDirection"
             android:label="@string/title_activity_location_detail_screen"
             android:theme="@style/Theme.AlarmManager" />
         <activity
@@ -43,23 +46,26 @@
             android:exported="false"
             android:label="@string/title_activity_task_detail_screen"
             android:theme="@style/Theme.AlarmManager"
+            android:configChanges="layoutDirection"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name="com.durranitech.taskalert.activities.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.AlarmManager"
+            android:configChanges="layoutDirection"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name="com.durranitech.taskalert.screens.HomeScreen"
             android:exported="true"
             android:label="AlarmManager"
+            android:configChanges="layoutDirection"
             android:theme="@style/Theme.AlarmManager"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name="com.durranitech.taskalert.screens.SplashScreen"
             android:exported="true"
-            android:label="AlarmManager"
             android:theme="@style/Theme.AlarmManager"
+            android:configChanges="layoutDirection"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

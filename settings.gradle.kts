@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AlarmManager"
+rootProject.name = "TaskAlert"
 include(":app")
  
