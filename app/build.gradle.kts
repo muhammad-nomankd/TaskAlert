@@ -6,11 +6,11 @@ plugins {
 
 
 android {
-    namespace = "com.example.alarmmanager"
+    namespace = "com.durranitech.taskalert"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.alarmmanager"
+        applicationId = "com.durranitech.taskalert"
         minSdk = 25
         targetSdk = 34
         versionCode = 1

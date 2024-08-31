@@ -7,17 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:77234148239:android:b7d12ffe776dfbbeaa31fa",
+        "mobilesdk_app_id": "1:77234148239:android:a44aba5d03e63376aa31fa",
         "android_client_info": {
-          "package_name": "com.example.alarmmanager"
+          "package_name": "com.durranitech.taskalert"
         }
       },
       "oauth_client": [
         {
-          "client_id": "77234148239-cttjhrlm2phh37gilvvrrpg8mfptla5d.apps.googleusercontent.com",
+          "client_id": "77234148239-nr8q9kujup9cgaqie47elec54dol3l8j.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.alarmmanager",
+            "package_name": "com.durranitech.taskalert",
             "certificate_hash": "51a0ef6b1733a23ac2afbe3fb768a7276cc84398"
           }
         },

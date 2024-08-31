@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AlarmManager</string>
+    <string name="app_name">TaskAlert</string>
     <string name="title_activity_forgot_password_screen">Forgot_Password_Screen</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
     <string name="title_activity_sign_up">SignUpActivity</string>
