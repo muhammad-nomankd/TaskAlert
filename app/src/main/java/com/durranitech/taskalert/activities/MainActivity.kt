@@ -1,5 +1,4 @@
 package com.durranitech.taskalert.activities
-
 import CreateTaskViewModel
 import android.os.Build
 import android.os.Bundle
@@ -7,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,6 +24,7 @@ import com.durranitech.taskalert.viewmodels.LocationViewModel
 
 class MainActivity : ComponentActivity() {
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,24 +32,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "home") {
-                composable("home") { HomeScreen().HomeScreenUi(navController, this@MainActivity) }
+                composable("home") {
+                    HomeScreen().HomeScreenUi(navController, this@MainActivity)
+                }
                 composable("ResetPassword") {
-                    PasswordResetScreen(
-                        context = LocalContext.current,
-                        navController
-                    )
+                    PasswordResetScreen(context = LocalContext.current, navController)
                 }
                 composable("SignIn") {
-                    SignUpActivity().SignUp(viewModel = AuthViewModel(AuthRepository()), navController = navController)
+                    SignUpActivity().SignUp(
+                        viewModel = AuthViewModel(
+                            AuthRepository()
+                        ), navController = navController
+                    )
                 }
                 composable("locationDetailScreen") {
                     LocationDetailScreen().LocationDetailContent(
-                        LocationViewModel(),navController
+                        LocationViewModel(), navController
                     )
                 }
                 composable("signup") {
                     SignUpActivity().SignUp(
-                        viewModel = AuthViewModel(AuthRepository()),
+                        viewModel = AuthViewModel(
+                            AuthRepository()
+                        ),
                         navController = navController
                     )
                 }

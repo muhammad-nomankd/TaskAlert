@@ -52,7 +52,11 @@ class SplashScreen : ComponentActivity() {
                     navController = navController, startDestination = startDestination
                 ) {
                     composable("SignIn") {
-                        SignUpActivity().SignUp(viewModel = AuthViewModel(AuthRepository()), navController = navController)
+                        SignUpActivity().SignUp(
+                            viewModel = AuthViewModel(
+                                AuthRepository()
+                            ), navController = navController
+                        )
                     }
                     composable("splash") {
                         authentication(navController = navController)

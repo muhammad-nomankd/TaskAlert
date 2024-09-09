@@ -1,20 +1,28 @@
 {
   "project_info": {
-    "project_number": "77234148239",
-    "project_id": "alarmmanager-94655",
-    "storage_bucket": "alarmmanager-94655.appspot.com"
+    "project_number": "493507260886",
+    "project_id": "taskalert-d44b6",
+    "storage_bucket": "taskalert-d44b6.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:77234148239:android:a44aba5d03e63376aa31fa",
+        "mobilesdk_app_id": "1:493507260886:android:02d88ad6222bab99d43477",
         "android_client_info": {
           "package_name": "com.durranitech.taskalert"
         }
       },
       "oauth_client": [
         {
-          "client_id": "77234148239-nr8q9kujup9cgaqie47elec54dol3l8j.apps.googleusercontent.com",
+          "client_id": "493507260886-bd41n9ihfs7qg1klv61ucv5ssj78rdaj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.durranitech.taskalert",
+            "certificate_hash": "dadd8dd38735a18aa2ba0ea7a74a9dd9b8d8a77d"
+          }
+        },
+        {
+          "client_id": "493507260886-srhom0a6bsja9scc66u4ljmkcs3iver0.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.durranitech.taskalert",
@@ -22,20 +30,20 @@
           }
         },
         {
-          "client_id": "77234148239-er5pvask6tf53t3gud581muiqo6el87n.apps.googleusercontent.com",
+          "client_id": "493507260886-mifhuustgenp92os2qn16k032vo4fjgu.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBadq0CICRhM7r06QjA6M33d04tFE9qFxU"
+          "current_key": "AIzaSyCxWKBRZ6RpKcCwRbROqzkj_vVhbXcRk8Q"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "77234148239-er5pvask6tf53t3gud581muiqo6el87n.apps.googleusercontent.com",
+              "client_id": "493507260886-mifhuustgenp92os2qn16k032vo4fjgu.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

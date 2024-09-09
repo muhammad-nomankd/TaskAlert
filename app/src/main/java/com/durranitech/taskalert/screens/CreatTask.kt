@@ -540,8 +540,16 @@ class CreatTask : ComponentActivity() {
                                                 }
                                             }
                                         },
-                                        onFailure = {
+                                        onFailure = {exception ->
                                             isloading = false
+
+                                            coroutinesScope.launch {
+                                                snackBarHost.showSnackbar(
+                                                    message = exception.toString(),
+                                                    actionLabel = "Close",
+                                                    duration = SnackbarDuration.Short
+                                                )
+                                            }
                                         },
                                         status
                                     )

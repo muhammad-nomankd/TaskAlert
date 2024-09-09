@@ -3,12 +3,7 @@
     <string name="title_activity_forgot_password_screen">Forgot_Password_Screen</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
     <string name="title_activity_sign_up">SignUpActivity</string>
-    <string name="default_web_client_id">77234148239-cttjhrlm2phh37gilvvrrpg8mfptla5d.apps.googleusercontent.com</string>
-
-    <string name="facebook_app_id">836177521733103</string>
-    <string name="fb_login_protocol_scheme">fb836177521733103</string>
-    <string name="facebook_client_token">034b3c1e65608a39af4651b888a171e3</string>
-    <string name="facebook_app_secret">c183ecdb38f399786c4b6f9ce1809c01</string>
+    <string name="default_web_client_id">77234148239-er5pvask6tf53t3gud581muiqo6el87n.apps.googleusercontent.com</string>
     <string name="title_activity_home_screen">HomeScreen</string>
     <string name="title_activity_creat_task">CreatTask</string>
     <string name="title_activity_task_detail_screen">TaskDetailScreen</string>

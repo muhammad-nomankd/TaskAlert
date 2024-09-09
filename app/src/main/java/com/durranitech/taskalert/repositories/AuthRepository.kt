@@ -1,5 +1,4 @@
 package com.durranitech.taskalert.repositories
-
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -7,14 +6,20 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.NavController
 import com.durranitech.taskalert.R
 import com.durranitech.taskalert.dataclasses.User
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
+import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firestore.v1.BeginTransactionRequest
 
 class AuthRepository() {
     private val auth = FirebaseAuth.getInstance()
@@ -83,12 +88,16 @@ class AuthRepository() {
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit,
     ) {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
         try {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
-            firebaseAuthWithGoogle(account, onSuccess, onError)
+            if (account != null) {
+                firebaseAuthWithGoogle(account, onSuccess, onError)
+            } else {
+                onError("Failed to get account")
+            }
         } catch (e: ApiException) {
-            Log.d("api exception", e.message.toString())
+           Log.d("TAG", "handleGoogleSignInResult: ${e.message}")
         }
     }
 
@@ -99,26 +108,42 @@ class AuthRepository() {
     ) {
         val firestore = FirebaseFirestore.getInstance().collection("User")
         val credentials = GoogleAuthProvider.getCredential(account.idToken, null)
+
         auth.signInWithCredential(credentials)
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    val user = User(
-                        id = auth.currentUser?.uid ?: "",
-                        email = account.email ?: "",
-                        name = account.displayName ?: "",
-                        imageUrl = account.photoUrl.toString()
-                    )
-                    firestore.document(auth.currentUser?.uid!!).set(user)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                onSuccess("signed In with google")
-                            } else {
-                                onError("Error saving User data")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val currentUser = auth.currentUser
+                    if (currentUser != null) {
+                        val user = User(
+                            id = currentUser.uid,
+                            email = account.email ?: "",
+                            name = account.displayName ?: "",
+                            imageUrl = account.photoUrl?.toString() ?: ""
+                        )
+                        firestore.document(currentUser.uid).set(user)
+                            .addOnCompleteListener { saveTask ->
+                                if (saveTask.isSuccessful) {
+                                    onSuccess("Signed in with Google")
+                                } else {
+                                    onError("Error saving user data")
+                                }
                             }
-                        }
+                    } else {
+                        onError("Authentication succeeded but user is null.")
+                    }
                 } else {
-                    onError("Something went wrong please try again.")
+                    // Handle exceptions like ApiException 8 here
+                    val exception = task.exception
+                    if (exception is ApiException && exception.statusCode == 8) {
+                        onError("Google API error: Check your OAuth configuration.")
+                    } else {
+                        onError("Something went wrong, please try again.")
+                    }
                 }
             }
     }
+
+
+
 }
+

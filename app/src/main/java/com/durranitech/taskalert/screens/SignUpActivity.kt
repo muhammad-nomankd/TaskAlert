@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,9 +41,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,13 +63,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import com.durranitech.taskalert.R
 import com.durranitech.taskalert.activities.MainActivity
 import com.durranitech.taskalert.repositories.AuthRepository
 import com.durranitech.taskalert.screens.ui.theme.AlarmManagerTheme
 import com.durranitech.taskalert.viewmodels.AuthViewModel
-import com.durranitech.taskalert.R
-import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -80,7 +82,9 @@ class SignUpActivity : ComponentActivity() {
         setContent {
             AlarmManagerTheme {
                 SignUp(
-                    viewModel = AuthViewModel(AuthRepository()), navController = NavController(
+                    viewModel = AuthViewModel(
+                        AuthRepository()
+                    ), navController = NavController(
                         LocalContext.current
                     )
                 )
@@ -106,38 +110,44 @@ class SignUpActivity : ComponentActivity() {
         var snackBarHost by remember { mutableStateOf(SnackbarHostState()) }
         val coroutinesScope = rememberCoroutineScope()
 
-        val googleSignInLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            val data: Intent? = result.data
-            if (result.resultCode == RESULT_OK && data != null) {
-                viewModel.handleGoogleSignInResult(data, onSuccess = {googleSuccess ->
-                    coroutinesScope.launch {
-                        snackBarHost.showSnackbar(message = googleSuccess, actionLabel = "Close")
-                    }
-                    coroutinesScope.launch {
-                        delay(1000)
-                        val intentn = Intent(context, MainActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    }
-                        context.startActivity(intentn)
-                    }
 
-                }, onError = { errorMessage ->
-                    coroutinesScope.launch {
-                        snackBarHost.showSnackbar(message = errorMessage, actionLabel = "Close")
-                    }
-                }, context)
-            } else {
-                isLoading.value = false
-                coroutinesScope.launch {
-                    snackBarHost.showSnackbar(
-                        message = "Sign In failed please try again",
-                        actionLabel = "Close"
-                    )
-                }
-            }
-        }
+         val googleSignInLauncher = rememberLauncherForActivityResult(
+             contract = ActivityResultContracts.StartActivityForResult()
+         ) { result ->
+             val data: Intent? = result.data
+             if (result.resultCode == RESULT_OK && data != null) {
+                 viewModel.handleGoogleSignInResult(data, onSuccess = { googleSuccess ->
+                     coroutinesScope.launch {
+                         snackBarHost.showSnackbar(message = googleSuccess, actionLabel = "Close")
+                     }
+                     coroutinesScope.launch {
+                         delay(1000)
+                         val intent = Intent(context, MainActivity::class.java).apply {
+                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                         }
+                         context.startActivity(intent)
+                     }
+                 }, onError = { errorMessage ->
+                     coroutinesScope.launch {
+                         snackBarHost.showSnackbar(message = errorMessage, actionLabel = "Close")
+                     }
+                 }, context)
+             } else {
+                 val errorMessage = when {
+                     result.resultCode != RESULT_OK -> "Result code not OK: ${result.resultCode}"
+                     data == null -> "Data is null"
+                     else -> "Unknown error occurred"
+                 }
+
+                 isLoading.value = false
+                 coroutinesScope.launch {
+                     snackBarHost.showSnackbar(
+                         message = "Sign In failed: $errorMessage",
+                         actionLabel = "Close"
+                     )
+                 }
+             }
+         }
 
 
         val textColor = TextFieldDefaults.outlinedTextFieldColors(
@@ -177,10 +187,9 @@ class SignUpActivity : ComponentActivity() {
                     ),
                     onValueChange = {
                         email = it
-                        mailerror =
-                            if (android.util.Patterns.EMAIL_ADDRESS.matcher(it)
-                                    .matches()
-                            ) null else ""
+                        mailerror = if (android.util.Patterns.EMAIL_ADDRESS.matcher(it)
+                                .matches()
+                        ) null else ""
                     },
                     label = { androidx.compose.material.Text("email", color = Color.Black) },
                     modifier = Modifier.fillMaxWidth(),
@@ -200,8 +209,7 @@ class SignUpActivity : ComponentActivity() {
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                OutlinedTextField(
-                    shape = RoundedCornerShape(16.dp),
+                OutlinedTextField(shape = RoundedCornerShape(16.dp),
                     value = password,
                     colors = textColor,
                     textStyle = TextStyle(color = Color.DarkGray, fontSize = 18.sp),
@@ -231,14 +239,13 @@ class SignUpActivity : ComponentActivity() {
                         text = "Forgot Password.",
                         color = Color.DarkGray,
                         textAlign = TextAlign.End,
-                        modifier = Modifier
-                            .clickable {
-                                try {
-                                    navController.navigate("ResetPassword")
-                                } catch (E: Exception) {
-                                    E.printStackTrace()
-                                }
-                            },
+                        modifier = Modifier.clickable {
+                            try {
+                                navController.navigate("ResetPassword")
+                            } catch (E: Exception) {
+                                E.printStackTrace()
+                            }
+                        },
                         fontSize = 12.sp
                     )
                 }
@@ -261,23 +268,24 @@ class SignUpActivity : ComponentActivity() {
                             ) {
                                 isLoading.value = true
                                 viewModel.signin(email, password, onSuccess = { successMessege ->
-                                        coroutinesScope.launch {
-                                            snackBarHost.showSnackbar(
-                                                message = successMessege,
-                                                actionLabel = "Close",
-                                                duration = SnackbarDuration.Short
-                                            )
+                                    coroutinesScope.launch {
+                                        snackBarHost.showSnackbar(
+                                            message = successMessege,
+                                            actionLabel = "Close",
+                                            duration = SnackbarDuration.Short
+                                        )
 
                                     }
 
-                                     coroutinesScope.launch {
-                                         delay(1000)
-                                         val intent1 = Intent(context, MainActivity::class.java).apply {
-                                             flags =
-                                                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                         }
-                                         context.startActivity(intent1)
-                                     }
+                                    coroutinesScope.launch {
+                                        delay(1000)
+                                        val intent1 =
+                                            Intent(context, MainActivity::class.java).apply {
+                                                flags =
+                                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                            }
+                                        context.startActivity(intent1)
+                                    }
 
 
                                 }, onError = { signInError ->
@@ -336,49 +344,51 @@ class SignUpActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        if (isNetworkAvailable(context)) {
-                            isLoading.value = true
-                            viewModel.googleSignIn(
-                                context,
-                                googleSignInLauncher,
-                                intent,
-                                onSuccess = {signInWithGoogleSuccessMessage ->
-                                    isLoading.value = false
-                                    coroutinesScope.launch {
-                                        val intentn = Intent(context, MainActivity::class.java).apply {
-                                            flags =
-                                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                        }
-                                        context.startActivity(intentn)
-                                    }
 
-                                },
-                                onError = { errorMessege ->
-                                    isLoading.value = false
-                                    coroutinesScope.launch {
-                                            snackBarHost.showSnackbar(   message = errorMessege,
-                                                actionLabel = "Close",
-                                                duration = SnackbarDuration.Short)
 
-                                    }
-                                })
-                        } else {
-                            coroutinesScope.launch {
-                                snackBarHost.showSnackbar(
-                                    message = "Connect to a network and try again",
-                                    actionLabel = "Close",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
+                         if (isNetworkAvailable(context)) {
+                             isLoading.value = true
+                             viewModel.googleSignIn(
+                                 context,
+                                 googleSignInLauncher,
+                                 intent,
+                                 onSuccess = {signInWithGoogleSuccessMessage ->
+                                     isLoading.value = false
+                                     coroutinesScope.launch {
+                                         val intentn = Intent(context, MainActivity::class.java).apply {
+                                             flags =
+                                                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                         }
+                                         context.startActivity(intentn)
+                                     }
 
-                        }
+                                 },
+                                 onError = { errorMessege ->
+                                     isLoading.value = false
+                                     coroutinesScope.launch {
+                                             snackBarHost.showSnackbar(   message = errorMessege,
+                                                 actionLabel = "Close",
+                                                 duration = SnackbarDuration.Short)
+
+                                     }
+                                 })
+                         } else {
+                             coroutinesScope.launch {
+                                 snackBarHost.showSnackbar(
+                                     message = "Connect to a network and try again",
+                                     actionLabel = "Close",
+                                     duration = SnackbarDuration.Short
+                                 )
+                             }
+
+                         }
+
 
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.gsi_bckg)),
                     shape = RoundedCornerShape(16.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -398,7 +408,8 @@ class SignUpActivity : ComponentActivity() {
                             text = "SignIn with Google",
                             color = Color.Black,
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }
@@ -414,8 +425,7 @@ class SignUpActivity : ComponentActivity() {
             if (isLoading.value) {
                 CircularProgressIndicator(
                     strokeWidth = 1.dp,
-                    modifier = Modifier
-                        .align(alignment = Alignment.CenterHorizontally),
+                    modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
                     color = Color.Gray
                 )
             }

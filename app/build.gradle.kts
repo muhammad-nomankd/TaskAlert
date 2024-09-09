@@ -13,8 +13,8 @@ android {
         applicationId = "com.durranitech.taskalert"
         minSdk = 25
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 5
+        versionName = "1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -77,23 +78,25 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.google.firebase.auth)
     implementation(libs.play.services.auth)
-    implementation (libs.androidx.lifecycle.viewmodel.ktx)
-    implementation (libs.androidx.core.ktx.v180)
-    implementation (libs.androidx.lifecycle.runtime.ktx.v251)
-    implementation (libs.androidx.activity.compose.v151)
-    implementation (libs.ui)
-    implementation (libs.androidx.material)
-    implementation (libs.ui.tooling.preview)
-    implementation (libs.firebase.auth.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.core.ktx.v180)
+    implementation(libs.androidx.lifecycle.runtime.ktx.v251)
+    implementation(libs.androidx.activity.compose.v151)
+    implementation(libs.ui)
+    implementation(libs.androidx.material)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.firebase.auth.ktx)
     implementation(libs.coil.compose)
-    implementation (libs.converter.gson)
-    implementation (libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit)
     implementation(libs.logging.interceptor.v4120)
     implementation(libs.firebase.storage)
-    implementation (libs.ucropnedit)
-    implementation (libs.play.services.location)
-    implementation (libs.play.services.maps)
-
+    implementation(libs.ucropnedit)
+    implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.auth.v2041)
+    implementation(libs.firebase.analytics)
+    implementation(platform(libs.firebase.bom))
 
 
 }

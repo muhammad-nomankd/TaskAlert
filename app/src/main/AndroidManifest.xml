@@ -32,7 +32,7 @@
         <activity
             android:name="com.durranitech.taskalert.screens.SignUpActivity"
             android:exported="false"
-            android:configChanges="layoutDirection"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
             android:label="@string/title_activity_sign_up"
             android:theme="@style/Theme.AlarmManager" />
         <activity
@@ -73,6 +73,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
     </application>
 
 </manifest>

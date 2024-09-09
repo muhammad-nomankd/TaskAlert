@@ -138,9 +138,7 @@ class HomeScreen : ComponentActivity() {
         val currentHumidity by weatherViewModel.weatherHumidity.observeAsState()
         var isWeatherLoading by rememberSaveable { mutableStateOf(false) }
         var isPressed by remember { mutableStateOf(false) }
-        var snackBarHost by remember { mutableStateOf(SnackbarHostState()) }
         val coroutineScope = rememberCoroutineScope()
-        var showSnackbar by remember { mutableStateOf(false) }
         val scale by animateFloatAsState(if (isPressed) 1.1f else 1.0f)
         var isPermisionGranted = ContextCompat.checkSelfPermission(
             context,
@@ -332,8 +330,8 @@ class HomeScreen : ComponentActivity() {
                 Text(
                     text,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
                 )
             }
         }
@@ -771,8 +769,7 @@ class HomeScreen : ComponentActivity() {
             item {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 8.dp),
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     categoryButton(text = "All", selectedCategoryState) {
@@ -789,7 +786,6 @@ class HomeScreen : ComponentActivity() {
                 }
             }
             item { Spacer(modifier = Modifier.height(32.dp)) }
-
             // LazyRow for horizontal scrollable tasks
             item {
                 LazyRow(
@@ -807,6 +803,9 @@ class HomeScreen : ComponentActivity() {
                             navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
                         })
                     }
+                }
+                if (tasks.isEmpty()){
+                    Spacer(modifier = Modifier.height(168.dp))
                 }
             }
             item { Spacer(modifier = Modifier.height(8.dp)) }
