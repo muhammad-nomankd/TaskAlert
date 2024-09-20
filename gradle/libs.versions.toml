@@ -34,6 +34,8 @@ ui = "1.6.8"
 uiToolingPreview = "1.6.8"
 lifecycleRuntimeComposeAndroid = "2.8.4"
 googleGmsGoogleServices = "4.4.2"
+workRuntimeKtx = "2.9.1"
+runtimeLivedataVersion = "1.7.2"
 
 [libraries]
 androidx-activity-compose-v151 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
@@ -42,6 +44,7 @@ androidx-core-ktx-v180 = { module = "androidx.core:core-ktx", version.ref = "cor
 androidx-lifecycle-runtime-ktx-v251 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
@@ -79,6 +82,7 @@ ucropnedit = { module = "com.github.krokyze:ucropnedit", version.ref = "ucropned
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
+runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedataVersion" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
