@@ -2,6 +2,8 @@ package com.durranitech.taskalert.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
@@ -55,7 +57,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,6 +91,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.durranitech.taskalert.R
+import com.durranitech.taskalert.TaskNotificationManager
 import com.durranitech.taskalert.dataclasses.Task
 import com.durranitech.taskalert.viewmodels.GetTaskViewModel
 import com.durranitech.taskalert.viewmodels.WeatherViewModel
@@ -104,13 +106,17 @@ import java.util.Locale
 class HomeScreen : ComponentActivity() {
     var loading: Boolean by mutableStateOf(false)
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            HomeScreenUi(navController = NavController(LocalContext.current), LocalContext.current)
-        }
+
+        val taskNotificationManager = TaskNotificationManager(this)
+        taskNotificationManager.checkTasksAndScheduleNotifications(
+            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        )
+        createNotificationChannel(this)
+
+
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -157,6 +163,14 @@ class HomeScreen : ComponentActivity() {
             } else {
                 isWeatherLoading = false
             }
+        }
+
+        LaunchedEffect(Unit) {
+            val taskNotificationManager = TaskNotificationManager(context)
+            taskNotificationManager.checkTasksAndScheduleNotifications(
+                FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            )
+            createNotificationChannel(context)
         }
         LaunchedEffect(Unit, loading) {
             // Getting User Detail from FireStore
@@ -804,7 +818,7 @@ class HomeScreen : ComponentActivity() {
                         })
                     }
                 }
-                if (tasks.isEmpty()){
+                if (tasks.isEmpty()) {
                     Spacer(modifier = Modifier.height(168.dp))
                 }
             }
@@ -1000,5 +1014,18 @@ class HomeScreen : ComponentActivity() {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createNotificationChannel(context: Context) {
+        val channelId = "taskAlertChannel"
+        val channelName = "Task Alert Notifications"
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        val channel = NotificationChannel(channelId, channelName, importance)
+        channel.description = "Channel for task alerts"
+
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        notificationManager?.createNotificationChannel(channel)
+    }
+
 
 }

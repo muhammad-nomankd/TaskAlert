@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.durranitech.taskalert"
-        minSdk = 25
+        minSdk = 26
         targetSdk = 34
         versionCode = 5
         versionName = "1.5"
@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.play.services.auth.v2041)
     implementation(libs.firebase.analytics)
     implementation(platform(libs.firebase.bom))
+    implementation(libs.androidx.work.runtime.ktx)
 
 
 }
