@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.durranitech.taskalert.dataclasses.location
+import com.durranitech.taskalert.modelclasses.location
 import com.durranitech.taskalert.models.City
 import com.durranitech.taskalert.repositories.SaveLocationRespository
 import kotlinx.coroutines.launch

@@ -1,5 +1,5 @@
 import androidx.lifecycle.ViewModel
-import com.durranitech.taskalert.dataclasses.Task
+import com.durranitech.taskalert.modelclasses.Task
 import com.durranitech.taskalert.repositories.CreateTaskRepository
 
 class CreateTaskViewModel : ViewModel() {

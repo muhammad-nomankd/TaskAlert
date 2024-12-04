@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("com.google.gms.google-services")
+    id("kotlin-kapt")
+    id("kotlin-android")
+    id("dagger.hilt.android.plugin")
 }
 
 
@@ -98,6 +101,8 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(platform(libs.firebase.bom))
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
 
 }

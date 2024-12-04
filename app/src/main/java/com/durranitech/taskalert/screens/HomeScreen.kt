@@ -2,6 +2,7 @@ package com.durranitech.taskalert.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -12,11 +13,10 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -48,6 +49,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -57,6 +59,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,7 +81,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -86,13 +89,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.durranitech.taskalert.R
 import com.durranitech.taskalert.TaskNotificationManager
-import com.durranitech.taskalert.dataclasses.Task
+import com.durranitech.taskalert.modelclasses.Task
 import com.durranitech.taskalert.viewmodels.GetTaskViewModel
 import com.durranitech.taskalert.viewmodels.WeatherViewModel
 import com.google.android.gms.location.LocationServices
@@ -106,7 +110,6 @@ import java.util.Locale
 class HomeScreen : ComponentActivity() {
     var loading: Boolean by mutableStateOf(false)
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -115,15 +118,13 @@ class HomeScreen : ComponentActivity() {
             FirebaseAuth.getInstance().currentUser?.uid ?: ""
         )
         createNotificationChannel(this)
-
-
     }
 
     @OptIn(ExperimentalFoundationApi::class)
-    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("NotConstructor", "CoroutineCreationDuringComposition", "MissingPermission")
     @Composable
     fun HomeScreenUi(navController: NavController, context: Context) {
+
         var profileImageUrl by rememberSaveable { mutableStateOf("") }
         var userName by rememberSaveable { mutableStateOf("") }
         var userEmail by rememberSaveable { mutableStateOf("") }
@@ -146,16 +147,15 @@ class HomeScreen : ComponentActivity() {
         var isPressed by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
         val scale by animateFloatAsState(if (isPressed) 1.1f else 1.0f)
-        var isPermisionGranted = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
+        var snackBarHost by remember { mutableStateOf(SnackbarHostState()) }
 
-        val sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val isLocationSaved = sharedPreferences.getBoolean("location_saved", false)
+        var isPermisionGranted = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
         val locationPermissionLauncher = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestPermission()
+
         ) { isGranted ->
             if (isGranted) {
                 isWeatherLoading = true
@@ -166,12 +166,25 @@ class HomeScreen : ComponentActivity() {
         }
 
         LaunchedEffect(Unit) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        context, Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        context as Activity, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1
+                    )
+                }
+
+            }
+
             val taskNotificationManager = TaskNotificationManager(context)
             taskNotificationManager.checkTasksAndScheduleNotifications(
                 FirebaseAuth.getInstance().currentUser?.uid ?: ""
             )
             createNotificationChannel(context)
         }
+
         LaunchedEffect(Unit, loading) {
             // Getting User Detail from FireStore
             isLoading = true
@@ -180,8 +193,7 @@ class HomeScreen : ComponentActivity() {
                     userName = document.getString("name") ?: ""
                     profileImageUrl = document.getString("imageUrl") ?: ""
                     userEmail = document.getString("email") ?: ""
-                }
-                .addOnSuccessListener {
+                }.addOnSuccessListener {
                     isLoading = false
                 }
 
@@ -192,9 +204,7 @@ class HomeScreen : ComponentActivity() {
             // Fetching Weather Location and data from FireStore
             isWeatherLoading = true
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
-                .collection("location")
-                .get()
-                .addOnSuccessListener { querySnapshot ->
+                .collection("location").get().addOnSuccessListener { querySnapshot ->
                     isWeatherLoading = false
                     for (document in querySnapshot.documents) {
                         selectedWeatherLocation = document.getString("location") ?: ""
@@ -202,11 +212,9 @@ class HomeScreen : ComponentActivity() {
                     if (selectedWeatherLocation.isNotBlank()) {
                         weatherViewModel.fetchWeather(selectedWeatherLocation)
                     } else {
-
                         Log.e("Weather Error", "Selected weather location is blank")
                     }
-                }
-                .addOnFailureListener {
+                }.addOnFailureListener {
                     isWeatherLoading = false
                     Log.d("weather data error", "error fetching weather data from firestore")
                 }
@@ -220,14 +228,9 @@ class HomeScreen : ComponentActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                if (isPermisionGranted && !isLocationSaved) {
+                if (isPermisionGranted) {
                     getUserLocation(context)
-                    with(sharedPreferences.edit()) {
-                        putBoolean("location_saved", true)
-                        apply()
-                    }
-
-                } else if (!isPermisionGranted) {
+                } else {
                     locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                 }
             }
@@ -239,6 +242,7 @@ class HomeScreen : ComponentActivity() {
         // Getting filtered Tasks based on selected Category Button
         LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
+
         }
 
         //Delete task logic
@@ -246,23 +250,19 @@ class HomeScreen : ComponentActivity() {
             val db = FirebaseFirestore.getInstance()
             val uId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
             val taskRef = db.collection("User").document(uId).collection("tasks")
-            taskRef.whereEqualTo("taskId", taskId)
-                .get()
-                .addOnSuccessListener { querySnapShot ->
-                    for (document in querySnapShot.documents) {
-                        if (status == "Completed") {
-                            taskRef.document(document.id).delete().addOnSuccessListener {
-                                deleteTask = true
-                            }
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Task has not completed yet.",
-                                Toast.LENGTH_LONG
-                            ).show()
+            taskRef.whereEqualTo("taskId", taskId).get().addOnSuccessListener { querySnapShot ->
+                for (document in querySnapShot.documents) {
+                    if (status == "Completed") {
+                        taskRef.document(document.id).delete().addOnSuccessListener {
+                            deleteTask = true
                         }
+                    } else {
+                        Toast.makeText(
+                            context, "Task has not completed yet.", Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
+            }
         }
 
         // Refresh tasks Category after deletion
@@ -293,8 +293,7 @@ class HomeScreen : ComponentActivity() {
                         )
                     ) {
                         Text(
-                            text = "Delete",
-                            color = Color.White, modifier = Modifier
+                            text = "Delete", color = Color.White, modifier = Modifier
                         )
                     }
 
@@ -335,8 +334,7 @@ class HomeScreen : ComponentActivity() {
         fun categoryButton(text: String, selectedCategory: String, onClick: (String) -> Unit) {
             val isSelected = selectedCategory == text
             Button(
-                onClick = { onClick(text) },
-                colors = ButtonDefaults.buttonColors(
+                onClick = { onClick(text) }, colors = ButtonDefaults.buttonColors(
                     containerColor = if (isSelected) colorResource(id = R.color.button_color) else Color.White,
                     contentColor = if (isSelected) Color.White else colorResource(id = R.color.button_color),
                 )
@@ -357,14 +355,12 @@ class HomeScreen : ComponentActivity() {
                 title.lowercase(Locale.ROOT)
                     .contains("office", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
-                )
-                    .contains("work", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                ).contains("work", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("job", ignoreCase = true) -> R.drawable.office
 
                 title.lowercase(Locale.ROOT).contains("home", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
-                )
-                    .contains("house", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                ).contains("house", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("building", ignoreCase = true) -> R.drawable.house
 
                 title.lowercase(Locale.ROOT)
@@ -372,24 +368,21 @@ class HomeScreen : ComponentActivity() {
 
                 title.lowercase(Locale.ROOT).contains("food", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
-                )
-                    .contains("lunch", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                ).contains("lunch", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("dinner", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("breakfast", ignoreCase = true) -> R.drawable.lunch
 
                 title.lowercase(Locale.ROOT)
                     .contains("medicine", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
-                )
-                    .contains("tablets", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                ).contains("tablets", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("doctor", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("hospital", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("appointment", ignoreCase = true) -> R.drawable.medicine
 
                 title.lowercase(Locale.ROOT).contains("Yoga", ignoreCase = true) || title.lowercase(
                     Locale.ROOT
-                )
-                    .contains("Gym", ignoreCase = true) || title.lowercase(Locale.ROOT)
+                ).contains("Gym", ignoreCase = true) || title.lowercase(Locale.ROOT)
                     .contains("Exercise", ignoreCase = true) -> R.drawable.house
 
                 else -> R.drawable.taskicon
@@ -399,8 +392,7 @@ class HomeScreen : ComponentActivity() {
         // Task Item for LazyRow
         @Composable
         fun taskItem(task: Task, longClick: () -> Unit, onClick: () -> Unit) {
-            Card(
-                backgroundColor = Color.White,
+            Card(backgroundColor = Color.White,
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp)
                     .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, spotColor = Color.Black)
@@ -408,20 +400,17 @@ class HomeScreen : ComponentActivity() {
                     .scale(scale)
                     .clip(shape = RoundedCornerShape(16.dp))
                     .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                isPressed = true
-                                tryAwaitRelease()
-                                isPressed = false
-                            },
-                            onLongPress = { longClick() },
-                            onTap = { onClick() }
-                        )
+                        detectTapGestures(onPress = {
+                            isPressed = true
+                            tryAwaitRelease()
+                            isPressed = false
+                        }, onLongPress = { longClick() }, onTap = { onClick() })
                     }
                     .combinedClickable(
                         onClick = { onClick() },
                         onLongClick = { longClick() },
-                    ), elevation = 4.dp
+                    ),
+                elevation = 4.dp
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
@@ -458,8 +447,7 @@ class HomeScreen : ComponentActivity() {
                             "Completed" -> Image(
                                 painter = painterResource(id = R.drawable.checkicon),
                                 contentDescription = "check icon",
-                                modifier = Modifier
-                                    .size(24.dp)
+                                modifier = Modifier.size(24.dp)
 
                             )
 
@@ -526,8 +514,7 @@ class HomeScreen : ComponentActivity() {
                     .combinedClickable(
                         onClick = { onClick() },
                         onLongClick = { longClick() },
-                    ),
-                shape = RoundedCornerShape(12.dp)
+                    ), shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -589,8 +576,7 @@ class HomeScreen : ComponentActivity() {
                                             "Low" -> colorResource(id = R.color.darkYellow)
                                             else -> Color.Black
                                         },
-                                        modifier = Modifier
-                                            .padding(start = 4.dp, top = 6.dp)
+                                        modifier = Modifier.padding(start = 4.dp, top = 6.dp)
                                     ) {
                                         Text(
                                             text = task.priority,
@@ -614,8 +600,7 @@ class HomeScreen : ComponentActivity() {
                             color = colorResource(id = R.color.medium_gray),
                             fontFamily = FontFamily.SansSerif,
                             fontWeight = FontWeight.Normal,
-                            modifier = Modifier
-                                .padding(top = 8.dp)
+                            modifier = Modifier.padding(top = 8.dp)
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -632,11 +617,11 @@ class HomeScreen : ComponentActivity() {
                             color = colorResource(id = R.color.medium_gray),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            modifier = Modifier
-                                .wrapContentWidth(Alignment.End)
+                            modifier = Modifier.wrapContentWidth(Alignment.End)
                         )
                         Text(
-                            text = "To", color = colorResource(id = R.color.medium_gray),
+                            text = "To",
+                            color = colorResource(id = R.color.medium_gray),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -645,31 +630,28 @@ class HomeScreen : ComponentActivity() {
                             color = colorResource(id = R.color.medium_gray),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            modifier = Modifier
-                                .wrapContentWidth(Alignment.End)
+                            modifier = Modifier.wrapContentWidth(Alignment.End)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         when (task.status) {
-                            "In Progress" ->
-                                Image(
-                                    painter = painterResource(id = R.drawable.inprogressicon),
-                                    contentDescription = "check icon",
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                )
+                            "In Progress" -> Image(
+                                painter = painterResource(id = R.drawable.inprogressicon),
+                                contentDescription = "check icon",
+                                modifier = Modifier.size(24.dp)
+                            )
 
-                            "Pending" ->
-                                Image(
-                                    painter = painterResource(id = R.drawable.pending),
-                                    modifier = Modifier.size(24.dp),
-                                    contentDescription = "pending",
-                                    colorFilter = ColorFilter.tint(Color(0xFFFFA500))
-                                )
+                            "Pending" -> Image(
+                                painter = painterResource(id = R.drawable.pending),
+                                modifier = Modifier.size(24.dp),
+                                contentDescription = "pending",
+                                colorFilter = ColorFilter.tint(Color(0xFFFFA500))
+                            )
                         }
                     }
                 }
             }
         }
+
 
         // MainHome Screen UI
         LazyColumn(
@@ -687,10 +669,10 @@ class HomeScreen : ComponentActivity() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
 
-                    Box(modifier = Modifier
-                        .clickable {
-                            navController.navigate("profile")
-                        }) {
+                    Box(modifier = Modifier.clickable {
+                        navController.navigate("profile")
+                    }) {
+
                         Image(
                             painter = rememberAsyncImagePainter(model = profileImageUrl.ifEmpty { R.drawable.person }),
                             contentDescription = "Profile Image",
@@ -722,18 +704,16 @@ class HomeScreen : ComponentActivity() {
                         }
 
                     } else if (selectedWeatherLocation.isEmpty()) {
-                        Text(text = "select location to view weather", modifier = Modifier
-                            .clickable { navController.navigate("locationDetailScreen") })
+                        Text(text = "select location to view weather",
+                            modifier = Modifier.clickable { navController.navigate("locationDetailScreen") })
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                            Text(
-                                text = selectedWeatherLocation.ifEmpty { "Loading..." },
+                            Text(text = selectedWeatherLocation.ifEmpty { "Loading..." },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = colorResource(id = R.color.dark_gray),
-                                modifier = Modifier
-                                    .clickable { navController.navigate("locationDetailScreen") }
+                                modifier = Modifier.clickable { navController.navigate("locationDetailScreen") }
 
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -775,15 +755,13 @@ class HomeScreen : ComponentActivity() {
                     color = colorResource(id = R.color.dark_gray),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(start = 32.dp)
+                    modifier = Modifier.padding(start = 32.dp)
                 )
             }
             item { Spacer(modifier = Modifier.height(8.dp)) }
             item {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     categoryButton(text = "All", selectedCategoryState) {
@@ -800,6 +778,8 @@ class HomeScreen : ComponentActivity() {
                 }
             }
             item { Spacer(modifier = Modifier.height(32.dp)) }
+
+
             // LazyRow for horizontal scrollable tasks
             item {
                 LazyRow(
@@ -814,7 +794,17 @@ class HomeScreen : ComponentActivity() {
                             taskStatus = task.status
 
                         }, onClick = {
-                            navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
+                            try {
+                                navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
+                            } catch (e: Exception) {
+                                coroutineScope.launch {
+                                    snackBarHost.showSnackbar(
+                                        message = "Error opening task please delete it and create it again",
+                                        actionLabel = "Ok",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
                         })
                     }
                 }
@@ -858,15 +848,27 @@ class HomeScreen : ComponentActivity() {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         nonfilterTasks.forEach { task ->
-                            upComingTasksItem(task,
-                                longClick = {
-                                    currenttask = task.taskId
-                                    showPopUp = true
-                                    taskStatus = task.status
+                            upComingTasksItem(task, longClick = {
+                                currenttask = task.taskId
+                                showPopUp = true
+                                taskStatus = task.status
 
-                                }, onClick = {
+                            }, onClick = {
+                                try {
                                     navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
-                                })
+                                    Log.d("task route", "${"createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}"}")
+                                }
+                                catch (e:Exception){
+                                    coroutineScope.launch{
+                                        snackBarHost.showSnackbar(
+                                            message = "Error opening task please delete it and create it again",
+                                            actionLabel = "Ok",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+
+                                }
+                            })
 
 
                         }
@@ -881,7 +883,7 @@ class HomeScreen : ComponentActivity() {
             // Floating Action Button for Creating task Screen navigation
             FloatingActionButton(
                 onClick = { navController.navigate("createTask") },
-                containerColor = colorResource(id = R.color.fab_color),
+                containerColor = colorResource(id = R.color.green),
                 contentColor = Color.White,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp),
                 shape = CircleShape,
@@ -907,12 +909,20 @@ class HomeScreen : ComponentActivity() {
                 if (isLoading) {
                     CircularProgressIndicator(
                         strokeWidth = 1.dp,
-                        modifier = Modifier
-                            .align(alignment = Alignment.CenterHorizontally),
+                        modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
                         color = Color.Gray
                     )
                 }
             }
+        }
+        Box(modifier = Modifier.fillMaxSize()) {
+            SnackbarHost(
+                hostState = snackBarHost,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(Alignment.Bottom)
+                    .align(Alignment.BottomCenter)
+            )
         }
 
     }
@@ -954,36 +964,32 @@ class HomeScreen : ComponentActivity() {
     @SuppressLint("MissingPermission")
     private fun getUserLocation(context: Context) {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location ->
-                location?.let {
-                    if (isNetworkAvailable(context)) {
-                        val geocoder = Geocoder(context, Locale.getDefault())
-                        try {
-                            val addresses =
-                                geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                            if (addresses != null) {
-                                if (addresses.isNotEmpty()) {
-                                    val locationName = addresses[0].locality ?: "Unknown location"
-                                    saveLocationToFireStore(locationName, context)
-                                    loading = true
-                                }
-                            } else {
-                                Log.d("null address", "null address")
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location?.let {
+                if (isNetworkAvailable(context)) {
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    try {
+                        val addresses =
+                            geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                        if (addresses != null) {
+                            if (addresses.isNotEmpty()) {
+                                val locationName = addresses[0].locality ?: "Unknown location"
+                                saveLocationToFireStore(locationName, context)
+                                loading = true
                             }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        } else {
+                            Log.d("null address", "null address")
                         }
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "No network connection available",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
+                } else {
+                    Toast.makeText(
+                        context, "No network connection available", Toast.LENGTH_LONG
+                    ).show()
                 }
             }
+        }
     }
 
     private fun saveLocationToFireStore(locationName: String, context: Context) {
@@ -993,9 +999,7 @@ class HomeScreen : ComponentActivity() {
                 .collection("location").document("12345")
         docRef.set(
             mapOf(
-                "location" to locationName,
-                "locationId" to "12345",
-                "country" to ""
+                "location" to locationName, "locationId" to "12345", "country" to ""
 
             )
         )
@@ -1004,15 +1008,16 @@ class HomeScreen : ComponentActivity() {
 
     private fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = connectivityManager.activeNetworkInfo
         return activeNetwork?.isConnectedOrConnecting == true
     }
 
     private fun isLocationEnabled(context: Context): Boolean {
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        val locationManager = context.getSystemService(LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -1,6 +1,6 @@
 package com.durranitech.taskalert.repositories
 
-import com.durranitech.taskalert.dataclasses.Task
+import com.durranitech.taskalert.modelclasses.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await

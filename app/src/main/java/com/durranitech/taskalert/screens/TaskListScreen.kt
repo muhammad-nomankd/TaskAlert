@@ -37,6 +37,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -51,6 +53,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -73,7 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.durranitech.taskalert.dataclasses.Task
+import com.durranitech.taskalert.modelclasses.Task
 import com.durranitech.taskalert.screens.ui.theme.AlarmManagerTheme
 import com.durranitech.taskalert.viewmodels.GetTaskViewModel
 import com.durranitech.taskalert.R
@@ -99,7 +102,7 @@ class TaskListScreen : ComponentActivity() {
     @Composable
     fun TaskListScreen(navController: NavController) {
         val viewModel: GetTaskViewModel = viewModel()
-        val filteredTasksForMonth by viewModel.filteredTasksofMonth.observeAsState(emptyList())
+        val filteredTasksForMonth by viewModel.filteredTasksofMonth.collectAsState()
         val filteredTasksForDay by viewModel.filteredTasksofDay.observeAsState(emptyList())
         val calendar = rememberSaveable { Calendar.getInstance() }
         val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
@@ -114,9 +117,8 @@ class TaskListScreen : ComponentActivity() {
         val context = LocalContext.current
         var refreshtaskforday by rememberSaveable { mutableStateOf(false) }
         var isLoading by rememberSaveable { mutableStateOf(false) }
-
-
         val coroutines = rememberCoroutineScope()
+        val snackbarHost by remember { mutableStateOf(SnackbarHostState()) }
         coroutines.launch {
             isLoading = true
             currentMonth = dateFormat.format(calendar.time)
@@ -128,10 +130,14 @@ class TaskListScreen : ComponentActivity() {
         }
 
         LaunchedEffect(calendar.time) {
-            viewModel.fetchTaskForMonth(
-                calendar.get(Calendar.MONTH) + 1,
-                calendar.get(Calendar.YEAR)
-            )
+
+            coroutines.launch{
+                viewModel.fetchTaskForMonth(
+                    calendar.get(Calendar.MONTH) + 1,
+                    calendar.get(Calendar.YEAR)
+                )
+            }
+
         }
 
         if (isLoading){
@@ -325,7 +331,19 @@ class TaskListScreen : ComponentActivity() {
                         showPopUp = true
                         taskStatus = task.status
                     }, onClick = {
-                        navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
+                        try {
+                            navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
+                        }
+                        catch (e: Exception){
+                            coroutines.launch{
+                                snackbarHost.showSnackbar(
+                                    message = "Error showing task delete it and create new task",
+                                    actionLabel = "Ok",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+
+                        }
                     })
                 }
             }
@@ -601,6 +619,7 @@ class TaskListScreen : ComponentActivity() {
                                 contentDescription = "pending",
                                 colorFilter = ColorFilter.tint(Color(0xFFFFA500))
                             )
+
                         "Completed" ->
                             Image(painter = painterResource(id = R.drawable.checkicon), contentDescription = "Completed",
                                 modifier = Modifier.size(24.dp))

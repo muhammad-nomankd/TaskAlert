@@ -5,21 +5,15 @@ import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.NavController
 import com.durranitech.taskalert.R
-import com.durranitech.taskalert.dataclasses.User
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
-import com.google.android.gms.auth.api.identity.SignInClient
+import com.durranitech.taskalert.modelclasses.User
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firestore.v1.BeginTransactionRequest
 
 class AuthRepository() {
     private val auth = FirebaseAuth.getInstance()

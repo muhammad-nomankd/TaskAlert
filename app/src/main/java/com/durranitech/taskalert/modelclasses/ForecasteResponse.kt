@@ -1,4 +1,4 @@
-package com.durranitech.taskalert.dataclasses
+package com.durranitech.taskalert.modelclasses
 
 data class ForecasteResponse(
     val city: City,

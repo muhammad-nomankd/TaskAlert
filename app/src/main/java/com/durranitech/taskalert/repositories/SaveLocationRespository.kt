@@ -2,7 +2,7 @@ package com.durranitech.taskalert.repositories
 
 import android.content.Context
 import android.util.Log
-import com.durranitech.taskalert.dataclasses.location
+import com.durranitech.taskalert.modelclasses.location
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 

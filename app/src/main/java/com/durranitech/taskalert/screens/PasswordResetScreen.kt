@@ -58,14 +58,14 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
     val isloading = rememberSaveable {
         mutableStateOf(false)
     }
-    val scrollstate = rememberScrollState()
+    val scrollable = rememberScrollState()
 
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = colorResource(id = R.color.custom_white))
-            .verticalScroll(scrollstate)
+            .verticalScroll(scrollable)
             .padding(start = 32.dp, top = 48.dp, end = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center

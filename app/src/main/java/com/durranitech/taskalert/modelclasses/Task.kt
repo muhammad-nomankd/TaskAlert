@@ -1,4 +1,4 @@
-package com.durranitech.taskalert.dataclasses
+package com.durranitech.taskalert.modelclasses
 import androidx.compose.runtime.Immutable
 
 @Immutable

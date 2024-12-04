@@ -1,12 +1,10 @@
 package com.durranitech.taskalert.activities
+
 import CreateTaskViewModel
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -32,12 +30,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "home") {
+
                 composable("home") {
                     HomeScreen().HomeScreenUi(navController, this@MainActivity)
                 }
+
                 composable("ResetPassword") {
                     PasswordResetScreen(context = LocalContext.current, navController)
                 }
+                composable("taskListScreen") {
+                    TaskListScreen().TaskListScreen(navController)
+                }
+
                 composable("SignIn") {
                     SignUpActivity().SignUp(
                         viewModel = AuthViewModel(
@@ -45,22 +49,25 @@ class MainActivity : ComponentActivity() {
                         ), navController = navController
                     )
                 }
+
                 composable("locationDetailScreen") {
                     LocationDetailScreen().LocationDetailContent(
                         LocationViewModel(), navController
                     )
                 }
+
                 composable("signup") {
                     SignUpActivity().SignUp(
                         viewModel = AuthViewModel(
                             AuthRepository()
-                        ),
-                        navController = navController
+                        ), navController = navController
                     )
                 }
+
                 composable("profile") {
                     ProfileScreen().ProfileContent(navController)
                 }
+
                 composable(
                     "createTask?taskId={taskId}&taskTitle={taskTitle}&taskDescription={taskDescription}&startDate={startDate}&endDate={endDate}&startTime={startTime}&endTime={endTime}&priority={priority}",
                     arguments = listOf(
@@ -74,6 +81,8 @@ class MainActivity : ComponentActivity() {
                         navArgument("priority") { nullable = true }
                     )
                 ) { backStackEntry ->
+
+                    // Extract arguments
                     val taskId = backStackEntry.arguments?.getString("taskId")
                     val taskTitle = backStackEntry.arguments?.getString("taskTitle")
                     val taskDescription = backStackEntry.arguments?.getString("taskDescription")
@@ -83,19 +92,15 @@ class MainActivity : ComponentActivity() {
                     val endTime = backStackEntry.arguments?.getString("endTime")
                     val priority = backStackEntry.arguments?.getString("priority")
 
+                    // Pass the arguments to the CreateTask screen
                     CreatTask().CreateTaskcom(
                         navController,
                         CreateTaskViewModel(),
-                        taskId,
-                        taskTitle,
-                        taskDescription,
-                        startDate,
-                        endDate,
-                        startTime,
-                        endTime,
-                        priority
+                        taskId, taskTitle, taskDescription, startDate, endDate, startTime, endTime, priority
                     )
                 }
+
+
                 composable("taskListScreen") { TaskListScreen().TaskListScreen(navController) }
             }
         }

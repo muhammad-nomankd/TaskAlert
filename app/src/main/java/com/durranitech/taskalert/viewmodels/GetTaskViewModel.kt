@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.durranitech.taskalert.dataclasses.Task
+import com.durranitech.taskalert.modelclasses.Task
 import com.durranitech.taskalert.repositories.GetTaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,8 +30,8 @@ class GetTaskViewModel : ViewModel() {
     private val _filteredTasks = MutableLiveData<List<Task>>(emptyList())
     var filteredTasks: LiveData<List<Task>> = _filteredTasks
 
-    private val _filteredTasksofMonth = MutableLiveData<List<Task>>(emptyList())
-    var filteredTasksofMonth: LiveData<List<Task>> = _filteredTasksofMonth
+    private val _filteredTasksofMonth = MutableStateFlow<List<Task>>(emptyList())
+    var filteredTasksofMonth: StateFlow<List<Task>> = _filteredTasksofMonth
 
     private val _filteredTasksofDay = MutableLiveData<List<Task>>(emptyList())
     var filteredTasksofDay: LiveData<List<Task>> = _filteredTasksofDay
@@ -61,7 +61,6 @@ class GetTaskViewModel : ViewModel() {
         val dateFormats = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         val currentTime = System.currentTimeMillis()
         try {
-
             taskList.forEach { task ->
                 val endT = dateFormats.parse("${task.endDate} ${task.endTime}")?.time ?: 0L
                 val startT = dateFormats.parse("${task.startDate} ${task.startTime}")?.time ?: 0L
@@ -102,6 +101,7 @@ class GetTaskViewModel : ViewModel() {
                     "In Progress and Pending" -> taskRepo.filter {
                         it.status == "In Progress" || it.status == "Pending"
                     }
+
                     else -> taskRepo
                 }
                 _tasksForUpCommingCategory.value = taskFilter
@@ -122,9 +122,10 @@ class GetTaskViewModel : ViewModel() {
                 taskDate?.let {
                     calendar.time = it
                 }
-                val isSameDay = calendar.get(Calendar.DAY_OF_MONTH) == day
-                        && calendar.get(Calendar.MONTH) + 1 == month
-                        && calendar.get(Calendar.YEAR) == year
+                val isSameDay =
+                    calendar.get(Calendar.DAY_OF_MONTH) == day && calendar.get(Calendar.MONTH) + 1 == month && calendar.get(
+                        Calendar.YEAR
+                    ) == year
                 isSameDay
             }
             _filteredTasksofDay.postValue(filterList)
@@ -148,6 +149,7 @@ class GetTaskViewModel : ViewModel() {
                 isSameMonth
             }
             _filteredTasksofMonth.value = (filterListForMonth)
+
             Log.d("bug fixing month", filterListForMonth.toString())
         }
         return _filteredTasksofMonth.value ?: emptyList()

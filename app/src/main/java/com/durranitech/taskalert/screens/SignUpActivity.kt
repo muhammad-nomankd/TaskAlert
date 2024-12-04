@@ -114,7 +114,7 @@ class SignUpActivity : ComponentActivity() {
             if (result.resultCode == RESULT_OK && data != null) {
                 viewModel.handleGoogleSignInResult(data, onSuccess = { googleSuccess ->
                     coroutinesScope.launch {
-                        snackBarHost.showSnackbar(message = googleSuccess, actionLabel = "Close")
+                        snackBarHost.showSnackbar(message = googleSuccess, actionLabel = "Close", duration = SnackbarDuration.Short)
                     }
                     coroutinesScope.launch {
                         delay(1000)
@@ -125,7 +125,7 @@ class SignUpActivity : ComponentActivity() {
                     }
                 }, onError = { errorMessage ->
                     coroutinesScope.launch {
-                        snackBarHost.showSnackbar(message = errorMessage, actionLabel = "Close")
+                        snackBarHost.showSnackbar(message = errorMessage, actionLabel = "Close", duration = SnackbarDuration.Short)
                     }
                 }, context)
             } else {
@@ -135,7 +135,8 @@ class SignUpActivity : ComponentActivity() {
                 coroutinesScope.launch {
                     snackBarHost.showSnackbar(
                         message = "Sign in cancelled",
-                        actionLabel = "Close"
+                        actionLabel = "Close",
+                        duration = SnackbarDuration.Short
                     )
                 }
             }
@@ -336,8 +337,6 @@ class SignUpActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-
-
                         if (isNetworkAvailable(context)) {
                             isLoading.value = true
                             viewModel.googleSignIn(
@@ -403,7 +402,7 @@ class SignUpActivity : ComponentActivity() {
                             text = "SignIn with Google",
                             color = Color.Black,
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }

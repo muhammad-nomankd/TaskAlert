@@ -1,7 +1,7 @@
 package com.durranitech.taskalert.weatherApi
 
-import com.durranitech.taskalert.dataclasses.ForecasteResponse
-import com.durranitech.taskalert.dataclasses.WeatherResponse
+import com.durranitech.taskalert.modelclasses.ForecasteResponse
+import com.durranitech.taskalert.modelclasses.WeatherResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

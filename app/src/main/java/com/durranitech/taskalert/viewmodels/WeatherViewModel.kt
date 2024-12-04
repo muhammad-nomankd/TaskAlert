@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.durranitech.taskalert.dataclasses.ForecasteData
+import com.durranitech.taskalert.modelclasses.ForecasteData
 import com.durranitech.taskalert.weatherApi.RetroFitInstance
 import kotlinx.coroutines.launch
 
