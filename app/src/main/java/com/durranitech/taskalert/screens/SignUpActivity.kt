@@ -255,6 +255,10 @@ class SignUpActivity : ComponentActivity() {
                             return@Button
                         }
                         if (isNetworkAvailable(context)) {
+                            if (password.length<6){
+                                passworderror = "Password must be at least 6 characters"
+                                return@Button
+                            }
                             if (password.isNotEmpty() && email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(
                                     email
                                 ).matches()
