@@ -214,12 +214,6 @@ class LocationDetailScreen : ComponentActivity() {
                             )
                             .background(Color(0xFFFAFAFA), shape = RoundedCornerShape(16.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
-                            cursorColor = Color.DarkGray,
-                            focusedIndicatorColor = Color(0xFFDADADA),
-                            unfocusedIndicatorColor = Color(0xFFDADADA)
-                        ),
                         textStyle = TextStyle(Color.DarkGray, fontSize = 16.sp)
                     )
 
@@ -244,7 +238,7 @@ class LocationDetailScreen : ComponentActivity() {
                                         shape = RoundedCornerShape(32.dp)
                                     ),
                                 text = {
-                                    androidx.wear.compose.material.Text(
+                                    Text(
                                         text = "${it.name}, ${it.country}",
                                         color = colorResource(id = R.color.medium_gray),
                                         fontSize = 18.sp

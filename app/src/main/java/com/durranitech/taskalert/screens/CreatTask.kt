@@ -119,11 +119,6 @@ class CreatTask : ComponentActivity() {
         var snackBarHost by remember { mutableStateOf(SnackbarHostState()) }
         val coroutinesScope = rememberCoroutineScope()
 
-        val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = Color.DarkGray,
-            cursorColor = Color.DarkGray
-        )
 
         fun showDatePicker(isStartDate: Boolean) {
             val calendar = Calendar.getInstance()
@@ -290,7 +285,6 @@ class CreatTask : ComponentActivity() {
                                         titleError = ""},
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
-                        colors = textFieldColors,
                         maxLines = 1,
                         textStyle = TextStyle(fontSize = 16.sp),
                         label = { Text(text = "Title", color = Color.Gray) })
@@ -321,8 +315,7 @@ class CreatTask : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp),
-                        label = { Text("Write a note...", color = Color.Gray) },
-                        colors = textFieldColors
+                        label = { Text("Write a note...", color = Color.Gray) }
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))

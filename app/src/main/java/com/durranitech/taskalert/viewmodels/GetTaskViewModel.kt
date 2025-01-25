@@ -22,7 +22,6 @@ class GetTaskViewModel : ViewModel() {
     private val repository = GetTaskRepository()
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-    val tasks: StateFlow<List<Task>> = _tasks
 
     private val _tasksForUpCommingCategory = MutableStateFlow<List<Task>>(emptyList())
     val tasksForUpCommingCategory: StateFlow<List<Task>> = _tasksForUpCommingCategory
@@ -107,7 +106,6 @@ class GetTaskViewModel : ViewModel() {
                 _tasksForUpCommingCategory.value = taskFilter
             } catch (e: Exception) {
                 _tasksForUpCommingCategory.value = emptyList()
-                // You might want to log the exception here or handle it appropriately
             }
         }
     }
@@ -152,7 +150,7 @@ class GetTaskViewModel : ViewModel() {
 
             Log.d("bug fixing month", filterListForMonth.toString())
         }
-        return _filteredTasksofMonth.value ?: emptyList()
+        return _filteredTasksofMonth.value
     }
 
 }

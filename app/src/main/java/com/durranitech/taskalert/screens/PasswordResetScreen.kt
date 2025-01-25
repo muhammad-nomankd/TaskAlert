@@ -112,11 +112,6 @@ fun PasswordResetScreen(context: Context, navController: NavController) {
                     Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = Color.Gray)
                 },
                 shape = RoundedCornerShape(16.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = colorResource(id = R.color.dark_gray),
-                    cursorColor = Color.DarkGray,
-                ),
                 textStyle = androidx.compose.ui.text.TextStyle(
                     color = Color.DarkGray,
                     fontSize = 16.sp

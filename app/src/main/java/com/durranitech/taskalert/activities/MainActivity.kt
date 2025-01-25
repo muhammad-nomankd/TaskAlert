@@ -1,10 +1,13 @@
 package com.durranitech.taskalert.activities
 
 import CreateTaskViewModel
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,6 +26,7 @@ import com.durranitech.taskalert.viewmodels.LocationViewModel
 class MainActivity : ComponentActivity() {
 
 
+    @RequiresApi(Build.VERSION_CODES.FROYO)
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -70,16 +74,35 @@ class MainActivity : ComponentActivity() {
 
                 composable(
                     "createTask?taskId={taskId}&taskTitle={taskTitle}&taskDescription={taskDescription}&startDate={startDate}&endDate={endDate}&startTime={startTime}&endTime={endTime}&priority={priority}",
-                    arguments = listOf(
-                        navArgument("taskId") { nullable = true },
-                        navArgument("taskTitle") { nullable = true },
-                        navArgument("taskDescription") { nullable = true },
-                        navArgument("startDate") { nullable = true },
-                        navArgument("endDate") { nullable = true },
-                        navArgument("startTime") { nullable = true },
-                        navArgument("endTime") { nullable = true },
-                        navArgument("priority") { nullable = true }
-                    )
+                    arguments = listOf(navArgument("taskId") { nullable = true },
+                        navArgument("taskTitle") {
+                            nullable = true
+                            NavType.StringType
+                        },
+                        navArgument("taskDescription") {
+                            nullable = true
+                            NavType.StringType
+                        },
+                        navArgument("startDate") {
+                            nullable = true
+                            NavType.StringType
+                        },
+                        navArgument("endDate") {
+                            nullable = true
+                            NavType.StringType
+                        },
+                        navArgument("startTime") {
+                            nullable = true
+                            NavType.StringType
+                        },
+                        navArgument("endTime") {
+                            nullable = true
+                            NavType.StringType
+                        },
+                        navArgument("priority") {
+                            nullable = true
+                            NavType.StringType
+                        })
                 ) { backStackEntry ->
 
                     // Extract arguments
@@ -96,7 +119,14 @@ class MainActivity : ComponentActivity() {
                     CreatTask().CreateTaskcom(
                         navController,
                         CreateTaskViewModel(),
-                        taskId, taskTitle, taskDescription, startDate, endDate, startTime, endTime, priority
+                        taskId,
+                        taskTitle,
+                        taskDescription,
+                        startDate,
+                        endDate,
+                        startTime,
+                        endTime,
+                        priority
                     )
                 }
 

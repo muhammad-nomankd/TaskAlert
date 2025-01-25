@@ -28,6 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
@@ -38,7 +39,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,7 +60,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.wear.compose.material.Text
 import coil.compose.rememberAsyncImagePainter
 import com.durranitech.taskalert.R
 import com.google.firebase.auth.FirebaseAuth
@@ -254,15 +253,6 @@ class ProfileScreen : ComponentActivity() {
                             )
                         },
                         singleLine = true,
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedTextColor = Color.DarkGray,
-                            unfocusedTextColor = Color.Gray,
-                            focusedBorderColor = Color.DarkGray,
-                            unfocusedBorderColor = Color.LightGray,
-                            cursorColor = Color.Black,
-                            focusedLabelColor = colorResource(id = R.color.light_pink),
-                            unfocusedLabelColor = colorResource(id = R.color.light_pink)
-                        ),
                         modifier = Modifier
                             .padding(start = 16.dp, end = 16.dp)
                             .fillMaxWidth()

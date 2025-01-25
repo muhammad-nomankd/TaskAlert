@@ -143,11 +143,7 @@ class SignUpActivity : ComponentActivity() {
         }
 
 
-        val textColor = TextFieldDefaults.outlinedTextFieldColors(
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = colorResource(id = R.color.dark_gray),
-            cursorColor = colorResource(id = R.color.dark_gray)
-        )
+
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackBarHost) },
             modifier = Modifier.fillMaxSize()
@@ -172,7 +168,6 @@ class SignUpActivity : ComponentActivity() {
                 OutlinedTextField(
                     textStyle = TextStyle(color = Color.DarkGray, fontSize = 18.sp),
                     shape = RoundedCornerShape(18.dp),
-                    colors = textColor,
                     singleLine = true,
                     value = email,
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -204,7 +199,6 @@ class SignUpActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(shape = RoundedCornerShape(16.dp),
                     value = password,
-                    colors = textColor,
                     textStyle = TextStyle(color = Color.DarkGray, fontSize = 18.sp),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Password

@@ -13,12 +13,9 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -49,7 +46,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -59,6 +55,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -90,6 +87,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -107,6 +105,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+@SuppressLint("RestrictedApi")
 class HomeScreen : ComponentActivity() {
     var loading: Boolean by mutableStateOf(false)
 
@@ -658,7 +657,6 @@ class HomeScreen : ComponentActivity() {
             modifier = Modifier
                 .background(colorResource(id = R.color.custom_white))
                 .fillMaxSize()
-
         ) {
             item {
                 Row(
@@ -748,7 +746,9 @@ class HomeScreen : ComponentActivity() {
 
                 }
             }
+
             item { Spacer(modifier = Modifier.height(32.dp)) }
+
             item {
                 Text(
                     "Categories",
@@ -758,7 +758,9 @@ class HomeScreen : ComponentActivity() {
                     modifier = Modifier.padding(start = 32.dp)
                 )
             }
+
             item { Spacer(modifier = Modifier.height(8.dp)) }
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -777,8 +779,8 @@ class HomeScreen : ComponentActivity() {
                     }
                 }
             }
-            item { Spacer(modifier = Modifier.height(32.dp)) }
 
+            item { Spacer(modifier = Modifier.height(32.dp)) }
 
             // LazyRow for horizontal scrollable tasks
             item {
@@ -856,10 +858,12 @@ class HomeScreen : ComponentActivity() {
                             }, onClick = {
                                 try {
                                     navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
-                                    Log.d("task route", "${"createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}"}")
-                                }
-                                catch (e:Exception){
-                                    coroutineScope.launch{
+                                    Log.d(
+                                        "task route",
+                                        "createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}"
+                                    )
+                                } catch (e: Exception) {
+                                    coroutineScope.launch {
                                         snackBarHost.showSnackbar(
                                             message = "Error opening task please delete it and create it again",
                                             actionLabel = "Ok",
@@ -1020,7 +1024,6 @@ class HomeScreen : ComponentActivity() {
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannel(context: Context) {
         val channelId = "taskAlertChannel"
         val channelName = "Task Alert Notifications"
@@ -1031,6 +1034,5 @@ class HomeScreen : ComponentActivity() {
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager?.createNotificationChannel(channel)
     }
-
 
 }
