@@ -16,7 +16,20 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -72,6 +85,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -100,6 +114,7 @@ import com.durranitech.taskalert.viewmodels.WeatherViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -109,9 +124,9 @@ import java.util.Locale
 class HomeScreen : ComponentActivity() {
     var loading: Boolean by mutableStateOf(false)
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val taskNotificationManager = TaskNotificationManager(this)
         taskNotificationManager.checkTasksAndScheduleNotifications(
             FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -119,7 +134,8 @@ class HomeScreen : ComponentActivity() {
         createNotificationChannel(this)
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
+    @RequiresApi(Build.VERSION_CODES.O)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     @SuppressLint("NotConstructor", "CoroutineCreationDuringComposition", "MissingPermission")
     @Composable
     fun HomeScreenUi(navController: NavController, context: Context) {
@@ -265,67 +281,75 @@ class HomeScreen : ComponentActivity() {
         }
 
         // Refresh tasks Category after deletion
-        if (deleteTask) {
-            coroutineScope.launch {
-                viewmodel.filterTasks(selectedCategoryState)
-                deleteTask = false
+        AnimatedContent(targetState = deleteTask, transitionSpec = {
+            fadeIn(animationSpec = tween(300)) with fadeOut(animationSpec = tween(300))
+        }) { isDeleted ->
+            if (!isDeleted) {
+                coroutineScope.launch(Dispatchers.Main) {
+                    viewmodel.filterTasks(selectedCategoryState)
+                    deleteTask = false
+                }
             }
         }
 
+
         // PopUp for Deleting task
-        if (showPopUp) {
-            AlertDialog(onDismissRequest = { showPopUp = false },
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = Color.White,
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showPopUp = false
-                            deleteTask(currenttask, taskStatus, context)
+        AnimatedVisibility(visible = showPopUp, enter = fadeIn(), exit = fadeOut()) {
+            if (showPopUp) {
+                AlertDialog(
+                    onDismissRequest = { showPopUp = false },
+                    shape = RoundedCornerShape(16.dp),
+                    backgroundColor = Color.White,
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showPopUp = false
+                                deleteTask(currenttask, taskStatus, context)
 
-                        },
-                        elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(
-                                id = R.color.button_color
+                            },
+                            elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(
+                                    id = R.color.button_color
+                                )
                             )
-                        )
-                    ) {
-                        Text(
-                            text = "Delete", color = Color.White, modifier = Modifier
-                        )
-                    }
+                        ) {
+                            Text(
+                                text = "Delete", color = Color.White, modifier = Modifier
+                            )
+                        }
 
-                },
-                title = {
-                    Text(
-                        text = "Delete Task",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = Color.Black,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                },
-                text = {
-                    Text(
-                        text = "Are you sure you  want to delete this task?",
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 16.sp,
-                        color = Color.DarkGray,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                },
-                dismissButton = {
-                    Button(
-                        onClick = { showPopUp = false },
-                        elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            colorResource(id = R.color.darkBlue)
+                    },
+                    title = {
+                        Text(
+                            text = "Delete Task",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodyLarge
                         )
-                    ) {
-                        Text(text = "Cancel", color = Color.White)
-                    }
-                })
+                    },
+                    text = {
+                        Text(
+                            text = "Are you sure you  want to delete this task?",
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 16.sp,
+                            color = Color.DarkGray,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = { showPopUp = false },
+                            elevation = ButtonDefaults.elevatedButtonElevation(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                colorResource(id = R.color.darkBlue)
+                            )
+                        ) {
+                            Text(text = "Cancel", color = Color.White)
+                        }
+                    })
+            }
         }
 
         // Category Button for selecting specific category like All, In Progress or Completed
@@ -391,113 +415,125 @@ class HomeScreen : ComponentActivity() {
         // Task Item for LazyRow
         @Composable
         fun taskItem(task: Task, longClick: () -> Unit, onClick: () -> Unit) {
-            Card(backgroundColor = Color.White,
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 8.dp)
-                    .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, spotColor = Color.Black)
-                    .width(160.dp)
-                    .scale(scale)
-                    .clip(shape = RoundedCornerShape(16.dp))
-                    .pointerInput(Unit) {
-                        detectTapGestures(onPress = {
-                            isPressed = true
-                            tryAwaitRelease()
-                            isPressed = false
-                        }, onLongPress = { longClick() }, onTap = { onClick() })
-                    }
-                    .combinedClickable(
-                        onClick = { onClick() },
-                        onLongClick = { longClick() },
-                    ),
-                elevation = 4.dp
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Image(
-                        painter = painterResource(id = getTaskIcon(task.title)),
-                        contentDescription = "Task Icon",
-                        Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = task.title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = colorResource(id = R.color.dark_gray),
-                        fontSize = 20.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = dateFormater(task.startDate),
-                        fontSize = 16.sp,
-                        color = colorResource(id = R.color.medium_gray),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Normal
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        when (task.status) {
-                            "Completed" -> Image(
-                                painter = painterResource(id = R.drawable.checkicon),
-                                contentDescription = "check icon",
-                                modifier = Modifier.size(24.dp)
-
-                            )
-
-                            "Pending" -> Image(
-                                painter = painterResource(id = R.drawable.pending),
-                                contentDescription = "pending",
-                                colorFilter = ColorFilter.tint(Color(0xFFFFA500)),
-                                modifier = Modifier.size(24.dp)
-                            )
-
-                            "In Progress" -> Image(
-                                painter = painterResource(id = R.drawable.inprogressicon),
-                                contentDescription = "In Progress",
-                                modifier = Modifier.size(24.dp)
-                            )
+            AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
+                Card(
+                    backgroundColor = Color.White,
+                    modifier = Modifier
+                        .padding(start = 8.dp, end = 8.dp)
+                        .shadow(
+                            8.dp, RoundedCornerShape(16.dp), clip = false, spotColor = Color.Black
+                        )
+                        .width(160.dp)
+                        .scale(scale)
+                        .clip(shape = RoundedCornerShape(16.dp))
+                        .pointerInput(Unit) {
+                            detectTapGestures(onPress = {
+                                isPressed = true
+                                tryAwaitRelease()
+                                isPressed = false
+                            }, onLongPress = { longClick() }, onTap = { onClick() })
                         }
-                        if (task.priority.isEmpty()) {
-                            Text(text = "")
-                        } else {
-                            Card(
-                                shape = RoundedCornerShape(8.dp),
-                                backgroundColor = when (task.priority) {
-                                    "High" -> colorResource(id = R.color.dark_pink)
-                                    "Medium" -> colorResource(id = R.color.darkYellow)
-                                    "Low" -> colorResource(id = R.color.darkBlue)
-                                    else -> Color.White
-                                },
-                                contentColor = when (task.priority) {
-                                    "High" -> colorResource(id = R.color.dark_pink)
-                                    "Medium" -> colorResource(id = R.color.darkBlue)
-                                    "Low" -> colorResource(id = R.color.darkYellow)
-                                    else -> Color.Black
-                                },
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(start = 4.dp)
-                            ) {
-                                Text(
-                                    text = task.priority,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(
-                                        start = 4.dp, end = 4.dp
-                                    )
-                                )
+                        .clickable {
+                            isPressed = true
+                            coroutineScope.launch {
+                                delay(100)
+                                isPressed = false
                             }
                         }
+                        .combinedClickable(
+                            onClick = { onClick() },
+                            onLongClick = { longClick() },
+                        ),
+                    elevation = 4.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Image(
+                            painter = painterResource(id = getTaskIcon(task.title)),
+                            contentDescription = "Task Icon",
+                            Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = task.title,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = colorResource(id = R.color.dark_gray),
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = dateFormater(task.startDate),
+                            fontSize = 16.sp,
+                            color = colorResource(id = R.color.medium_gray),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Normal
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Box(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            when (task.status) {
+                                "Completed" -> Image(
+                                    painter = painterResource(id = R.drawable.checkicon),
+                                    contentDescription = "check icon",
+                                    modifier = Modifier.size(24.dp)
+
+                                )
+
+                                "Pending" -> Image(
+                                    painter = painterResource(id = R.drawable.pending),
+                                    contentDescription = "pending",
+                                    colorFilter = ColorFilter.tint(Color(0xFFFFA500)),
+                                    modifier = Modifier.size(24.dp)
+                                )
+
+                                "In Progress" -> Image(
+                                    painter = painterResource(id = R.drawable.inprogressicon),
+                                    contentDescription = "In Progress",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            if (task.priority.isEmpty()) {
+                                Text(text = "")
+                            } else {
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    backgroundColor = when (task.priority) {
+                                        "High" -> colorResource(id = R.color.dark_pink)
+                                        "Medium" -> colorResource(id = R.color.darkYellow)
+                                        "Low" -> colorResource(id = R.color.darkBlue)
+                                        else -> Color.White
+                                    },
+                                    contentColor = when (task.priority) {
+                                        "High" -> colorResource(id = R.color.dark_pink)
+                                        "Medium" -> colorResource(id = R.color.darkBlue)
+                                        "Low" -> colorResource(id = R.color.darkYellow)
+                                        else -> Color.Black
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .padding(start = 4.dp)
+                                ) {
+                                    Text(
+                                        text = task.priority,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(
+                                            start = 4.dp, end = 4.dp
+                                        )
+                                    )
+                                }
+                            }
 
 
+                        }
                     }
                 }
             }
@@ -507,144 +543,146 @@ class HomeScreen : ComponentActivity() {
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun upComingTasksItem(task: Task, longClick: () -> Unit, onClick: () -> Unit) {
-            Card(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .combinedClickable(
-                        onClick = { onClick() },
-                        onLongClick = { longClick() },
-                    ), shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
+            AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
+                Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.Start
+                        .padding(4.dp)
+                        .combinedClickable(
+                            onClick = { onClick() },
+                            onLongClick = { longClick() },
+                        ), shape = RoundedCornerShape(12.dp)
                 ) {
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .height(90.dp)
-                            .width(4.dp)
-                            .background(
-                                colorResource(id = R.color.box_color),
-                                shape = RoundedCornerShape(4.dp)
-                            )
-                    )
-                    Column(
-                        modifier = Modifier
-                            .padding(start = 12.dp)
-                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.Start
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Box(
+                            modifier = Modifier
+                                .height(90.dp)
+                                .width(4.dp)
+                                .background(
+                                    colorResource(id = R.color.box_color),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                        )
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .weight(1f)
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(
-                                    text = task.title,
-                                    fontSize = 20.sp,
-                                    color = colorResource(id = R.color.dark_gray),
-                                    fontFamily = FontFamily.SansSerif,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .padding(top = 8.dp)
-                                        .width(IntrinsicSize.Max)
-                                        .widthIn(0.dp, 150.dp),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = task.title,
+                                        fontSize = 20.sp,
+                                        color = colorResource(id = R.color.dark_gray),
+                                        fontFamily = FontFamily.SansSerif,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            .padding(top = 8.dp)
+                                            .width(IntrinsicSize.Max)
+                                            .widthIn(0.dp, 150.dp),
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
 
-                                if (task.priority.isEmpty()) {
-                                    Text(text = "")
-                                } else {
-                                    Card(
-                                        shape = RoundedCornerShape(8.dp),
-                                        backgroundColor = when (task.priority) {
-                                            "High" -> colorResource(id = R.color.dark_pink)
-                                            "Medium" -> colorResource(id = R.color.darkYellow)
-                                            "Low" -> colorResource(id = R.color.darkBlue)
-                                            else -> Color.White
-                                        },
-                                        contentColor = when (task.priority) {
-                                            "High" -> colorResource(id = R.color.dark_pink)
-                                            "Medium" -> colorResource(id = R.color.darkBlue)
-                                            "Low" -> colorResource(id = R.color.darkYellow)
-                                            else -> Color.Black
-                                        },
-                                        modifier = Modifier.padding(start = 4.dp, top = 6.dp)
-                                    ) {
-                                        Text(
-                                            text = task.priority,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                            modifier = Modifier.padding(
-                                                start = 4.dp, end = 4.dp
+                                    if (task.priority.isEmpty()) {
+                                        Text(text = "")
+                                    } else {
+                                        Card(
+                                            shape = RoundedCornerShape(8.dp),
+                                            backgroundColor = when (task.priority) {
+                                                "High" -> colorResource(id = R.color.dark_pink)
+                                                "Medium" -> colorResource(id = R.color.darkYellow)
+                                                "Low" -> colorResource(id = R.color.darkBlue)
+                                                else -> Color.White
+                                            },
+                                            contentColor = when (task.priority) {
+                                                "High" -> colorResource(id = R.color.dark_pink)
+                                                "Medium" -> colorResource(id = R.color.darkBlue)
+                                                "Low" -> colorResource(id = R.color.darkYellow)
+                                                else -> Color.Black
+                                            },
+                                            modifier = Modifier.padding(start = 4.dp, top = 6.dp)
+                                        ) {
+                                            Text(
+                                                text = task.priority,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp, end = 4.dp
+                                                )
                                             )
-                                        )
+                                        }
                                     }
                                 }
                             }
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = task.description,
+                                fontSize = 14.sp,
+                                color = colorResource(id = R.color.medium_gray),
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = timeFormater(task.startTime) + " - " + timeFormater(task.endTime),
+                                color = colorResource(id = R.color.medium_gray),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = task.description,
-                            fontSize = 14.sp,
-                            color = colorResource(id = R.color.medium_gray),
-                            fontFamily = FontFamily.SansSerif,
-                            fontWeight = FontWeight.Normal,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = timeFormater(task.startTime) + " - " + timeFormater(task.endTime),
-                            color = colorResource(id = R.color.medium_gray),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = dateFormater(task.startDate),
-                            color = colorResource(id = R.color.medium_gray),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.wrapContentWidth(Alignment.End)
-                        )
-                        Text(
-                            text = "To",
-                            color = colorResource(id = R.color.medium_gray),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = dateFormater(task.endDate),
-                            color = colorResource(id = R.color.medium_gray),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.wrapContentWidth(Alignment.End)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        when (task.status) {
-                            "In Progress" -> Image(
-                                painter = painterResource(id = R.drawable.inprogressicon),
-                                contentDescription = "check icon",
-                                modifier = Modifier.size(24.dp)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = dateFormater(task.startDate),
+                                color = colorResource(id = R.color.medium_gray),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.wrapContentWidth(Alignment.End)
                             )
-
-                            "Pending" -> Image(
-                                painter = painterResource(id = R.drawable.pending),
-                                modifier = Modifier.size(24.dp),
-                                contentDescription = "pending",
-                                colorFilter = ColorFilter.tint(Color(0xFFFFA500))
+                            Text(
+                                text = "To",
+                                color = colorResource(id = R.color.medium_gray),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
                             )
+                            Text(
+                                text = dateFormater(task.endDate),
+                                color = colorResource(id = R.color.medium_gray),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.wrapContentWidth(Alignment.End)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            when (task.status) {
+                                "In Progress" -> Image(
+                                    painter = painterResource(id = R.drawable.inprogressicon),
+                                    contentDescription = "check icon",
+                                    modifier = Modifier.size(24.dp)
+                                )
+
+                                "Pending" -> Image(
+                                    painter = painterResource(id = R.drawable.pending),
+                                    modifier = Modifier.size(24.dp),
+                                    contentDescription = "pending",
+                                    colorFilter = ColorFilter.tint(Color(0xFFFFA500))
+                                )
+                            }
                         }
                     }
                 }
@@ -662,7 +700,7 @@ class HomeScreen : ComponentActivity() {
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 32.dp, start = 32.dp, end = 32.dp),
+                        .padding(top = 8.dp, start = 32.dp, end = 32.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -698,20 +736,23 @@ class HomeScreen : ComponentActivity() {
                             delay(1000)
                         }
                         Box {
-                            CircularProgressIndicator(strokeWidth = 1.dp, color = Color.Gray)
+                            RotatingProgressIndicator()
                         }
 
                     } else if (selectedWeatherLocation.isEmpty()) {
-                        Text(text = "select location to view weather",
+                        Text(
+                            text = "select location to view weather",
                             modifier = Modifier.clickable { navController.navigate("locationDetailScreen") })
                     } else {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { navController.navigate("locationDetailScreen") }) {
 
-                            Text(text = selectedWeatherLocation.ifEmpty { "Loading..." },
+                            Text(
+                                text = selectedWeatherLocation.ifEmpty { "Loading..." },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = colorResource(id = R.color.dark_gray),
-                                modifier = Modifier.clickable { navController.navigate("locationDetailScreen") }
+                                color = colorResource(id = R.color.dark_gray)
 
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -818,7 +859,8 @@ class HomeScreen : ComponentActivity() {
             // View all tasks
             item {
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    Text(text = if (tasks.size > 2) "View all" else "",
+                    Text(
+                        text = if (tasks.size > 2) "View all" else "",
                         color = colorResource(id = R.color.button_color),
                         fontSize = 16.sp,
                         modifier = Modifier
@@ -911,11 +953,15 @@ class HomeScreen : ComponentActivity() {
                 horizontalAlignment = Alignment.Start
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(
-                        strokeWidth = 1.dp,
-                        modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
-                        color = Color.Gray
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        RotatingProgressIndicator()
+                    }
                 }
             }
         }
@@ -952,15 +998,15 @@ class HomeScreen : ComponentActivity() {
     }
 
     // Formating Time
-    private fun timeFormater(timeString: String): String {
+    private fun timeFormater(timeToFormat: String): String {
 
-        val fetchedTime = SimpleDateFormat("HH:mm", Locale.getDefault())
-        val dDF = SimpleDateFormat("h.mm a", Locale.getDefault())
+        val inputTimeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val outputTimeFormat = SimpleDateFormat("h.mm a", Locale.getDefault())
         return try {
-            val time = fetchedTime.parse(timeString)
-            dDF.format(time ?: "")
-        } catch (e: Exception) {
-            e.printStackTrace()
+            val parsedTime = inputTimeFormat.parse(timeToFormat)
+            outputTimeFormat.format(parsedTime ?: "")
+        } catch (exception: Exception) {
+            exception.printStackTrace()
             "invalid formated time"
         }
     }
@@ -1024,6 +1070,7 @@ class HomeScreen : ComponentActivity() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createNotificationChannel(context: Context) {
         val channelId = "taskAlertChannel"
         val channelName = "Task Alert Notifications"
@@ -1033,6 +1080,20 @@ class HomeScreen : ComponentActivity() {
 
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager?.createNotificationChannel(channel)
+    }
+
+    @Composable
+    fun RotatingProgressIndicator() {
+        val infiniteTransition = rememberInfiniteTransition()
+        val rotation by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
+                animation = tween(1000, easing = LinearEasing), repeatMode = RepeatMode.Restart
+            ), label = "rotation"
+        )
+
+        CircularProgressIndicator(
+            modifier = Modifier.rotate(rotation), strokeWidth = 2.dp, color = Color.Gray
+        )
     }
 
 }

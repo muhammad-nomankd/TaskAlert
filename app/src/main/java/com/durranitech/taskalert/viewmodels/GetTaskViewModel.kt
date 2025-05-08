@@ -23,8 +23,8 @@ class GetTaskViewModel : ViewModel() {
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
 
-    private val _tasksForUpCommingCategory = MutableStateFlow<List<Task>>(emptyList())
-    val tasksForUpCommingCategory: StateFlow<List<Task>> = _tasksForUpCommingCategory
+    private val _tasksForUpComingCategory = MutableStateFlow<List<Task>>(emptyList())
+    val tasksForUpCommingCategory: StateFlow<List<Task>> = _tasksForUpComingCategory
 
     private val _filteredTasks = MutableLiveData<List<Task>>(emptyList())
     var filteredTasks: LiveData<List<Task>> = _filteredTasks
@@ -103,9 +103,9 @@ class GetTaskViewModel : ViewModel() {
 
                     else -> taskRepo
                 }
-                _tasksForUpCommingCategory.value = taskFilter
+                _tasksForUpComingCategory.value = taskFilter
             } catch (e: Exception) {
-                _tasksForUpCommingCategory.value = emptyList()
+                _tasksForUpComingCategory.value = emptyList()
             }
         }
     }

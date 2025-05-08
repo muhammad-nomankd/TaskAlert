@@ -1,7 +1,9 @@
 package com.durranitech.taskalert
 
 import android.Manifest
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
@@ -11,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.durranitech.taskalert.screens.CreateTask
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -28,40 +31,43 @@ class TaskNotificationManager(private val context: Context) {
                 val taskDescription = document.getString("description") ?: "some important task"
                 val startTime = document.getString("startTime") ?: "00:00"
                 val startDate = document.getString("startDate") ?: "1970-01-01"
-
                 val taskStartTimeInMillis = getTaskStartTimeInMillis(startDate, startTime)
                 val currentTime = System.currentTimeMillis()
+                val timeUntilTask = taskStartTimeInMillis - currentTime
 
-                val timeDifference = Math.abs(currentTime - taskStartTimeInMillis)
 
-                if (timeDifference <= 6000) {
-                    showNotificationImmediately(taskTitle, taskDescription)
+                if (timeUntilTask > 0 && timeUntilTask >= 600) {
+                    scheduleNotification(
+                        taskTitle, taskDescription, timeUntilTask
+                    )
                 } else if (taskStartTimeInMillis > currentTime) {
                     scheduleNotification(
-                        taskTitle,
-                        taskDescription,
-                        taskStartTimeInMillis - currentTime
+                        taskTitle, taskDescription, taskStartTimeInMillis - currentTime
                     )
                 }
             }
         }
     }
 
-    fun showNotificationImmediately(taskTitle: String, taskDescription: String) {
+    fun showNotificationImmediately(
+        context: Context,
+        taskTitle: String,
+        taskDescription: String
+    ) {
         val notificationId = System.currentTimeMillis().toInt()
 
         // Create the notification builder
         val notificationBuilder = NotificationCompat.Builder(context, "taskAlertChannel")
             .setSmallIcon(R.drawable.appicon) // Replace with your actual app icon
             .setContentTitle(taskTitle).setContentText(taskDescription)
-            .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
 
         val notificationManager = NotificationManagerCompat.from(context)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
+                    context, Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 Log.d("TaskNotification", "Permission not granted")
@@ -75,13 +81,12 @@ class TaskNotificationManager(private val context: Context) {
 
     fun scheduleNotification(taskTitle: String, taskDescription: String, delay: Long) {
         val data = workDataOf(
-            "TASK_TITLE" to taskTitle, "TASK_DESCRIPTION" to taskDescription
+            "TASK_TITLE" to taskTitle, "TASK_DESCRIPTION" to taskDescription,
         )
 
         val notificationWork = OneTimeWorkRequestBuilder<NotificationWorker>().setInitialDelay(
-                delay,
-                TimeUnit.MILLISECONDS
-            ).setInputData(data).build()
+            delay, TimeUnit.MILLISECONDS
+        ).setInputData(data).build()
 
         WorkManager.getInstance(context).enqueue(notificationWork)
     }

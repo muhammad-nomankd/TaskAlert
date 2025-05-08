@@ -31,7 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.durranitech.taskalert.R
-import com.durranitech.taskalert.activities.MainActivity
+import com.durranitech.taskalert.MainActivity
 import com.durranitech.taskalert.repositories.AuthRepository
 import com.durranitech.taskalert.ui.theme.AlarmManagerTheme
 import com.durranitech.taskalert.viewmodels.AuthViewModel
@@ -59,7 +59,7 @@ class SplashScreen : ComponentActivity() {
                         )
                     }
                     composable("splash") {
-                        authentication(navController = navController)
+                        Authentication(navController = navController)
                     }
                     composable("ResetPassword") {
                         PasswordResetScreen(context = LocalContext.current, navController)
@@ -77,7 +77,7 @@ class SplashScreen : ComponentActivity() {
 
 
     @Composable
-    fun authentication(navController: NavHostController) {
+    fun Authentication(navController: NavHostController) {
         val coroutinescope = rememberCoroutineScope()
         LaunchedEffect(Unit) {
             coroutinescope.launch {
@@ -85,7 +85,7 @@ class SplashScreen : ComponentActivity() {
                 if (FirebaseAuth.getInstance().currentUser?.uid != null) {
                     val intent = Intent(
                         this@SplashScreen,
-                        com.durranitech.taskalert.activities.MainActivity::class.java
+                        MainActivity::class.java
                     ).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     }
@@ -122,7 +122,7 @@ class SplashScreen : ComponentActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.applogo),
+                    painter = painterResource(id = R.drawable.appicon),
                     contentDescription = "App logo",
                     modifier = Modifier
                         .size(150.dp)

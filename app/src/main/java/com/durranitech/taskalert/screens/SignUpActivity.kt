@@ -12,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -63,10 +64,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.durranitech.taskalert.R
-import com.durranitech.taskalert.activities.MainActivity
+import com.durranitech.taskalert.MainActivity
 import com.durranitech.taskalert.repositories.AuthRepository
 import com.durranitech.taskalert.screens.ui.theme.AlarmManagerTheme
 import com.durranitech.taskalert.viewmodels.AuthViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -77,6 +79,13 @@ class SignUpActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AlarmManagerTheme {
+                val isSystemInDarkTheme = isSystemInDarkTheme()
+                val systemUiController = rememberSystemUiController()
+
+                systemUiController.setSystemBarsColor(
+                    color = Color.Transparent,
+                    darkIcons = !isSystemInDarkTheme
+                )
                 SignUp(
                     viewModel = AuthViewModel(
                         AuthRepository()

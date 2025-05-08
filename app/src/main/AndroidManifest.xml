@@ -25,8 +25,8 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/applogo"
-        android:roundIcon="@drawable/applogo"
+        android:icon="@drawable/appicon"
+        android:roundIcon="@drawable/appicon"
         android:supportsRtl="true"
         android:theme="@style/Theme.AlarmManager"
         tools:targetApi="31">
@@ -37,7 +37,7 @@
             android:label="@string/title_activity_sign_up"
             android:theme="@style/Theme.AlarmManager" />
         <activity
-            android:name="com.durranitech.taskalert.screens.LocationDetailScreen"
+            android:name="com.durranitech.taskalert.screens.WeatherDetailScreen"
             android:exported="false"
             android:configChanges="layoutDirection"
             android:label="@string/title_activity_location_detail_screen"
@@ -50,7 +50,7 @@
             android:configChanges="layoutDirection"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name="com.durranitech.taskalert.activities.MainActivity"
+            android:name="com.durranitech.taskalert.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.AlarmManager"
             android:configChanges="layoutDirection"

@@ -28,7 +28,7 @@ class CreateTaskViewModel : ViewModel() {
             startTime = startTime,
             endTime = endTime,
             priority = taskPriority,
-            status
+            status = status
         )
 
         repository.saveTask(

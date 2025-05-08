@@ -1,8 +1,4 @@
 package com.durranitech.taskalert.screens
-
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context

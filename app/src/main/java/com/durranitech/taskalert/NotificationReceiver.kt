@@ -9,7 +9,7 @@ class NotificationWorker(context:Context, params: WorkerParameters):CoroutineWor
         val taskTitle = inputData.getString("TASK_TITLE")?: "Task Title"
         val taskDescription = inputData.getString("TASK_DESCRIPTION")?:"Task Description"
 
-        TaskNotificationManager(applicationContext).showNotificationImmediately(taskTitle,taskDescription)
+        TaskNotificationManager(applicationContext).showNotificationImmediately(applicationContext,taskTitle,taskDescription)
         return Result.success()
 
     }

@@ -1,4 +1,4 @@
-package com.durranitech.taskalert.activities
+package com.durranitech.taskalert
 
 import CreateTaskViewModel
 import android.os.Build
@@ -13,9 +13,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.durranitech.taskalert.repositories.AuthRepository
-import com.durranitech.taskalert.screens.CreatTask
+import com.durranitech.taskalert.screens.CreateTask
 import com.durranitech.taskalert.screens.HomeScreen
-import com.durranitech.taskalert.screens.LocationDetailScreen
+import com.durranitech.taskalert.screens.WeatherDetailScreen
 import com.durranitech.taskalert.screens.PasswordResetScreen
 import com.durranitech.taskalert.screens.ProfileScreen
 import com.durranitech.taskalert.screens.SignUpActivity
@@ -24,13 +24,9 @@ import com.durranitech.taskalert.viewmodels.AuthViewModel
 import com.durranitech.taskalert.viewmodels.LocationViewModel
 
 class MainActivity : ComponentActivity() {
-
-
-    @RequiresApi(Build.VERSION_CODES.FROYO)
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
-
         setContent {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = "home") {
@@ -55,7 +51,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("locationDetailScreen") {
-                    LocationDetailScreen().LocationDetailContent(
+                    WeatherDetailScreen().LocationDetailContent(
                         LocationViewModel(), navController
                     )
                 }
@@ -74,34 +70,35 @@ class MainActivity : ComponentActivity() {
 
                 composable(
                     "createTask?taskId={taskId}&taskTitle={taskTitle}&taskDescription={taskDescription}&startDate={startDate}&endDate={endDate}&startTime={startTime}&endTime={endTime}&priority={priority}",
-                    arguments = listOf(navArgument("taskId") { nullable = true },
+                    arguments = listOf(
+                        navArgument("taskId") { nullable = true },
                         navArgument("taskTitle") {
                             nullable = true
-                            NavType.StringType
+                            NavType.Companion.StringType
                         },
                         navArgument("taskDescription") {
                             nullable = true
-                            NavType.StringType
+                            NavType.Companion.StringType
                         },
                         navArgument("startDate") {
                             nullable = true
-                            NavType.StringType
+                            NavType.Companion.StringType
                         },
                         navArgument("endDate") {
                             nullable = true
-                            NavType.StringType
+                            NavType.Companion.StringType
                         },
                         navArgument("startTime") {
                             nullable = true
-                            NavType.StringType
+                            NavType.Companion.StringType
                         },
                         navArgument("endTime") {
                             nullable = true
-                            NavType.StringType
+                            NavType.Companion.StringType
                         },
                         navArgument("priority") {
                             nullable = true
-                            NavType.StringType
+                            NavType.Companion.StringType
                         })
                 ) { backStackEntry ->
 
@@ -116,7 +113,7 @@ class MainActivity : ComponentActivity() {
                     val priority = backStackEntry.arguments?.getString("priority")
 
                     // Pass the arguments to the CreateTask screen
-                    CreatTask().CreateTaskcom(
+                    CreateTask(
                         navController,
                         CreateTaskViewModel(),
                         taskId,
@@ -138,4 +135,3 @@ class MainActivity : ComponentActivity() {
 
 
 }
-

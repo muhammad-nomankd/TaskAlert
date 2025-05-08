@@ -11,10 +11,23 @@ class CreateTaskRepository {
 
     fun saveTask(task: Task, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         if (currentUser != null) {
+            // Convert Task to Map explicitly to include all fields
+            val taskMap = mapOf(
+                "taskId" to task.taskId,
+                "title" to task.title,
+                "description" to task.description,
+                "startDate" to task.startDate,
+                "endDate" to task.endDate,
+                "startTime" to task.startTime,
+                "endTime" to task.endTime,
+                "priority" to task.priority,
+                "status" to task.status
+            )
+
             firestore.collection("User")
                 .document(currentUser.uid)
                 .collection("tasks")
-                .add(task)
+                .add(taskMap)
                 .addOnSuccessListener { onSuccess() }
                 .addOnFailureListener { exception -> onFailure(exception) }
         } else {
