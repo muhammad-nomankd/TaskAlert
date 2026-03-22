@@ -4,15 +4,15 @@ plugins {
     id("com.google.gms.google-services")
     id("kotlin-kapt")
     id("kotlin-android")
-    id("dagger.hilt.android.plugin")
 }
 
+
 android {
-    namespace = "com.durranitech.taskalert"
+    namespace = "com.durrani.taskalert"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.durranitech.taskalert"
+        applicationId = "com.durrani.taskalert"
         minSdk = 24
         targetSdk = 35
         versionCode = 5
@@ -26,10 +26,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
     }
@@ -52,7 +51,6 @@ android {
         }
     }
 }
-
 dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
@@ -63,7 +61,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material3) // Material Design 3
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.material)
@@ -94,16 +92,6 @@ dependencies {
     // Work Manager
     implementation(libs.androidx.work.runtime.ktx)
 
-    // Dependency Injection
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-android-compiler:2.48")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-
-    // Room Database
-    implementation("androidx.room:room-runtime:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -111,11 +99,15 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.test.manifest)
-    testImplementation("org.mockito:mockito-core:5.3.1")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
-    testImplementation("app.cash.turbine:turbine:1.0.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
-    // Accompanist
+    //Accompanist
     implementation(libs.accompanist.systemuicontroller)
+
+    //google signin
+    implementation(libs.androidx.credentials.v120)
+    implementation(libs.androidx.credentials.play.services.auth.v120)
+    implementation(libs.googleid.v111)
+
+
+
 }

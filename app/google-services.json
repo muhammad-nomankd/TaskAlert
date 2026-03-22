@@ -7,30 +7,30 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:493507260886:android:02d88ad6222bab99d43477",
+        "mobilesdk_app_id": "1:493507260886:android:037a82f052dc91c7d43477",
         "android_client_info": {
-          "package_name": "com.durranitech.taskalert"
+          "package_name": "com.durrani.taskalert"
         }
       },
       "oauth_client": [
         {
-          "client_id": "493507260886-bd41n9ihfs7qg1klv61ucv5ssj78rdaj.apps.googleusercontent.com",
+          "client_id": "493507260886-7e1rhnhorjla6ca8646jeoiui46bdjkv.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.durranitech.taskalert",
-            "certificate_hash": "dadd8dd38735a18aa2ba0ea7a74a9dd9b8d8a77d"
+            "package_name": "com.durrani.taskalert",
+            "certificate_hash": "2a68165ea5d280154e25f0c904020ba20aa9559f"
           }
         },
         {
-          "client_id": "493507260886-srhom0a6bsja9scc66u4ljmkcs3iver0.apps.googleusercontent.com",
+          "client_id": "493507260886-q93d6k73cme9ico8bru2nejtkjt2om5i.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.durranitech.taskalert",
-            "certificate_hash": "51a0ef6b1733a23ac2afbe3fb768a7276cc84398"
+            "package_name": "com.durrani.taskalert",
+            "certificate_hash": "a28ec22ab38ad58b7ed2a0b8a4d133c83b34ddfa"
           }
         },
         {
-          "client_id": "493507260886-mifhuustgenp92os2qn16k032vo4fjgu.apps.googleusercontent.com",
+          "client_id": "493507260886-5hbo8sqm26glc6p0nbdmq8qadqgrpb5d.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -43,7 +43,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "493507260886-mifhuustgenp92os2qn16k032vo4fjgu.apps.googleusercontent.com",
+              "client_id": "493507260886-5hbo8sqm26glc6p0nbdmq8qadqgrpb5d.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

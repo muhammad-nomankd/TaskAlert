@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "493507260886",
+    "project_id": "taskalert-d44b6",
+    "storage_bucket": "taskalert-d44b6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:493507260886:android:02d88ad6222bab99d43477",
+        "android_client_info": {
+          "package_name": "com.durrani.taskalert"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "493507260886-mifhuustgenp92os2qn16k032vo4fjgu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxWKBRZ6RpKcCwRbROqzkj_vVhbXcRk8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "493507260886-mifhuustgenp92os2qn16k032vo4fjgu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

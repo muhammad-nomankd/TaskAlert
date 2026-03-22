@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.durranitech.taskalert"
+    package="com.durrani.taskalert"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION">
+    </uses-permission>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
@@ -20,7 +21,6 @@
         android:xlargeScreens="true" />
 
     <application
-        android:name=".TaskAlertApplication"
         android:label="@string/app_name"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -30,65 +30,51 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AlarmManager"
         tools:targetApi="31">
-        
         <activity
-            android:name=".screens.SplashScreen"
+            android:name="com.durrani.taskalert.presentation.screens.AuthenticationActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
+            android:label="@string/title_activity_sign_up"
+            android:theme="@style/Theme.AlarmManager" />
+        <activity
+            android:name="com.durrani.taskalert.presentation.ui.screens.WeatherDetailScreen"
+            android:exported="false"
+            android:configChanges="layoutDirection"
+            android:label="@string/title_activity_location_detail_screen"
+            android:theme="@style/Theme.AlarmManager" />
+        <activity
+            android:name="com.durrani.taskalert.presentation.ui.screens.TaskListScreen"
+            android:exported="false"
+            android:label="@string/title_activity_task_detail_screen"
+            android:theme="@style/Theme.AlarmManager"
+            android:configChanges="layoutDirection"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name="com.durrani.taskalert.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AlarmManager"
+            android:configChanges="layoutDirection"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name="com.durrani.taskalert.presentation.ui.screens.HomeScreen"
+            android:exported="true"
+            android:label="AlarmManager"
+            android:configChanges="layoutDirection"
+            android:theme="@style/Theme.AlarmManager"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name="com.durrani.taskalert.presentation.ui.screens.SplashScreen"
             android:exported="true"
             android:theme="@style/Theme.AlarmManager"
             android:configChanges="layoutDirection"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".screens.SignUpActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
-            android:label="@string/title_activity_sign_up"
-            android:theme="@style/Theme.AlarmManager" />
-
-        <activity
-            android:name=".screens.WeatherDetailScreen"
-            android:exported="false"
-            android:configChanges="layoutDirection"
-            android:label="@string/title_activity_location_detail_screen"
-            android:theme="@style/Theme.AlarmManager" />
-
-        <activity
-            android:name=".screens.TaskListScreen"
-            android:exported="false"
-            android:label="@string/title_activity_task_detail_screen"
-            android:theme="@style/Theme.AlarmManager"
-            android:configChanges="layoutDirection"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.AlarmManager"
-            android:configChanges="layoutDirection"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
-            android:name=".screens.HomeScreen"
-            android:exported="true"
-            android:label="AlarmManager"
-            android:configChanges="layoutDirection"
-            android:theme="@style/Theme.AlarmManager"
-            android:windowSoftInputMode="adjustResize" />
-
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
+        
     </application>
+
 </manifest>
