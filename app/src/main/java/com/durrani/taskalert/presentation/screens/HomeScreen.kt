@@ -1,4 +1,4 @@
-package com.durrani.taskalert.presentation.ui.screens
+package com.durrani.taskalert.presentation.screens
 
 //noinspection UsingMaterialAndMaterial3Libraries
 //noinspection UsingMaterialAndMaterial3Libraries
@@ -219,7 +219,7 @@ class HomeScreen : ComponentActivity() {
             )
         }
         val coroutineScope = rememberCoroutineScope()
-        var snackBarHost by androidx.compose.runtime.remember {
+        var snackBarHost by remember {
             mutableStateOf(
                 SnackbarHostState()
             )
@@ -329,7 +329,10 @@ class HomeScreen : ComponentActivity() {
                 }
             }
 
-            // Getting filtered Tasks based on selected Category Button
+
+        }
+
+        LaunchedEffect(selectedCategoryState) {
             viewmodel.filterTasks(selectedCategoryState)
         }
 
@@ -912,38 +915,45 @@ class HomeScreen : ComponentActivity() {
 
             item { Spacer(modifier = Modifier.height(32.dp)) }
 
-            // LazyRow for horizontal scrollable tasks
-            item {
-                LazyRow(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(start = 32.dp, end = 32.dp)
-                ) {
-                    items(tasks, key = { it.taskId }) { task ->
-                        taskItem(task, longClick = {
-                            currentTask = task.taskId
-                            showPopUp = true
-                            taskStatus = task.status
 
-                        }, onClick = {
-                            try {
-                                navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
-                            } catch (_: Exception) {
-                                coroutineScope.launch {
-                                    snackBarHost.showSnackbar(
-                                        message = "Error opening task please delete it and create it again",
-                                        actionLabel = "Ok",
-                                        duration = SnackbarDuration.Short
-                                    )
+                item {
+                    if(isLoading){
+                        HorizontalTaskCardShimmer()
+                    }
+                    else {
+                    LazyRow(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(start = 32.dp, end = 32.dp)
+                    ) {
+                        items(tasks, key = { it.taskId }) { task ->
+                            taskItem(task, longClick = {
+                                currentTask = task.taskId
+                                showPopUp = true
+                                taskStatus = task.status
+
+                            }, onClick = {
+                                try {
+                                    navController.navigate("createTask?taskId=${task.taskId}&taskTitle=${task.title}&taskDescription=${task.description}&startDate=${task.startDate}&endDate=${task.endDate}&startTime=${task.startTime}&endTime=${task.endTime}&priority=${task.priority}")
+                                } catch (_: Exception) {
+                                    coroutineScope.launch {
+                                        snackBarHost.showSnackbar(
+                                            message = "Error opening task please delete it and create it again",
+                                            actionLabel = "Ok",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
                                 }
-                            }
-                        })
+                            })
+                        }
+                    }
+                    if (tasks.isEmpty()) {
+                        Spacer(modifier = Modifier.height(168.dp))
+                    }
                     }
                 }
-                if (tasks.isEmpty()) {
-                    Spacer(modifier = Modifier.height(168.dp))
-                }
-            }
+
+
             item { Spacer(modifier = Modifier.height(8.dp)) }
             // View all tasks
             item {
@@ -1141,7 +1151,7 @@ class HomeScreen : ComponentActivity() {
         }
     }
 
-    private fun saveLocationToFireStore(locationName: String) {
+    fun saveLocationToFireStore(locationName: String) {
         val firestore = FirebaseFirestore.getInstance()
         val docRef =
             firestore.collection("User").document(FirebaseAuth.getInstance().currentUser?.uid ?: "")
@@ -1155,14 +1165,14 @@ class HomeScreen : ComponentActivity() {
 
     }
 
-    private fun isNetworkAvailable(context: Context): Boolean {
+    fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager =
             context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = connectivityManager.activeNetworkInfo
         return activeNetwork?.isConnectedOrConnecting == true
     }
 
-    private fun isLocationEnabled(context: Context): Boolean {
+    fun isLocationEnabled(context: Context): Boolean {
         val locationManager = context.getSystemService(LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
             LocationManager.NETWORK_PROVIDER
@@ -1181,297 +1191,7 @@ class HomeScreen : ComponentActivity() {
         notificationManager?.createNotificationChannel(channel)
     }
 
-    @Composable
-    fun HomeScreenShimmer() {
-        val infiniteTransition = rememberInfiniteTransition()
-        val shimmerAlpha by infiniteTransition.animateFloat(
-            initialValue = 0.2f, targetValue = 0.8f, animationSpec = infiniteRepeatable(
-                animation = tween(1000, easing = LinearEasing), repeatMode = RepeatMode.Reverse
-            ), label = "shimmer"
-        )
 
-        @Composable
-        fun ShimmerBox(
-            modifier: Modifier = Modifier, height: Dp = 20.dp
-        ) {
-            Box(
-                modifier = modifier
-                    .height(height)
-                    .background(
-                        Color.Gray.copy(alpha = shimmerAlpha), RoundedCornerShape(8.dp)
-                    )
-            )
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .background(colorResource(id = R.color.custom_white))
-                .fillMaxSize()
-        ) {
-            // Header Section with Profile and Weather
-            item {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, start = 32.dp, end = 32.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // Profile Image Shimmer
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                            .background(Color.Gray.copy(alpha = shimmerAlpha))
-                    )
-
-                    // Weather Section Shimmer
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        ShimmerBox(
-                            modifier = Modifier.width(120.dp), height = 16.dp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        ShimmerBox(
-                            modifier = Modifier.width(60.dp), height = 32.dp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        ShimmerBox(
-                            modifier = Modifier.width(100.dp), height = 16.dp
-                        )
-                        ShimmerBox(
-                            modifier = Modifier.width(80.dp), height = 14.dp
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-
-            // Categories Title Shimmer
-            item {
-                ShimmerBox(
-                    modifier = Modifier
-                        .padding(start = 32.dp)
-                        .width(100.dp), height = 20.dp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            // Category Buttons Shimmer
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    repeat(3) {
-                        ShimmerBox(
-                            modifier = Modifier
-                                .width(80.dp)
-                                .height(40.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-
-            // Horizontal Task Cards Shimmer
-            item {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, end = 20.dp)
-                ) {
-                    items(3) {
-                        Card(
-                            backgroundColor = Color.White,
-                            modifier = Modifier
-                                .padding(start = 8.dp, end = 8.dp)
-                                .width(160.dp)
-                                .shadow(
-                                    12.dp,
-                                    RoundedCornerShape(20.dp),
-                                    clip = false,
-                                    spotColor = Color.Gray.copy(alpha = shimmerAlpha)
-                                ),
-                            elevation = 4.dp,
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                // Task Icon Shimmer
-                                Box(
-                                    modifier = Modifier
-                                        .height(24.dp)
-                                        .width(48.dp)
-                                        .background(
-                                            Color.Gray.copy(alpha = shimmerAlpha),
-                                            RoundedCornerShape(8.dp)
-                                        )
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                // Task Title Shimmer
-                                ShimmerBox(
-                                    modifier = Modifier.fillMaxWidth(), height = 20.dp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                // Date Shimmer
-                                ShimmerBox(
-                                    modifier = Modifier.width(80.dp), height = 16.dp
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                // Status and Priority Row
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .background(
-                                                Color.Gray.copy(alpha = shimmerAlpha), CircleShape
-                                            )
-                                    )
-                                    ShimmerBox(
-                                        modifier = Modifier.width(40.dp), height = 20.dp
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // View All Text Shimmer
-            item {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    ShimmerBox(
-                        modifier = Modifier
-                            .padding(end = 32.dp)
-                            .align(Alignment.CenterEnd)
-                            .width(60.dp), height = 16.dp
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            // Upcoming Tasks Section Shimmer
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    backgroundColor = colorResource(id = R.color.task_color)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(
-                            start = 24.dp, end = 24.dp, top = 12.dp, bottom = 16.dp
-                        )
-                    ) {
-                        // Upcoming Tasks Title
-                        ShimmerBox(
-                            modifier = Modifier.width(150.dp), height = 20.dp
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Upcoming Task Items
-                        repeat(2) {
-                            Card(
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .shadow(
-                                        8.dp,
-                                        RoundedCornerShape(16.dp),
-                                        clip = false,
-                                        spotColor = Color.Gray.copy(alpha = 0.8f)
-                                    ), shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp),
-                                    horizontalArrangement = Arrangement.Start
-                                ) {
-                                    // Left Color Bar
-                                    Box(
-                                        modifier = Modifier
-                                            .height(90.dp)
-                                            .width(4.dp)
-                                            .background(
-                                                Color.Gray.copy(alpha = shimmerAlpha),
-                                                shape = RoundedCornerShape(4.dp)
-                                            )
-                                    )
-
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(start = 12.dp)
-                                            .weight(1f)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            // Task Title
-                                            ShimmerBox(
-                                                modifier = Modifier.width(120.dp), height = 20.dp
-                                            )
-                                            // Priority Badge
-                                            ShimmerBox(
-                                                modifier = Modifier.width(50.dp), height = 20.dp
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        // Description
-                                        ShimmerBox(
-                                            modifier = Modifier.fillMaxWidth(0.8f), height = 14.dp
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        // Time Range
-                                        ShimmerBox(
-                                            modifier = Modifier.width(100.dp), height = 16.dp
-                                        )
-                                    }
-
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        // Start Date
-                                        ShimmerBox(
-                                            modifier = Modifier.width(60.dp), height = 16.dp
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        // "To" text
-                                        ShimmerBox(
-                                            modifier = Modifier.width(20.dp), height = 16.dp
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        // End Date
-                                        ShimmerBox(
-                                            modifier = Modifier.width(60.dp), height = 16.dp
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        // Status Icon
-                                        Box(
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .background(
-                                                    Color.Gray.copy(alpha = shimmerAlpha),
-                                                    CircleShape
-                                                )
-                                        )
-                                    }
-                                }
-                            }
-                            if (it < 1) Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     // Alternative compact shimmer for weather section only
     @Composable
@@ -1530,9 +1250,323 @@ class HomeScreen : ComponentActivity() {
         }
     }
 
-    @Preview
-    @Composable
-    private fun HomeScreenShimmerEFfect() {
-        HomeScreenShimmer()
+}
+
+@Composable
+fun HorizontalTaskCardShimmer() {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val shimmerAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.2f, targetValue = 0.8f, animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing), repeatMode = RepeatMode.Reverse
+        ), label = "shimmer"
+    )
+
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp)
+    ) {
+        items(3) {
+            Card(
+                backgroundColor = Color.White,
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 8.dp)
+                    .width(160.dp)
+                    .shadow(
+                        12.dp,
+                        RoundedCornerShape(20.dp),
+                        clip = false,
+                        spotColor = Color.Gray.copy(alpha = shimmerAlpha)
+                    ),
+                elevation = 4.dp,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // Task Icon Shimmer
+                    Box(
+                        modifier = Modifier
+                            .height(24.dp)
+                            .width(48.dp)
+                            .background(
+                                Color.Gray.copy(alpha = shimmerAlpha),
+                                RoundedCornerShape(8.dp)
+                            )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    // Task Title Shimmer
+                    ShimmerBox(
+                        modifier = Modifier.fillMaxWidth(), height = 20.dp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    // Date Shimmer
+                    ShimmerBox(
+                        modifier = Modifier.width(80.dp), height = 16.dp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // Status and Priority Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(
+                                    Color.Gray.copy(alpha = shimmerAlpha), CircleShape
+                                )
+                        )
+                        ShimmerBox(
+                            modifier = Modifier.width(40.dp), height = 20.dp
+                        )
+                    }
+                }
+            }
+        }
     }
+    Spacer(modifier = Modifier.height(16.dp))
+}
+@Composable
+fun ShimmerBox(
+    modifier: Modifier = Modifier, height: Dp = 20.dp
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val shimmerAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.2f, targetValue = 0.8f, animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing), repeatMode = RepeatMode.Reverse
+        ), label = "shimmer"
+    )
+
+    Box(
+        modifier = modifier
+            .height(height)
+            .background(
+                Color.Gray.copy(alpha = shimmerAlpha), RoundedCornerShape(8.dp)
+            )
+    )
+}
+@Composable
+fun HomeScreenShimmer() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val shimmerAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.2f, targetValue = 0.8f, animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing), repeatMode = RepeatMode.Reverse
+        ), label = "shimmer"
+    )
+
+    LazyColumn(
+        modifier = Modifier
+            .background(colorResource(id = R.color.custom_white))
+            .fillMaxSize()
+    ) {
+        // Header Section with Profile and Weather
+        item {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, start = 32.dp, end = 32.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Profile Image Shimmer
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray.copy(alpha = shimmerAlpha))
+                )
+
+                // Weather Section Shimmer
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ShimmerBox(
+                        modifier = Modifier.width(120.dp), height = 16.dp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    ShimmerBox(
+                        modifier = Modifier.width(60.dp), height = 32.dp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    ShimmerBox(
+                        modifier = Modifier.width(100.dp), height = 16.dp
+                    )
+                    ShimmerBox(
+                        modifier = Modifier.width(80.dp), height = 14.dp
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        // Categories Title Shimmer
+        item {
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(start = 32.dp)
+                    .width(100.dp), height = 20.dp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Category Buttons Shimmer
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                repeat(3) {
+                    ShimmerBox(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(40.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        // Horizontal Task Cards Shimmer
+
+        item {
+            HorizontalTaskCardShimmer()
+        }
+
+        // View All Text Shimmer
+        item {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                ShimmerBox(
+                    modifier = Modifier
+                        .padding(end = 32.dp)
+                        .align(Alignment.CenterEnd)
+                        .width(60.dp), height = 16.dp
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Upcoming Tasks Section Shimmer
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = colorResource(id = R.color.task_color)
+            ) {
+                Column(
+                    modifier = Modifier.padding(
+                        start = 24.dp, end = 24.dp, top = 12.dp, bottom = 16.dp
+                    )
+                ) {
+                    // Upcoming Tasks Title
+                    ShimmerBox(
+                        modifier = Modifier.width(150.dp), height = 20.dp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Upcoming Task Items
+                    repeat(2) {
+                        Card(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .shadow(
+                                    8.dp,
+                                    RoundedCornerShape(16.dp),
+                                    clip = false,
+                                    spotColor = Color.Gray.copy(alpha = 0.8f)
+                                ), shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                // Left Color Bar
+                                Box(
+                                    modifier = Modifier
+                                        .height(90.dp)
+                                        .width(4.dp)
+                                        .background(
+                                            Color.Gray.copy(alpha = shimmerAlpha),
+                                            shape = RoundedCornerShape(4.dp)
+                                        )
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .padding(start = 12.dp)
+                                        .weight(1f)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        // Task Title
+                                        ShimmerBox(
+                                            modifier = Modifier.width(120.dp), height = 20.dp
+                                        )
+                                        // Priority Badge
+                                        ShimmerBox(
+                                            modifier = Modifier.width(50.dp), height = 20.dp
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    // Description
+                                    ShimmerBox(
+                                        modifier = Modifier.fillMaxWidth(0.8f), height = 14.dp
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    // Time Range
+                                    ShimmerBox(
+                                        modifier = Modifier.width(100.dp), height = 16.dp
+                                    )
+                                }
+
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    // Start Date
+                                    ShimmerBox(
+                                        modifier = Modifier.width(60.dp), height = 16.dp
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    // "To" text
+                                    ShimmerBox(
+                                        modifier = Modifier.width(20.dp), height = 16.dp
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    // End Date
+                                    ShimmerBox(
+                                        modifier = Modifier.width(60.dp), height = 16.dp
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    // Status Icon
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .background(
+                                                Color.Gray.copy(alpha = shimmerAlpha),
+                                                CircleShape
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                        if (it < 1) Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Preview
+@Composable
+private fun HomeScreenShimmerEFfect() {
+    HomeScreenShimmer()
 }

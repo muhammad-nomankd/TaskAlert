@@ -16,7 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.durrani.taskalert.presentation.screens.AuthenticationActivity
 import com.durrani.taskalert.presentation.ui.screens.CreateTask
-import com.durrani.taskalert.presentation.ui.screens.HomeScreen
+import com.durrani.taskalert.presentation.screens.HomeScreen
 import com.durrani.taskalert.presentation.ui.screens.WeatherDetailScreen
 import com.durrani.taskalert.presentation.ui.screens.PasswordResetScreen
 import com.durrani.taskalert.presentation.ui.screens.ProfileScreen

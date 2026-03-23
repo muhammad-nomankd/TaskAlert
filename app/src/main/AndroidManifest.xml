@@ -56,7 +56,7 @@
             android:configChanges="layoutDirection"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name="com.durrani.taskalert.presentation.ui.screens.HomeScreen"
+            android:name="com.durrani.taskalert.presentation.screens.HomeScreen"
             android:exported="true"
             android:label="AlarmManager"
             android:configChanges="layoutDirection"

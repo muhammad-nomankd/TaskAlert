@@ -34,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.durrani.taskalert.MainActivity
 import com.durrani.taskalert.R
 import com.durrani.taskalert.presentation.screens.AuthenticationActivity
+import com.durrani.taskalert.presentation.screens.HomeScreen
 import com.durrani.taskalert.presentation.ui.theme.AlarmManagerTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
