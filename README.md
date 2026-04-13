@@ -1,11 +1,5 @@
 https://github.com/user-attachments/assets/2ca05a7f-c3dd-4540-a1a5-ca1a66dd8d2f
-# TaskAlert 
 
-## 📌 Description (for GitHub About section)
-
-TaskAlert is a modern Android productivity app built with Kotlin and Jetpack Compose that helps users manage tasks efficiently with smart alerts, reminders and implementation of hourly weather updates. It focuses on simplicity, real-time notifications, and a clean user experience to ensure you never miss important work.
-
----
 
 # 📱 TaskAlert - README
 
